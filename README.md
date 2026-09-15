@@ -103,6 +103,26 @@ We also released the generated datasets in our lab's HF Space. Please check the 
 | **Dialogue Simulation** | [🤗 Verbalized-Sampling-Dialogue-Simulation](https://huggingface.co/datasets/CHATS-Lab/Verbalized-Sampling-Dialogue-Simulation) |
 | **Synthetic Data (Math)** | [🤗 Verbalized-Sampling-Synthetic-Data-Generation](https://huggingface.co/datasets/CHATS-Lab/Verbalized-Sampling-Synthetic-Data-Generation) |
   
+## autocut — prompt-driven video editing
+
+[`autocut/`](autocut/README.md) is an applied tool that lives in this repo: you
+describe a film in one sentence and it analyses the rushes, writes an edit
+decision list, and renders finished masters in every aspect ratio you need. It
+runs entirely on ffmpeg — no other runtime dependency.
+
+```bash
+autocut auto "20s vertical teaser, moody and slow, open on the model, \
+tagline: \"it's yours\"" --rushes ./rushes --out ./out
+```
+
+With `--llm` it plans by eliciting *k* distinct edits with their own
+probabilities through `verbalize()`, rather than collapsing to one mode-seeking
+answer — the same idea as the rest of this repository, applied to a cut. Every
+candidate is compiled and validated deterministically, and with no model
+available it falls back to deterministic variants.
+
+See [autocut/README.md](autocut/README.md).
+
 ## Citation
 
 If you use Verbalized Sampling in your research, please cite our paper:

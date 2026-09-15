@@ -1,0 +1,58 @@
+{
+  "name": "editorial_luxury",
+  "description": "Fragrance-house editorial: negative space, held frames, hard cuts, one dissolve reserved for the product reveal. Warm sand grade with lifted film blacks and protected skin.",
+  "bpm": 92,
+  "subdivision": 2.0,
+  "tempo_curve": [[0.0, 1.55], [0.18, 1.15], [0.45, 0.78], [0.66, 0.70], [0.80, 1.25], [1.0, 1.85]],
+  "arc": [
+    {"name": "hook",     "roles": ["talent", "macro", "gesture"], "weight": 1.55, "motion": "push_slow",  "transition": "cut",      "min_dur": 1.1, "max_dur": 2.8, "hold": true},
+    {"name": "world",    "roles": ["texture", "macro"],           "weight": 0.85, "motion": "drift_left", "transition": "cut",      "min_dur": 0.5, "max_dur": 1.8},
+    {"name": "detail",   "roles": ["macro", "product"],           "weight": 0.80, "motion": "push",       "transition": "cut",      "min_dur": 0.45, "max_dur": 1.6},
+    {"name": "gesture",  "roles": ["gesture", "talent"],          "weight": 0.85, "motion": "pull",       "transition": "cut",      "min_dur": 0.5, "max_dur": 1.8},
+    {"name": "reveal",   "roles": ["product", "macro"],           "weight": 1.35, "motion": "push_slow",  "transition": "dissolve", "min_dur": 1.2, "max_dur": 3.2, "hold": true, "title": "product"},
+    {"name": "presence", "roles": ["talent", "gesture"],          "weight": 1.05, "motion": "static",     "transition": "cut",      "min_dur": 0.8, "max_dur": 2.4},
+    {"name": "resolve",  "roles": ["product", "texture", "macro"],"weight": 1.30, "motion": "push_slow",  "transition": "dissolve", "min_dur": 1.3, "max_dur": 3.4, "hold": true, "title": "tagline"},
+    {"name": "endcard",  "roles": ["logo", "texture", "product"], "weight": 1.20, "motion": "static",     "transition": "dissolve", "min_dur": 1.4, "max_dur": 3.0, "hold": true, "title": "endcard"}
+  ],
+  "dissolve_budget": 3,
+  "dissolve_frames": 16,
+  "motion_amount": 0.055,
+  "grade": {
+    "curves": "r='0/0.016 0.25/0.255 0.75/0.795 1/0.985':g='0/0.020 0.25/0.245 0.75/0.765 1/0.965':b='0/0.042 0.25/0.235 0.75/0.730 1/0.935'",
+    "contrast": 1.045,
+    "saturation": 0.93,
+    "gamma": 1.015,
+    "colorbalance": "rm=0.035:gm=0.008:bm=-0.030:rh=0.022:bh=-0.018:bs=0.030",
+    "unsharp": "5:5:0.38:5:5:0.0"
+  },
+  "grain": 5,
+  "vignette": 0.30,
+  "typography": {
+    "wordmark_font": ["/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf"],
+    "tagline_font": ["/usr/share/fonts/truetype/dejavu/DejaVuSerif-Italic.ttf"],
+    "wordmark_size": 0.052,
+    "tagline_size": 0.046,
+    "tracking": 9,
+    "color": "white@0.94",
+    "shadow": "black@0.30",
+    "fade_frames": 8,
+    "safe_bottom": 0.17,
+    "safe_top": 0.11
+  },
+  "audio": {
+    "bed": "warm_pad",
+    "root_hz": 110.0,
+    "swell_at": "reveal",
+    "target_lufs": -14.0,
+    "fade_in": 0.8,
+    "fade_out": 1.6
+  },
+  "role_affinity": {
+    "talent": 1.0,
+    "product": 1.05,
+    "macro": 1.0,
+    "gesture": 0.95,
+    "texture": 0.8,
+    "logo": 0.9
+  }
+}
