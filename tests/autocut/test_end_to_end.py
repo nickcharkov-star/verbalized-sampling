@@ -15,7 +15,7 @@ from autocut.demo import procedural
 from autocut.ffmpeg import FFmpegNotFound, ffmpeg_bin, probe
 from autocut.ingest import ingest
 from autocut.plan import plan
-from autocut.render import RenderConfig, render
+from autocut.render import RenderConfig, _even, render
 from autocut.style import StylePack
 
 try:
@@ -27,6 +27,19 @@ except FFmpegNotFound:
 pytestmark = pytest.mark.skipif(not HAVE_FFMPEG, reason="ffmpeg is not installed")
 
 W, H, FPS = 256, 456, 24
+CANVAS = 384  # longest edge for test renders: full 1080p masters here buy nothing
+
+
+def downscale(edl):
+    """Render the real graph on a small canvas — same code path, seconds not minutes."""
+    scale = CANVAS / max(edl.width, edl.height)
+    edl.width = max(2, _even(edl.width * scale))
+    edl.height = max(2, _even(edl.height * scale))
+    return edl
+
+
+def aspect_of(info):
+    return round(info.width / info.height, 3)
 
 
 @pytest.fixture(scope="module")
@@ -85,7 +98,7 @@ def test_a_full_render_lands_on_spec(shotlist, tmp_path):
     pack = StylePack.load("editorial_luxury")
     brief = parse('8s vertical teaser, tagline: "it\'s yours", brand: "DOMAIN BLACK"')
     brief.fps = FPS
-    edl = plan(shotlist, brief, pack, project="e2e")
+    edl = downscale(plan(shotlist, brief, pack, project="e2e"))
 
     dest = tmp_path / "e2e.mp4"
     render(
@@ -106,27 +119,56 @@ def test_retargeting_reuses_the_cut_on_a_new_canvas(shotlist, tmp_path):
     pack = StylePack.load("editorial_luxury")
     brief = parse("6s square film")
     brief.fps = FPS
-    edl = plan(shotlist, brief, pack, project="e2e_square")
+    edl = downscale(plan(shotlist, brief, pack, project="e2e_square"))
 
     dest = tmp_path / "square.mp4"
     render(edl, pack, str(dest), RenderConfig(crf=34, preset="ultrafast",
                                               silent=True, workdir=str(tmp_path / "w1")))
-    wide = edl.retarget("16:9")
+    wide = downscale(edl.retarget("16:9"))
     dest_wide = tmp_path / "wide.mp4"
     render(wide, pack, str(dest_wide), RenderConfig(crf=34, preset="ultrafast",
                                                     silent=True, workdir=str(tmp_path / "w2")))
 
     square, landscape = probe(str(dest)), probe(str(dest_wide))
-    assert (square.width, square.height) == (1080, 1080)
-    assert (landscape.width, landscape.height) == (1920, 1080)
+    assert aspect_of(square) == pytest.approx(1.0, abs=0.02)
+    assert aspect_of(landscape) == pytest.approx(16 / 9, abs=0.02)
     assert abs(square.duration - landscape.duration) < 0.1
+
+
+def test_the_inset_reframe_actually_renders(shotlist, tmp_path):
+    """The fit graph uses split/overlay, so only a real render proves it links."""
+    pack = StylePack.load("editorial_luxury")
+    brief = parse("6s film")
+    brief.fps = FPS
+    edl = downscale(plan(shotlist, brief, pack, project="fit").retarget("16:9"))
+
+    dest = tmp_path / "fit.mp4"
+    render(edl, pack, str(dest), RenderConfig(crf=34, preset="ultrafast", silent=True,
+                                              reframe="fit", workdir=str(tmp_path / "w")))
+    info = probe(str(dest))
+    assert aspect_of(info) == pytest.approx(16 / 9, abs=0.02)
+    assert abs(info.duration - 6.0) < 1.5 / FPS
+
+
+def test_auto_reframe_insets_vertical_rushes_in_a_landscape_master(shotlist, tmp_path):
+    from autocut.render import choose_reframe, clip_graph
+
+    pack = StylePack.load("editorial_luxury")
+    brief = parse("6s film")
+    brief.fps = FPS
+    edl = plan(shotlist, brief, pack, project="auto_fit").retarget("16:9")
+
+    # the demo rushes are vertical; a landscape master must not crop them
+    _graph, mode = clip_graph(edl.clips[0], edl, pack, RenderConfig(reframe="auto"))
+    assert mode == "fit"
+    assert choose_reframe("auto", (W, H), (edl.width, edl.height)) == "fit"
 
 
 def test_segments_are_cached_between_renders(shotlist, tmp_path):
     pack = StylePack.load("editorial_luxury")
     brief = parse("6s vertical film")
     brief.fps = FPS
-    edl = plan(shotlist, brief, pack, project="cache")
+    edl = downscale(plan(shotlist, brief, pack, project="cache"))
     work = tmp_path / "work"
 
     messages = []

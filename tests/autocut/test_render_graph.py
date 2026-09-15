@@ -13,10 +13,15 @@ from autocut.render import (
     RenderConfig,
     _even,
     _fingerprint,
+    _fit_size,
     _groups,
     _music_inputs,
+    choose_reframe,
     clip_filter,
+    clip_graph,
+    fit_graph,
     motion_filters,
+    retained_area,
 )
 from autocut.style import StylePack
 
@@ -149,3 +154,78 @@ def test_an_external_music_bed_is_trimmed_and_faded(edl, pack, tmp_path):
     assert "-ss" in args and "4.000" in args
     assert f"atrim=0:{edl.duration:.3f}" in chain
     assert "afade=t=in" in chain and "afade=t=out" in chain
+
+
+# ---------------------------------------------------------------------------
+# reframing across aspect ratios
+# ---------------------------------------------------------------------------
+def test_retained_area_measures_what_a_crop_throws_away():
+    assert retained_area((1080, 1920), (1080, 1920)) == pytest.approx(1.0)
+    assert retained_area((1080, 1920), (1080, 1080)) == pytest.approx(0.5625, abs=1e-3)
+    assert retained_area((1080, 1920), (1920, 1080)) == pytest.approx(0.3164, abs=1e-3)
+    assert retained_area((0, 0), (1920, 1080)) == 1.0  # unknown source: assume fine
+
+
+def test_auto_crops_when_the_loss_is_modest_and_insets_when_it_is_not():
+    assert choose_reframe("auto", (1080, 1920), (1080, 1920)) == "fill"
+    assert choose_reframe("auto", (1080, 1920), (1080, 1080)) == "fill"
+    # a vertical take in a landscape master would keep under a third of frame
+    assert choose_reframe("auto", (1080, 1920), (1920, 1080)) == "fit"
+    assert choose_reframe("auto", (1920, 1080), (1080, 1920)) == "fit"
+
+
+@pytest.mark.parametrize("policy", ["fill", "fit"])
+def test_an_explicit_policy_overrides_the_measurement(policy):
+    assert choose_reframe(policy, (1080, 1920), (1920, 1080)) == policy
+    assert choose_reframe(policy, (1080, 1920), (1080, 1920)) == policy
+
+
+def test_fit_size_preserves_aspect_and_stays_even():
+    w, h = _fit_size((1080, 1920), (1920, 1080))
+    assert h == 1080
+    assert w == pytest.approx(1080 * 1080 / 1920, abs=2)
+    assert w % 2 == 0 and h % 2 == 0
+
+
+def test_fit_graph_insets_over_a_plate_made_from_the_same_frame(edl, pack):
+    clip = edl.clips[0]
+    graph = fit_graph(clip, edl, pack, (1080, 1920), "src", "out")
+    assert "split=2" in graph
+    assert "boxblur=" in graph and "eq=brightness=" in graph
+    assert "overlay=(W-w)/2:(H-h)/2" in graph
+    assert graph.endswith("[out]")
+
+
+def test_fit_keeps_the_camera_move_on_the_inset(edl, pack):
+    clip = edl.clips[0]
+    clip.motion = "push"
+    assert "zoompan=" in fit_graph(clip, edl, pack, (1080, 1920), "src", "out")
+    clip.motion = "static"
+    assert "zoompan=" not in fit_graph(clip, edl, pack, (1080, 1920), "src", "out")
+
+
+def test_clip_graph_picks_the_mode_and_still_ends_at_v(edl, pack, monkeypatch):
+    import autocut.render as render_module
+
+    monkeypatch.setattr(render_module, "_source_size", lambda _p: (1080, 1920))
+    clip = edl.clips[0]
+
+    graph, mode = clip_graph(clip, edl, pack, RenderConfig(reframe="auto"))
+    assert mode == "fill"
+    assert graph.startswith("[0:v]") and graph.endswith("[v]")
+
+    wide = edl.retarget("16:9")
+    graph, mode = clip_graph(clip, wide, pack, RenderConfig(reframe="auto"))
+    assert mode == "fit"
+    assert graph.startswith("[0:v]") and graph.endswith("[v]")
+    assert "overlay=" in graph
+
+    graph, mode = clip_graph(clip, wide, pack, RenderConfig(reframe="fill"))
+    assert mode == "fill" and "overlay=" not in graph
+
+
+def test_the_cache_key_tracks_the_reframe_policy(edl, pack):
+    clip = edl.clips[0]
+    fill = _fingerprint(clip, edl, pack, RenderConfig(reframe="fill"))
+    fit = _fingerprint(clip, edl, pack, RenderConfig(reframe="fit"))
+    assert fill != fit

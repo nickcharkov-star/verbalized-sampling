@@ -16,6 +16,10 @@ The pipeline is four stages, each usable on its own:
 
 Only ffmpeg is required. An LLM is optional and only ever proposes shot
 selection; timing, transitions and validation stay deterministic.
+
+The convenience exports are named so they do not shadow the submodules they
+come from: ``ingest_rushes``, ``plan_cut`` and ``render_edl`` leave
+``autocut.ingest``, ``autocut.plan`` and ``autocut.render`` importable.
 """
 
 from __future__ import annotations
@@ -24,21 +28,28 @@ __version__ = "0.1.0"
 
 from typing import List, Optional, Sequence
 
+from . import brief, ingest, plan, render, style
 from .brief import Brief
-from .brief import parse as parse_brief
 from .ingest import Shot, ShotList
-from .ingest import ingest as ingest_rushes
-from .plan import EDL, PlanError, plan, plan_variants, plan_verbalized
-from .render import RenderConfig, render
+from .plan import EDL, PlanError, plan_variants, plan_verbalized
+from .render import RenderConfig
 from .style import ASPECTS, StylePack
-from .style import available as available_styles
+
+# Public names are bound by assignment rather than `import ... as ...` so that
+# `autocut.ingest`, `autocut.plan` and `autocut.render` keep referring to the
+# submodules instead of being shadowed by a function of the same name.
+parse_brief = brief.parse
+ingest_rushes = ingest.ingest
+plan_cut = plan.plan
+render_edl = render.render
+available_styles = style.available
 
 __all__ = [
     "__version__",
     "Brief", "parse_brief",
     "Shot", "ShotList", "ingest_rushes",
-    "EDL", "PlanError", "plan", "plan_variants", "plan_verbalized",
-    "RenderConfig", "render",
+    "EDL", "PlanError", "plan_cut", "plan_variants", "plan_verbalized",
+    "RenderConfig", "render_edl",
     "StylePack", "ASPECTS", "available_styles",
     "auto_edit",
 ]
@@ -68,7 +79,7 @@ def auto_edit(
     if use_llm:
         edl = plan_verbalized(shots, parsed, pack, k=4, project=project, seed=seed)[0]
     else:
-        edl = plan(shots, parsed, pack, project=project, seed=seed)
+        edl = plan_cut(shots, parsed, pack, project=project, seed=seed)
 
     os.makedirs(out, exist_ok=True)
     edl.save(os.path.join(out, f"{project}.edl.json"))
@@ -79,5 +90,5 @@ def auto_edit(
         target = edl if aspect == edl.aspect else edl.retarget(aspect)
         dest = os.path.join(out, f"{project}_{aspect.replace(':', 'x')}.mp4")
         cfg.workdir = os.path.join(out, ".autocut", aspect.replace(":", "x"))
-        written.append(render(target, pack, dest, cfg, progress=progress))
+        written.append(render_edl(target, pack, dest, cfg, progress=progress))
     return written

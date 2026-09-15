@@ -180,6 +180,17 @@ what actually changed.
 pack's target), or let autocut synthesise a warm drone with a sub swell anchored
 to the reveal beat. `--silent` for no audio.
 
+**Reframing across aspects.** Cropping a vertical take into a landscape master
+throws away two thirds of the picture and blows up what is left — the hero ends
+up an unreadable detail. So `--reframe auto` (the default) measures how much of
+each source frame a crop would keep, and when that falls below 45% it insets the
+whole frame on a blurred, darkened plate made from itself, camera move intact.
+`--reframe fill` always crops, `--reframe fit` always insets.
+
+An inset preserves the image but cannot invent picture: a 9:16 take in a 16:9
+master is a pillar, however tastefully plated. The real fix is wider rushes for
+wide deliverables — autocut just refuses to destroy the shot in the meantime.
+
 **Type.** Rendered with libass where available — it does real letter-spacing,
 which a luxury wordmark lives or dies on — falling back to `drawtext`, and
 finally to rendering without supers plus a warning. Many static ffmpeg builds
@@ -288,15 +299,15 @@ auto_edit("20s vertical teaser, slow and moody", rushes="./rushes", out="./out")
 Or stage by stage:
 
 ```python
-from autocut import ingest_rushes, parse_brief, plan, render, RenderConfig, StylePack
+from autocut import ingest_rushes, parse_brief, plan_cut, render_edl, RenderConfig, StylePack
 
 shots = ingest_rushes("./rushes")
 brief = parse_brief('20s vertical teaser, tagline: "it\'s yours"')
 pack  = StylePack.load(brief.style)
-edl   = plan(shots, brief, pack)
+edl   = plan_cut(shots, brief, pack)
 
-render(edl, pack, "master_9x16.mp4", RenderConfig())
-render(edl.retarget("16:9"), pack, "master_16x9.mp4", RenderConfig())
+render_edl(edl, pack, "master_9x16.mp4", RenderConfig())
+render_edl(edl.retarget("16:9"), pack, "master_16x9.mp4", RenderConfig())
 ```
 
 ---

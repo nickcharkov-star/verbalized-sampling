@@ -187,6 +187,7 @@ def cmd_render(args: argparse.Namespace) -> int:
         crf=args.crf, preset=args.preset, music=args.music,
         music_offset=args.music_offset, silent=args.silent,
         keep_intermediates=not args.clean, threads=args.threads,
+        reframe=args.reframe,
     )
     outputs: List[str] = []
     aspects = args.aspect or [edl.aspect]
@@ -230,7 +231,7 @@ def cmd_auto(args: argparse.Namespace) -> int:
         crf=args.crf, preset=args.preset, music=args.music,
         music_offset=args.music_offset, silent=args.silent,
         keep_intermediates=not args.clean, threads=args.threads,
-        workdir=os.path.join(args.out, ".autocut"),
+        reframe=args.reframe, workdir=os.path.join(args.out, ".autocut"),
     )
 
     manifest = {
@@ -308,6 +309,10 @@ def _add_render_args(sub: argparse.ArgumentParser) -> None:
     sub.add_argument("--silent", action="store_true", help="render without audio")
     sub.add_argument("--clean", action="store_true", help="delete intermediates when done")
     sub.add_argument("--threads", type=int, default=0, help="ffmpeg thread count (0 = auto)")
+    sub.add_argument(
+        "--reframe", choices=["auto", "fill", "fit"], default="auto",
+        help="crop to the canvas (fill), inset on a soft plate (fit), or decide per clip",
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:

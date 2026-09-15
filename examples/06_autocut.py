@@ -16,7 +16,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from autocut import RenderConfig, StylePack, ingest_rushes, parse_brief, render
+from autocut import RenderConfig, StylePack, ingest_rushes, parse_brief, render_edl
 from autocut.demo import build as build_rushes
 from autocut.ingest import apply_role_overrides
 from autocut.plan import plan, plan_variants
@@ -79,7 +79,7 @@ def main() -> int:
         target = edl if aspect == edl.aspect else edl.retarget(aspect)
         dest = os.path.join(args.out, f"example_{aspect.replace(':', 'x')}.mp4")
         cfg.workdir = os.path.join(args.out, ".autocut", aspect.replace(":", "x"))
-        render(target, pack, dest, cfg, progress=log)
+        render_edl(target, pack, dest, cfg, progress=log)
 
     edl_path = os.path.join(args.out, "example.edl.json")
     edl.save(edl_path)

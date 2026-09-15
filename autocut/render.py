@@ -18,6 +18,7 @@ import json
 import os
 import shutil
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Callable, List, Optional, Sequence, Tuple
 
 from . import captions
@@ -39,6 +40,7 @@ class RenderConfig:
     music_offset: float = 0.0
     silent: bool = False
     threads: int = 0
+    reframe: str = "auto"    # auto | fill | fit
 
 
 # ---------------------------------------------------------------------------
@@ -48,17 +50,68 @@ def _even(n: float) -> int:
     return int(round(n / 2.0)) * 2
 
 
+def _move_expressions(clip: Clip, pack: StylePack, frames: int) -> Optional[Tuple[str, str, str]]:
+    """zoompan z/x/y expressions for this clip's camera move, or None if static."""
+    if clip.motion == "static":
+        return None
+    amount = pack.motion_amount
+    n = max(1, frames - 1)
+    zc = "iw/2-(iw/zoom/2)"
+    yc = "ih/2-(ih/zoom/2)"
+
+    if clip.motion == "push":
+        return f"1+{amount:.4f}*on/{n}", zc, yc
+    if clip.motion == "pull":
+        return f"1+{amount:.4f}-{amount:.4f}*on/{n}", zc, yc
+    if clip.motion in ("drift_left", "drift_right"):
+        sign = 1.0 if clip.motion == "drift_left" else -1.0
+        drift = f"{amount:.4f}*iw*0.5"
+        return f"1+{amount:.4f}", f"{zc}+{sign:.1f}*{drift}*(on/{n}-0.5)", yc
+    # push_slow and anything unrecognised
+    return f"1+{amount * 0.55:.4f}*on/{n}", zc, yc
+
+
+def retained_area(source: Tuple[int, int], canvas: Tuple[int, int]) -> float:
+    """Fraction of the source frame still visible after a fill (cover) crop."""
+    sw, sh = source
+    w, h = canvas
+    if not all((sw, sh, w, h)):
+        return 1.0
+    cover = max(w / sw, h / sh)
+    return min(1.0, (w / cover) * (h / cover) / (sw * sh))
+
+
+def choose_reframe(policy: str, source: Tuple[int, int], canvas: Tuple[int, int]) -> str:
+    """fill crops to the canvas; fit insets the frame on a soft plate.
+
+    Cropping a vertical take into a landscape master throws away two thirds of
+    the picture and blows up what is left — the hero ends up as an unreadable
+    detail. Past that point, insetting the whole frame on a blurred, darkened
+    copy of itself is the treatment a finishing house would actually use.
+    """
+    if policy in ("fill", "fit"):
+        return policy
+    return "fill" if retained_area(source, canvas) >= 0.45 else "fit"
+
+
+def _fit_size(source: Tuple[int, int], canvas: Tuple[int, int]) -> Tuple[int, int]:
+    sw, sh = source
+    w, h = canvas
+    if not all((sw, sh)):
+        return w, h
+    scale = min(w / sw, h / sh)
+    return max(2, _even(sw * scale)), max(2, _even(sh * scale))
+
+
 def motion_filters(clip: Clip, edl: EDL, pack: StylePack) -> List[str]:
-    """Reframe to the canvas and apply the camera move.
+    """Reframe by cropping to the canvas, and apply the camera move.
 
     zoompan is fed a super-sampled frame (1.6x canvas) because at low zoom
     factors its integer crop origin visibly stutters on a 1:1 input.
     """
     w, h = edl.width, edl.height
     sw, sh = _even(w * 1.6), _even(h * 1.6)
-    amount = pack.motion_amount
     frames = max(2, int(round(clip.duration * edl.fps)))
-    n = frames - 1
 
     # y-bias: keep eyes off the exact centre line on talent/gesture framing
     y_bias = 0.32 if clip.crop == "face" else 0.5
@@ -68,48 +121,83 @@ def motion_filters(clip: Clip, edl: EDL, pack: StylePack) -> List[str]:
         f"crop={sw}:{sh}:x=(iw-ow)/2:y=(ih-oh)*{y_bias:.3f}",
     ]
 
-    zc = "iw/2-(iw/zoom/2)"
-    yc = "ih/2-(ih/zoom/2)"
-    drift = f"{amount:.4f}*iw*0.5"
-
-    if clip.motion == "static":
+    move = _move_expressions(clip, pack, frames)
+    if move is None:
         chain.append(f"scale={w}:{h}:flags=lanczos")
-        chain.append("setsar=1")
-        return chain
-
-    if clip.motion == "push":
-        z = f"1+{amount:.4f}*on/{n}"
-        x, y = zc, yc
-    elif clip.motion == "push_slow":
-        z = f"1+{amount * 0.55:.4f}*on/{n}"
-        x, y = zc, yc
-    elif clip.motion == "pull":
-        z = f"1+{amount:.4f}-{amount:.4f}*on/{n}"
-        x, y = zc, yc
-    elif clip.motion in ("drift_left", "drift_right"):
-        sign = 1.0 if clip.motion == "drift_left" else -1.0
-        z = f"1+{amount:.4f}"
-        x = f"{zc}+{sign:.1f}*{drift}*(on/{n}-0.5)"
-        y = yc
     else:
-        z = f"1+{amount * 0.55:.4f}*on/{n}"
-        x, y = zc, yc
-
-    chain.append(
-        f"zoompan=z='{z}':x='{x}':y='{y}':d=1:s={w}x{h}:fps={edl.fps}"
-    )
+        z, x, y = move
+        chain.append(f"zoompan=z='{z}':x='{x}':y='{y}':d=1:s={w}x{h}:fps={edl.fps}")
     chain.append("setsar=1")
     return chain
 
 
-def clip_filter(clip: Clip, edl: EDL, pack: StylePack) -> str:
-    parts = [
+def fit_graph(clip: Clip, edl: EDL, pack: StylePack, source: Tuple[int, int],
+              label_in: str, label_out: str) -> str:
+    """Inset the whole frame on a blurred, darkened plate made from itself."""
+    w, h = edl.width, edl.height
+    fw, fh = _fit_size(source, (w, h))
+    frames = max(2, int(round(clip.duration * edl.fps)))
+    blur = max(6, int(min(w, h) * 0.02))
+
+    fg = [f"scale={fw}:{fh}:flags=lanczos"]
+    move = _move_expressions(clip, pack, frames)
+    if move is not None:
+        ow, oh = _even(fw * 1.6), _even(fh * 1.6)
+        z, x, y = move
+        fg = [
+            f"scale={ow}:{oh}:flags=lanczos",
+            f"zoompan=z='{z}':x='{x}':y='{y}':d=1:s={fw}x{fh}:fps={edl.fps}",
+        ]
+    fg.append("setsar=1")
+
+    return (
+        f"[{label_in}]split=2[bgsrc][fgsrc];"
+        f"[bgsrc]scale={w}:{h}:force_original_aspect_ratio=increase:flags=lanczos,"
+        f"crop={w}:{h},boxblur={blur}:2,eq=brightness=-0.10:saturation=0.55,setsar=1[bg];"
+        f"[fgsrc]{','.join(fg)}[fg];"
+        f"[bg][fg]overlay=(W-w)/2:(H-h)/2:shortest=1[{label_out}]"
+    )
+
+
+@lru_cache(maxsize=256)
+def _source_size(path: str) -> Tuple[int, int]:
+    try:
+        info = probe(path)
+        return info.width, info.height
+    except Exception:
+        return (0, 0)
+
+
+def _head_filters(clip: Clip, edl: EDL) -> List[str]:
+    """Trim to the planned range, apply the speed ramp, lock the frame rate."""
+    head = [
         f"trim=start={clip.src_in:.4f}:end={clip.src_out:.4f}",
         "setpts=PTS-STARTPTS",
     ]
     if abs(clip.speed - 1.0) > 1e-3:
-        parts.append(f"setpts=PTS/{clip.speed:.5f}")
-    parts.append(f"fps={edl.fps}")
+        head.append(f"setpts=PTS/{clip.speed:.5f}")
+    head.append(f"fps={edl.fps}")
+    return head
+
+
+def clip_graph(clip: Clip, edl: EDL, pack: StylePack, cfg: RenderConfig) -> Tuple[str, str]:
+    """Full filter_complex for one clip. Returns (graph, chosen reframe mode)."""
+    source = _source_size(clip.source)
+    mode = choose_reframe(cfg.reframe, source, (edl.width, edl.height))
+
+    if mode == "fill":
+        return f"[0:v]{clip_filter(clip, edl, pack)}[v]", mode
+
+    return (
+        f"[0:v]{','.join(_head_filters(clip, edl))}[src];"
+        + fit_graph(clip, edl, pack, source, "src", "fitted")
+        + ";[fitted]format=yuv420p[v]"
+    ), mode
+
+
+def clip_filter(clip: Clip, edl: EDL, pack: StylePack) -> str:
+    """The linear crop-to-canvas chain. See clip_graph for the inset variant."""
+    parts = _head_filters(clip, edl)
     parts.extend(motion_filters(clip, edl, pack))
     parts.append("format=yuv420p")
     return ",".join(parts)
@@ -124,7 +212,8 @@ def _fingerprint(clip: Clip, edl: EDL, pack: StylePack, cfg: RenderConfig) -> st
             "clip": clip.to_dict(),
             "w": edl.width, "h": edl.height, "fps": edl.fps,
             "pack": pack.name, "motion_amount": pack.motion_amount,
-            "crf": cfg.crf, "preset": cfg.preset,
+            "crf": cfg.crf, "preset": cfg.preset, "reframe": cfg.reframe,
+            "source_size": _source_size(clip.source),
             "src_mtime": os.path.getmtime(clip.source) if os.path.exists(clip.source) else 0,
         },
         sort_keys=True,
@@ -147,13 +236,15 @@ def render_segments(
             if progress:
                 progress(f"segment {i + 1}/{len(edl.clips)} {clip.id} (cached)")
             continue
+        graph, mode = clip_graph(clip, edl, pack, cfg)
         if progress:
-            progress(f"segment {i + 1}/{len(edl.clips)} {clip.id} {clip.beat}/{clip.role}")
+            note = "" if mode == "fill" else "  (inset: source too narrow for this canvas)"
+            progress(f"segment {i + 1}/{len(edl.clips)} {clip.id} {clip.beat}/{clip.role}{note}")
         run([
             "-y",
             "-i", clip.source,
             "-an",
-            "-filter_complex", f"[0:v]{clip_filter(clip, edl, pack)}[v]",
+            "-filter_complex", graph,
             "-map", "[v]",
             "-c:v", "libx264", "-preset", cfg.preset, "-crf", str(cfg.crf),
             "-pix_fmt", "yuv420p", "-r", str(edl.fps),
