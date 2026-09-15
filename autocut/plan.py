@@ -23,6 +23,7 @@ import random
 from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
 
+from ._util import _field_names
 from .brief import Brief
 from .ingest import Shot, ShotList
 from .style import ASPECTS, Beat, StylePack
@@ -59,7 +60,7 @@ class Clip:
 
     @classmethod
     def from_dict(cls, d: dict) -> "Clip":
-        return cls(**{k: v for k, v in d.items() if k in cls.__dataclass_fields__})
+        return cls(**{k: v for k, v in d.items() if k in _field_names(cls)})
 
 
 @dataclass
@@ -75,7 +76,7 @@ class Title:
 
     @classmethod
     def from_dict(cls, d: dict) -> "Title":
-        return cls(**{k: v for k, v in d.items() if k in cls.__dataclass_fields__})
+        return cls(**{k: v for k, v in d.items() if k in _field_names(cls)})
 
 
 @dataclass
@@ -581,11 +582,14 @@ def conform_duration(
             delta = target - _timeline_duration(clips, fps)
             if abs(delta) < frame:
                 return clips
+            # delta and relaxed are bound as defaults rather than captured:
+            # sorted() consumes the key eagerly so either would work, but the
+            # explicit binding says so without the reader having to check
             order = sorted(
                 range(len(clips)),
-                key=lambda i: (
+                key=lambda i, d=delta, r=relaxed: (
                     beats[i].hold,
-                    -_slack(clips[i], shots[i], beats[i], delta, relaxed),
+                    -_slack(clips[i], shots[i], beats[i], d, r),
                 ),
             )
             moved = False

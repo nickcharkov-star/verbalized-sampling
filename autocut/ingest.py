@@ -20,6 +20,7 @@ import re
 from dataclasses import asdict, dataclass, field
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
+from ._util import _field_names
 from .ffmpeg import MediaInfo, probe, raw_frames, run_stdout
 
 VIDEO_EXTS = {".mp4", ".mov", ".m4v", ".mkv", ".webm", ".avi", ".mxf", ".mts"}
@@ -73,7 +74,7 @@ class Shot:
 
     @classmethod
     def from_dict(cls, d: dict) -> "Shot":
-        fields = {k: v for k, v in d.items() if k in cls.__dataclass_fields__}
+        fields = {k: v for k, v in d.items() if k in _field_names(cls)}
         return cls(**fields)
 
 

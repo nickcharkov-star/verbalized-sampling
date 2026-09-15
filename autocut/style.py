@@ -18,6 +18,8 @@ import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
+from ._util import _field_names
+
 PACK_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "packs")
 
 ASPECTS: Dict[str, Tuple[int, int]] = {
@@ -45,7 +47,7 @@ class Beat:
 
     @classmethod
     def from_dict(cls, d: dict) -> "Beat":
-        return cls(**{k: v for k, v in d.items() if k in cls.__dataclass_fields__})
+        return cls(**{k: v for k, v in d.items() if k in _field_names(cls)})
 
 
 @dataclass
@@ -96,7 +98,7 @@ class StylePack:
     def from_dict(cls, d: dict) -> "StylePack":
         data = dict(d)
         data["arc"] = [Beat.from_dict(b) for b in data.get("arc", [])]
-        known = {k: v for k, v in data.items() if k in cls.__dataclass_fields__}
+        known = {k: v for k, v in data.items() if k in _field_names(cls)}
         return cls(**known)
 
     @classmethod

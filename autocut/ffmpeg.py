@@ -11,7 +11,9 @@ this order:
 
 from __future__ import annotations
 
+import json
 import os
+import re
 import shutil
 import subprocess
 from dataclasses import dataclass
@@ -114,11 +116,9 @@ class MediaInfo:
         return self.width / self.height if self.height else 0.0
 
 
-def _probe_with_ffprobe(path: str, probe: str) -> Optional[MediaInfo]:
-    import json
-
+def _probe_with_ffprobe(path: str, probe_exe: str) -> Optional[MediaInfo]:
     cmd = [
-        probe, "-v", "error", "-print_format", "json",
+        probe_exe, "-v", "error", "-print_format", "json",
         "-show_format", "-show_streams", path,
     ]
     proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -147,8 +147,6 @@ def _probe_with_ffprobe(path: str, probe: str) -> Optional[MediaInfo]:
 
 def _probe_with_ffmpeg(path: str) -> MediaInfo:
     """Fallback probe: parse ffmpeg's own stream banner from stderr."""
-    import re
-
     text = run_stderr(["-i", path, "-f", "null", "-"])
     width = height = 0
     fps = 30.0

@@ -14,6 +14,7 @@ import re
 from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Optional
 
+from ._util import _field_names
 from .ingest import ROLES
 from .style import ASPECTS
 
@@ -86,7 +87,7 @@ class Brief:
 
     @classmethod
     def from_dict(cls, d: dict) -> "Brief":
-        return cls(**{k: v for k, v in d.items() if k in cls.__dataclass_fields__})
+        return cls(**{k: v for k, v in d.items() if k in _field_names(cls)})
 
     def save(self, path: str) -> str:
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)

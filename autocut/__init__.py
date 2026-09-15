@@ -26,6 +26,7 @@ from __future__ import annotations
 
 __version__ = "0.1.0"
 
+import os
 from typing import List, Optional, Sequence
 
 from . import brief, ingest, plan, render, style
@@ -56,7 +57,7 @@ __all__ = [
 
 
 def auto_edit(
-    brief: str,
+    brief_text: str,
     rushes: str,
     out: str = "out",
     *,
@@ -68,9 +69,7 @@ def auto_edit(
     progress=None,
 ) -> List[str]:
     """Brief in, rendered masters out. Returns the paths written."""
-    import os
-
-    parsed = parse_brief(brief)
+    parsed = parse_brief(brief_text)
     if aspects:
         parsed.aspects = list(aspects)
     pack = StylePack.load(parsed.style)
