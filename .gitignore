@@ -111,6 +111,11 @@ node_modules/
 .preview/
 
 # The Python build-dir patterns above (lib/, build/, dist/) also match
-# scripts/lib/, which is source. Unignore the directory, then its contents.
+# scripts/lib/, which is source. Unignore the directory, then its source
+# files by extension — `!scripts/lib/**` was too broad and dragged
+# __pycache__ back in with them.
 !scripts/lib/
-!scripts/lib/**
+!scripts/lib/*.py
+!scripts/lib/*.mjs
+!scripts/lib/*.js
+!scripts/lib/*.json
