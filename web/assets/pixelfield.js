@@ -30,13 +30,8 @@
    ═══════════════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 
-export const MOVEMENTS = [
-  { id: 'frame',   num: 'I',   name: 'Frame',   note: 'Every pixel at home' },
-  { id: 'sillage', num: 'II',  name: 'Sillage', note: 'The springs let go' },
-  { id: 'relief',  num: 'III', name: 'Relief',  note: 'Luminance becomes depth' },
-  { id: 'five',    num: 'IV',  name: 'The Five', note: 'Sorted into the collection' },
-  { id: 'flacon',  num: 'V',   name: 'Flacon',  note: 'One bottle, 129,600 pixels' }
-];
+export { MOVEMENTS } from './catalogue.js';
+import { MOVEMENTS } from './catalogue.js';
 
 /* The house palette, as the sorter sees it. A pixel joins whichever of
    these it is nearest in linear RGB. */
@@ -769,14 +764,22 @@ export function createPixelField (canvas, opts = {}) {
   }
 
   /* ── load, then go ────────────────────────────────────────────── */
-  const load = src => new Promise(res => {
-    if (!src) return res(null);
+  /* Load once with crossOrigin set — that is what lets the canvas be read
+     for luminance — and, if the server sends no CORS header, the request
+     fails outright rather than merely tainting. So retry without it: the
+     reads are already wrapped, and a shuffled deal is better than no
+     photograph at all. */
+  const loadOnce = (src, anon) => new Promise(res => {
     const im = new Image();
-    im.crossOrigin = 'anonymous';
+    if (anon) im.crossOrigin = 'anonymous';
     im.onload = () => res(im);
     im.onerror = () => res(null);
     im.src = src;
   });
+  const load = async src => {
+    if (!src) return null;
+    return (await loadOnce(src, true)) || (await loadOnce(src, false));
+  };
 
   const ready = Promise.all([load(opts.photo), load(opts.shape)]).then(([p, s]) => {
     if (disposed) return null;

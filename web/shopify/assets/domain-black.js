@@ -10,8 +10,21 @@
    still the page, because every reveal animates *from* its resting
    state — so the resting state is what a visitor without them sees.
    ═══════════════════════════════════════════════════════════════════════ */
-import { createFlacon } from './flacon.js';
-import { createPixelField, MOVEMENTS } from './pixelfield.js';
+/* The only static import is the catalogue, which depends on nothing.
+   three.js is 687 KB; importing the flacon and the pixel field statically
+   meant one failed request took this whole module down with it — and with
+   it every reveal, the seal, the engraving, the sloshing rules. They are
+   loaded dynamically below, after the page already reads, so a failure
+   costs exactly the thing that failed. */
+import { MOVEMENTS } from './catalogue.js';
+
+function showFallback (sel, why) {
+  const el = document.querySelector(sel);
+  if (!el) return;
+  el.setAttribute('data-fallback', '');
+  const p = el.querySelector('.stage-fallback p, .pixels-fallback p');
+  if (p && why) p.textContent = why;
+}
 
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const root  = document.documentElement;
@@ -146,30 +159,55 @@ if (movesEl) {
     '</button></li>').join('');
 }
 
+/* Progress comes from the section's own viewport rect, not from scrollY:
+   getBoundingClientRect is right whichever element actually scrolled. */
+function pixelsProgress () {
+  if (!pixelsSec) return null;
+  const r = pixelsSec.getBoundingClientRect();
+  const total = r.height - innerHeight;
+  if (total <= 10) return null;
+  return clamp(-r.top / total, 0, 1);
+}
 function pixelsSpan () {
   if (!pixelsSec) return null;
-  const top = pixelsSec.offsetTop;
-  const total = pixelsSec.offsetHeight - innerHeight;
-  return total > 10 ? { top, total } : null;
+  const r = pixelsSec.getBoundingClientRect();
+  const total = r.height - innerHeight;
+  return total > 10 ? { top: r.top + scrollY, total } : null;
 }
 
-if (pfCanvas && pixelsSec) {
+if (pfCanvas && pixelsSec) (async () => {
   const shot = pixelsSec.dataset.shot;
   const shape = pixelsSec.dataset.shape || pixelsSec.dataset.shapeAsset;
+  if (!shot) {
+    showFallback('[data-pixels]', 'Choose a campaign photograph in the theme editor.');
+    return;
+  }
   try {
-    pf = shot ? createPixelField(pfCanvas, {
+    const { createPixelField } = await import('./pixelfield.js');
+    pf = createPixelField(pfCanvas, {
       photo: new URL(shot, location.href).href,
       shape: shape ? new URL(shape, location.href).href : null
-    }) : null;
-  } catch (e) { pf = null; }
-
-  if (!pf) pixelsSec.setAttribute('data-fallback', '');
-  else pf.ready.then(api => {
-    if (!api) { pixelsSec.setAttribute('data-fallback', ''); return; }
+    });
+    if (!pf) {
+      showFallback('[data-pixels]',
+        'This movement needs WebGL 2 with float render targets, which this browser does not offer. Everything else on this page reads the same.');
+      return;
+    }
+    const api = await pf.ready;
+    if (!api) {
+      pf = null;
+      showFallback('[data-pixels]',
+        'The campaign photograph could not be read, so there is nothing to take apart here.');
+      return;
+    }
     const out = $('[data-pf-count]');
     if (out) out.textContent = api.state.count.toLocaleString() + ' particles';
-  });
-}
+  } catch (e) {
+    pf = null;
+    showFallback('[data-pixels]',
+      'The pixel field could not be loaded. Everything else on this page reads the same.');
+  }
+})();
 
 if (movesEl) {
   movesEl.addEventListener('click', e => {
@@ -317,13 +355,19 @@ if (teeth) {
 const stage = $('[data-stage]');
 const canvas3d = $('[data-flacon]');
 let flacon = null;
-if (canvas3d) {
+
+if (canvas3d) (async () => {
   try {
+    const { createFlacon } = await import('./flacon.js');
     flacon = createFlacon(canvas3d);
-    if (flacon) flacon.setDomain(+(canvas3d.dataset.domain || 1), true);
-  } catch (e) { flacon = null; }
-  if (!flacon && stage) stage.setAttribute('data-fallback', '');
-}
+    if (flacon) { flacon.setDomain(+(canvas3d.dataset.domain || 1), true); return; }
+    showFallback('[data-stage]',
+      'This browser cannot run WebGL, so the flacon does not turn here. Everything else on this page reads the same.');
+  } catch (e) {
+    showFallback('[data-stage]',
+      'The 3D flacon could not be loaded. Everything else on this page reads the same.');
+  }
+})();
 
 /* Each detail row carries the move it wants the object to make, so a
    merchant can add, remove or reorder them in the theme editor and the
@@ -401,9 +445,8 @@ let t0 = performance.now();
 
   // the photograph's movement is just where you are in its section
   if (pf) {
-    const span = pixelsSpan();
-    if (span) {
-      const p = clamp((scrollY - span.top) / span.total, 0, 1);
+    const p = pixelsProgress();
+    if (p !== null) {
       pf.scrub(p * (MOVEMENTS.length - 1));
       updateMoveLabels(pf.movement());
     }

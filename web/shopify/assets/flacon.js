@@ -15,33 +15,10 @@ import * as THREE from 'three';
 
 /* The five compositions. Colours sampled from the campaign photograph and
    the house palette — Sovereign is the bottle in the photograph. */
-export const DOMAINS = [
-  { num: 'I',   name: 'Kingdom',   theme: 'Quiet Authority',
-    lacquer: 0x171310, juice: 0x2a211b, gloss: 0.34,
-    notes: ['Vanilla', 'Salt', 'Cannabis', 'Sandalwood'],
-    line: 'For those whose presence speaks before they do.',
-    world: 'Dark walnut, black stone, and morning fog.' },
-  { num: 'II',  name: 'Sovereign', theme: 'Refined Indulgence',
-    lacquer: 0x5b3a25, juice: 0x7a4a22, gloss: 0.38,
-    notes: ['Pomegranate', 'Orchard Fruits', 'Cocoa', 'Rum'],
-    line: 'Luxury without excess.',
-    world: 'A private library. Leather, espresso, and dark woods.' },
-  { num: 'III', name: 'Celestial', theme: 'Light Beyond Reach',
-    lacquer: 0x2e5e8e, juice: 0x3f79ad, gloss: 0.30,
-    notes: ['Orange', 'Lemon', 'Jasmine', 'Amber', 'Musk'],
-    line: 'A quiet brilliance that never asks to be seen.',
-    world: 'Blue hour, open sky, and glass architecture.' },
-  { num: 'IV',  name: 'Crown',     theme: 'Comfort Elevated',
-    lacquer: 0xe9dfcd, juice: 0xd8c4a2, gloss: 0.42,
-    notes: ['Vanilla', 'Cocoa', 'Amber', 'Sugar', 'Tonka Bean'],
-    line: 'Confidence wrapped in comfort.',
-    world: 'Cashmere, cream stone, and soft candlelight.' },
-  { num: 'V',   name: 'Empire',    theme: 'Magnetic Arrival',
-    lacquer: 0xd9732a, juice: 0xc9571a, gloss: 0.36,
-    notes: ['Peach', 'Blood Orange', 'Rum'],
-    line: 'Every entrance deserves a signature.',
-    world: 'Golden sunset over a modern city.' }
-];
+/* The catalogue is dependency-free on purpose; this module re-exports it
+   so callers that already have the flacon need not import twice. */
+export { DOMAINS } from './catalogue.js';
+import { DOMAINS } from './catalogue.js';
 
 const GOLD = 0xd8b589;
 

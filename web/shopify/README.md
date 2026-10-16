@@ -55,6 +55,7 @@ settings.
 ```
 assets/      domain-black.css      the whole visual system, one file
              domain-black.js       behaviour: engraving, sillage, liquid, motion
+             catalogue.js          the five compositions, dependency-free
              flacon.js             the flacon in three dimensions
              pixelfield.js         the photograph as a GPU particle field
              three.module.min.js   served from Assets, not a CDN
@@ -135,6 +136,15 @@ none is required.
 
 ## Motion, WebGL, and doing without either
 
+**Nothing on the page depends on anything that can fail.** three.js is
+687 KB, and the flacon and the pixel field both need it — so they are
+imported *dynamically*, after the page already reads. Only the catalogue is
+imported statically, and it depends on nothing. If three.js never arrives,
+the products, the register, the engraving, the seal and every reveal are
+still there, and the two sections that lost something say which and why. A
+static import put all of that behind one request, and a page that lost it
+lost everything, silently.
+
 The pixel field needs **WebGL 2 with float render targets** and the flacon
 needs WebGL; both probe for it before constructing a renderer, so a browser
 without it gets a line of text and no console error. three.js is served from
@@ -183,6 +193,11 @@ Each movement of the pixel field is screenshot separately from a bench page
 and looked at — a particle system cannot be checked any other way. Four of the
 six bugs in it were only visible that way, including a silhouette whose
 thickness came from distance-to-centre, which domed every shape into a ball.
+
+The suite includes a check that loads the page with three.js blocked and
+asserts that all five products, all five register rows, the seal's 72 teeth,
+the movement index and the engraved plates are still present, and that both
+3D sections have said what they lost.
 
 A fault that only the theme could show up: `--shot` holds a URL, and a
 relative `url()` inside a custom property resolves against the stylesheet that

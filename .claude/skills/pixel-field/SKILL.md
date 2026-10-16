@@ -118,6 +118,39 @@ volume with `z = (hash(ref) - 0.5) * 2.0 * thickness`.
    throws a temporal-dead-zone `ReferenceError` and the whole module dies
    silently. Declare shared state before anything that observes.
 
+## Never import the heavy thing statically
+
+three.js is ~690 KB and both the field and any 3D object need it. If the
+page's module imports them at the top:
+
+```js
+import { createPixelField } from './pixelfield.js';   // → imports three
+```
+
+then one failed request for three.js takes down **the entire module** — every
+list the script builds, every reveal it wires, every handler it attaches —
+and the browser reports only a network error. The page renders as a husk with
+no explanation.
+
+Put the data in its own dependency-free module, import *that* statically, and
+load the heavy parts dynamically after the page already reads:
+
+```js
+import { CATALOGUE } from './catalogue.js';   // depends on nothing
+let field = null;
+(async () => {
+  try {
+    const { createPixelField } = await import('./pixelfield.js');
+    field = createPixelField(canvas, opts);
+    if (!field) say('this browser cannot run it');
+  } catch (e) { say('it could not be loaded'); }
+})();
+```
+
+Then test it: block the dependency with `page.route('**/three*.js', r => r.abort())`
+and assert the content is all still there. A page that silently loses
+everything looks identical to a page that never loaded.
+
 ## Capability check, and degrading
 
 Probe before constructing — `new THREE.WebGLRenderer()` without WebGL throws
