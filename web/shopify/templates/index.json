@@ -107,10 +107,15 @@
     "rule3": {
       "type": "domain-rule",
       "settings": {}
+    },
+    "pixels": {
+      "type": "domain-pixels",
+      "settings": {}
     }
   },
   "order": [
     "hero",
+    "pixels",
     "rule1",
     "flacon",
     "rule2",

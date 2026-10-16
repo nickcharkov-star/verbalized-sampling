@@ -11,6 +11,7 @@
    state — so the resting state is what a visitor without them sees.
    ═══════════════════════════════════════════════════════════════════════ */
 import { createFlacon } from './flacon.js';
+import { createPixelField, MOVEMENTS } from './pixelfield.js';
 
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const root  = document.documentElement;
@@ -126,6 +127,72 @@ if (frame) {
     new IntersectionObserver(e => { live = e[0].isIntersecting; }).observe(cv);
   }
 })();
+
+/* ── the photograph, taken apart ──────────────────────────────────
+   Scroll position through the tall section *is* the movement index, so
+   the sequence runs with no animation library at all. A movement button
+   scrolls to its position, which keeps one source of truth. */
+const pixelsSec = $('[data-pixels]');
+const pfCanvas  = $('[data-pixelfield]');
+const movesEl   = $('[data-moves]');
+let pf = null;
+
+if (movesEl) {
+  movesEl.innerHTML = MOVEMENTS.map((m, i) =>
+    '<li><button type="button" data-mv="' + i + '" aria-current="' + (i === 0) + '">' +
+      '<span class="mv-n">' + m.num + '</span>' +
+      '<span class="mv-t">' + m.name + '</span>' +
+      '<span class="mv-d">' + m.note + '</span>' +
+    '</button></li>').join('');
+}
+
+function pixelsSpan () {
+  if (!pixelsSec) return null;
+  const top = pixelsSec.offsetTop;
+  const total = pixelsSec.offsetHeight - innerHeight;
+  return total > 10 ? { top, total } : null;
+}
+
+if (pfCanvas && pixelsSec) {
+  const shot = pixelsSec.dataset.shot;
+  const shape = pixelsSec.dataset.shape || pixelsSec.dataset.shapeAsset;
+  try {
+    pf = shot ? createPixelField(pfCanvas, {
+      photo: new URL(shot, location.href).href,
+      shape: shape ? new URL(shape, location.href).href : null
+    }) : null;
+  } catch (e) { pf = null; }
+
+  if (!pf) pixelsSec.setAttribute('data-fallback', '');
+  else pf.ready.then(api => {
+    if (!api) { pixelsSec.setAttribute('data-fallback', ''); return; }
+    const out = $('[data-pf-count]');
+    if (out) out.textContent = api.state.count.toLocaleString() + ' particles';
+  });
+}
+
+if (movesEl) {
+  movesEl.addEventListener('click', e => {
+    const b = e.target.closest('[data-mv]');
+    if (!b) return;
+    const i = +b.dataset.mv;
+    const span = pixelsSpan();
+    if (!span) { if (pf) pf.setMovement(i); return; }
+    const y = span.top + (i / (MOVEMENTS.length - 1)) * span.total;
+    if (window.__lenis) window.__lenis.scrollTo(y, { duration: 1.1 });
+    else scrollTo({ top: y, behavior: still ? 'auto' : 'smooth' });
+  });
+}
+
+let shownMove = -1;
+function updateMoveLabels (i) {
+  if (i === shownMove) return;
+  shownMove = i;
+  const m = MOVEMENTS[i]; if (!m) return;
+  const set = (sel, v) => { const el = $(sel); if (el) el.textContent = v; };
+  set('[data-mv-num]', m.num); set('[data-mv-name]', m.name); set('[data-mv-note]', m.note);
+  $$('[data-mv]').forEach(b => b.setAttribute('aria-current', String(+b.dataset.mv === i)));
+}
 
 /* ── the sloshing rules ───────────────────────────────────────────────
    A meniscus drawn across the page, pushed by how fast you are
@@ -332,6 +399,16 @@ let t0 = performance.now();
     if (moveT >= 1 && Math.abs(d) < 0.02) moveTo = null;
   }
 
+  // the photograph's movement is just where you are in its section
+  if (pf) {
+    const span = pixelsSpan();
+    if (span) {
+      const p = clamp((scrollY - span.top) / span.total, 0, 1);
+      pf.scrub(p * (MOVEMENTS.length - 1));
+      updateMoveLabels(pf.movement());
+    }
+  }
+
   if (!still) liquids.forEach(L => { if (L.live) drawLiquid(L, t); });
 })(t0);
 liquids.forEach(L => drawLiquid(L, 0));   // never blank before motion starts
@@ -339,6 +416,7 @@ liquids.forEach(L => drawLiquid(L, 0));   // never blank before motion starts
 /* ═══ motion, where the libraries arrived ═══════════════════════════ */
 if (!still && typeof window.Lenis !== 'undefined') {
   const lenis = new window.Lenis({ lerp: 0.078, wheelMultiplier: 0.92 });
+  window.__lenis = lenis;
   if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
     if (window.ScrollTrigger) lenis.on('scroll', window.ScrollTrigger.update);
     window.gsap.ticker.add(t => lenis.raf(t * 1000));

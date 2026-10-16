@@ -20,6 +20,18 @@ of it: the mask, the particles, the glow on the tagline and the stone lifting
 off the 3D flacon. The merchant tells the theme where in their photograph the
 flacon sits, so the warmth blooms from the right place.
 
+**The photograph is taken apart, pixel by pixel.** One particle per pixel of
+the campaign shot — a 270 × 480 image is 129,600 of them — simulated entirely
+on the GPU in ping-pong float textures. Scroll position through the section
+*is* the movement index, so the sequence runs with no animation library at
+all. Five movements: the frame held together by a spring per particle;
+diffusion on curl noise; a relief where each pixel is pushed along z by its
+own luminance; the pixels sorted into whichever of the five house colours
+they most resemble, each pile shaped like a flacon; and all of them
+reassembled into one bottle. Dragging pushes the field aside, pressing pulls
+it back in. On a portrait screen the five piles stack rather than shrinking
+into thumbnails.
+
 **The flacon is real geometry, not a sprite sheet.** A squircle body under a
 clearcoat, a knurled gold collar whose fluting is cut into the mesh, a raised
 and bevelled monogram, and a polished stone for a cap — generated from noise
@@ -44,12 +56,14 @@ settings.
 assets/      domain-black.css      the whole visual system, one file
              domain-black.js       behaviour: engraving, sillage, liquid, motion
              flacon.js             the flacon in three dimensions
+             pixelfield.js         the photograph as a GPU particle field
              three.module.min.js   served from Assets, not a CDN
              flacon-*.png          the five, pre-rendered, for the empty state
              campaign-sovereign.png a campaign photograph to start from
 layout/      theme.liquid          the page frame
              password.liquid       the pre-launch page
 sections/    domain-hero           the campaign photograph, and opening it
+             domain-pixels         that photograph, taken apart to pixels
              domain-flacon         the flacon in 3D, with detail blocks
              domain-five           Five Worlds, from a collection
              domain-register       the register table
@@ -77,7 +91,8 @@ locales/     en.default.json
 **As sections dropped into a theme you already use** (Dawn, or any OS 2.0 theme)
 
 1. Copy `assets/domain-black.css`, `domain-black.js`, `flacon.js`,
-   `three.module.min.js` and the five `flacon-*.png` into `assets/`.
+   `pixelfield.js`, `three.module.min.js` and the five `flacon-*.png` into
+   `assets/`.
 2. Copy the `domain-*.liquid` sections into `sections/`.
 3. Copy `snippets/domain-scripts.liquid` into `snippets/`, add
    `{% render 'domain-scripts' %}` before `</body>` and
@@ -91,6 +106,9 @@ In **Customize**:
 - **Hero · campaign** — choose the photograph, then drag the two position
   sliders until the marker sits on the flacon in your shot. That is where the
   world warms from.
+- **The photograph · pixels** — choose the photograph, pick which flacon the
+  final movement assembles into (or supply your own transparent PNG as the
+  silhouette), and set how much scrolling the five movements take.
 - **The Flacon · 3D** — each detail is a block. A block carries the turn,
   lift, tip and fill it wants, so adding your own detail is a block, not a
   code change.
@@ -117,8 +135,11 @@ none is required.
 
 ## Motion, WebGL, and doing without either
 
-three.js is served from **Assets** through an import map, not a CDN, so the
-flacon works on a locked-down network. Where WebGL is missing the object is
+The pixel field needs **WebGL 2 with float render targets** and the flacon
+needs WebGL; both probe for it before constructing a renderer, so a browser
+without it gets a line of text and no console error. three.js is served from
+**Assets** through an import map, not a CDN, so both work on a locked-down
+network. Where WebGL is missing the object is
 replaced by a line of text and the rest of the page is unchanged — the theme
 probes for WebGL before constructing a renderer, so nothing logs an error on
 the way.
@@ -157,6 +178,11 @@ page can be loaded in a browser without one. It was then checked in Chromium
 at 1440×900 and 390×844, twice: no console errors, no failed requests, no
 horizontal overflow, and nothing left invisible after a full scroll — with
 the motion libraries present, with them blocked, and with WebGL disabled.
+
+Each movement of the pixel field is screenshot separately from a bench page
+and looked at — a particle system cannot be checked any other way. Four of the
+six bugs in it were only visible that way, including a silhouette whose
+thickness came from distance-to-centre, which domed every shape into a ball.
 
 A fault that only the theme could show up: `--shot` holds a URL, and a
 relative `url()` inside a custom property resolves against the stylesheet that
