@@ -1,0 +1,47 @@
+<section class="band five" id="section-{{ section.id }}">
+  <div class="band-in">
+    <h1 class="display" style="font-size:clamp(1.5rem,1rem + 2.2vw,2.8rem)" data-rise>{{ section.settings.heading | escape }}</h1>
+    <form action="{{ routes.search_url }}" method="get" role="search" class="notify" style="margin-top:1.2rem">
+      <input type="search" name="q" value="{{ search.terms | escape }}" placeholder="{{ section.settings.placeholder | escape }}" aria-label="{{ section.settings.heading | escape }}">
+      <button type="submit">{{ section.settings.submit | escape }}</button>
+    </form>
+    <hr class="rule">
+    {%- if search.performed -%}
+      <div class="rail" role="list">
+        {%- for item in search.results -%}
+          {%- assign lot_alt = item.featured_image.alt | default: item.title -%}
+          <article class="lot" role="listitem">
+            <a href="{{ item.url }}" class="vignette" aria-label="{{ item.title | escape }}">
+              <canvas data-vignette aria-hidden="true"></canvas>
+              {%- if item.featured_image -%}
+                {{ item.featured_image | image_url: width: 900 | image_tag:
+                     class: 'lot-art', loading: 'lazy',
+                     widths: '240, 360, 540, 720, 900',
+                     sizes: '(min-width: 900px) 20vw, 60vw', alt: lot_alt }}
+              {%- else -%}
+                <span class="lot-art lot-empty" aria-hidden="true"></span>
+              {%- endif -%}
+            </a>
+            <div class="lot-meta"><span class="lot-name">{{ item.title | escape }}</span></div>
+          </article>
+        {%- else -%}
+          <p class="lede">{{ section.settings.none | escape }}</p>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Search",
+  "tag": "section",
+  "class": "domain-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Search the register" },
+    { "type": "text", "id": "placeholder", "label": "Placeholder", "default": "Lot, accord, vintage" },
+    { "type": "text", "id": "submit", "label": "Button", "default": "Search" },
+    { "type": "text", "id": "none", "label": "No results", "default": "Nothing in the register matches." }
+  ]
+}
+{% endschema %}

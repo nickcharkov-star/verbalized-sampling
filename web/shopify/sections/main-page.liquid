@@ -1,0 +1,11 @@
+<section class="band thesis" id="section-{{ section.id }}">
+  <div class="band-in" style="max-width:68ch">
+    <h1 class="display" style="font-size:clamp(1.7rem,1.1rem + 2.4vw,3rem)" data-rise>{{ page.title | escape }}</h1>
+    <hr class="rule">
+    <div class="lede" data-rise>{{ page.content }}</div>
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Page", "tag": "section", "class": "domain-section", "settings": [] }
+{% endschema %}

@@ -1,0 +1,48 @@
+<section class="band register" id="section-{{ section.id }}">
+  <div class="band-in">
+    <h1 class="display" style="font-size:clamp(1.6rem,1.05rem + 2.4vw,3rem)" data-rise>{{ section.settings.heading | escape }}</h1>
+    <hr class="rule">
+    {%- if cart.item_count > 0 -%}
+      {%- form 'cart', cart -%}
+        <div class="reg-wrap">
+          <table class="reg-table">
+            <thead><tr><th scope="col">Lot</th><th scope="col">Quantity</th><th scope="col">Total</th></tr></thead>
+            <tbody>
+              {%- for item in cart.items -%}
+                <tr>
+                  <td><a href="{{ item.url }}">{{ item.product.title | escape }}</a></td>
+                  <td class="num"><input type="number" name="updates[]" value="{{ item.quantity }}" min="0" aria-label="Quantity"></td>
+                  <td class="num">{{ item.final_line_price | money }}</td>
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+        </div>
+        <dl class="bearer" style="margin-top:1.6rem">
+          <div><dt>Subtotal</dt><dd class="num">{{ cart.total_price | money }}</dd></div>
+        </dl>
+        <p style="margin-top:1.4rem;display:flex;gap:1rem;flex-wrap:wrap">
+          <button type="submit" name="update">Update</button>
+          <button type="submit" name="checkout">{{ section.settings.checkout | escape }}</button>
+        </p>
+      {%- endform -%}
+    {%- else -%}
+      <p class="lede" data-rise>{{ section.settings.empty | escape }}</p>
+      <p><a class="eyebrow" href="{{ routes.all_products_collection_url }}">{{ section.settings.continue | escape }}</a></p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Cart",
+  "tag": "section",
+  "class": "domain-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Your holding" },
+    { "type": "text", "id": "empty", "label": "Empty message", "default": "Nothing held yet." },
+    { "type": "text", "id": "continue", "label": "Continue link", "default": "See what is open" },
+    { "type": "text", "id": "checkout", "label": "Checkout button", "default": "Settle" }
+  ]
+}
+{% endschema %}

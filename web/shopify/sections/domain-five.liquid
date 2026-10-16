@@ -1,0 +1,92 @@
+{{ 'domain-black.css' | asset_url | stylesheet_tag }}
+
+{%- assign coll = collections[section.settings.collection] -%}
+
+<section class="band five" id="section-{{ section.id }}">
+  <div class="band-in">
+    <div class="five-head">
+      <h2 class="display" style="font-size:clamp(1.5rem,1rem + 2.2vw,2.8rem)" data-rise>
+        {{ section.settings.heading | escape }}
+      </h2>
+      {% if section.settings.note != blank %}
+        <p class="eyebrow" data-rise>{{ section.settings.note | escape }}</p>
+      {% endif %}
+    </div>
+    <hr class="rule">
+
+    <div class="rail" role="list" aria-label="{{ section.settings.heading | escape }}">
+      {%- if coll and coll.products.size > 0 -%}
+        {%- for product in coll.products limit: section.settings.count -%}
+          {%- assign lot_alt = product.featured_image.alt | default: product.title -%}
+          <article class="lot" role="listitem">
+            <a href="{{ product.url }}" class="vignette" aria-label="{{ product.title | escape }}">
+              <canvas data-vignette aria-hidden="true"></canvas>
+              {%- if product.featured_image -%}
+                {%- comment -%}
+                  The merchant's own photograph, used as-is. Alt text is resolved
+                  first: piping `default` inside a filter argument would apply it
+                  to image_tag's output instead, and ship alt="".
+                {%- endcomment -%}
+                {{ product.featured_image
+                   | image_url: width: 900
+                   | image_tag:
+                       class: 'lot-art',
+                       loading: 'lazy',
+                       widths: '240, 360, 540, 720, 900',
+                       sizes: '(min-width: 900px) 20vw, 60vw',
+                       alt: lot_alt }}
+              {%- else -%}
+                <span class="lot-art lot-empty" aria-hidden="true"></span>
+              {%- endif -%}
+            </a>
+            <div class="lot-meta">
+              <span class="lot-name">{{ product.title | escape }}</span>
+              <span class="lot-note">
+                {%- if product.metafields.domain.accord != blank -%}
+                  {{ product.metafields.domain.accord }}
+                {%- else -%}
+                  {{ product.price | money }}
+                {%- endif -%}
+              </span>
+            </div>
+          </article>
+        {%- endfor -%}
+
+      {%- else -%}
+        {%- comment -%}
+          No collection chosen yet. Show the shape of the section so the
+          merchant can see what they are configuring, rather than an
+          empty band that looks broken.
+        {%- endcomment -%}
+        {%- for i in (1..5) -%}
+          <article class="lot" role="listitem">
+            <div class="vignette">
+              <canvas data-vignette aria-hidden="true"></canvas>
+              <span class="lot-art lot-empty" aria-hidden="true"></span>
+            </div>
+            <div class="lot-meta">
+              <span class="lot-name">Lot {{ i }}</span>
+              <span class="lot-note">Choose a collection</span>
+            </div>
+          </article>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "The Five",
+  "tag": "section",
+  "class": "domain-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "The Five" },
+    { "type": "text", "id": "note", "label": "Note", "default": "Struck 2026 · Not reissued" },
+    { "type": "collection", "id": "collection", "label": "Collection",
+      "info": "Product images are used as-is, held inside an engraved vignette." },
+    { "type": "range", "id": "count", "label": "Products shown", "min": 3, "max": 12, "step": 1, "default": 5 }
+  ],
+  "presets": [{ "name": "The Five" }]
+}
+{% endschema %}

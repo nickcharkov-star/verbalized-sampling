@@ -1,0 +1,14 @@
+<section class="band thesis">
+  <div class="band-in" style="max-width:40ch">
+    <h1 class="display" style="font-size:2rem">{{ 'customer.register.title' | t }}</h1>
+    <hr class="rule">
+    {%- form 'create_customer', class: 'notify' -%}
+      {%- if form.errors -%}<p class="said" role="alert">{{ form.errors | default_errors }}</p>{%- endif -%}
+      <input type="text" name="customer[first_name]" autocomplete="given-name" placeholder="{{ 'customer.register.first_name' | t }}">
+      <input type="text" name="customer[last_name]" autocomplete="family-name" placeholder="{{ 'customer.register.last_name' | t }}">
+      <input type="email" name="customer[email]" autocomplete="email" placeholder="{{ 'customer.login.email' | t }}" required>
+      <input type="password" name="customer[password]" autocomplete="new-password" placeholder="{{ 'customer.login.password' | t }}">
+      <button type="submit">{{ 'customer.register.submit' | t }}</button>
+    {%- endform -%}
+  </div>
+</section>

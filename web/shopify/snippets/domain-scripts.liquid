@@ -1,0 +1,18 @@
+{%- comment -%}
+  Motion libraries + theme behaviour.
+
+  Include once per page, just before </body>:
+      {% render 'domain-scripts' %}
+
+  Both libraries are optional at runtime. If a CDN is blocked the page
+  still renders and reads correctly — smooth scroll falls back to the
+  browser's own and every reveal is already in its resting state.
+
+  To self-host instead (recommended for production): upload gsap.min.js,
+  ScrollTrigger.min.js and lenis.min.js to Assets and swap the three
+  <script src> values for {{ 'gsap.min.js' | asset_url }} and so on.
+{%- endcomment -%}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script>
+<script src="{{ 'domain-black.js' | asset_url }}" defer></script>

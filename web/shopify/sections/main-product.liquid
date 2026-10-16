@@ -1,0 +1,87 @@
+{%- comment -%}
+  The product page as a certificate for a single lot: the merchant's own
+  photograph held inside an engraved vignette, the facts of the lot set as a
+  register entry, and the form that transfers it.
+{%- endcomment -%}
+{%- assign p = product -%}
+{%- assign lot_alt = p.featured_image.alt | default: p.title -%}
+
+<section class="band product" id="section-{{ section.id }}">
+  <div class="band-in product-grid">
+
+    <div class="frame">
+      <canvas data-vignette aria-hidden="true"></canvas>
+      {%- if p.featured_image -%}
+        {{ p.featured_image | image_url: width: 1400 | image_tag:
+             class: 'lot-art',
+             widths: '400, 600, 900, 1200, 1400',
+             sizes: '(min-width: 900px) 46vw, 88vw',
+             alt: lot_alt }}
+      {%- else -%}
+        <span class="lot-art lot-empty" aria-hidden="true"></span>
+      {%- endif -%}
+    </div>
+
+    <div class="product-side">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="eyebrow" data-rise>{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+
+      <h1 class="display" style="font-size:clamp(1.9rem,1.2rem + 2.6vw,3.2rem);margin:.4rem 0 0" data-rise>
+        {{ p.title | escape }}
+      </h1>
+
+      <dl class="bearer" style="margin-top:1.4rem">
+        <div>
+          <dt>{{ section.settings.label_accord | escape }}</dt>
+          <dd>{{ p.metafields.domain.accord | default: p.type | default: '—' }}</dd>
+        </div>
+        <div>
+          <dt>{{ section.settings.label_vintage | escape }}</dt>
+          <dd class="num">{{ p.metafields.domain.vintage | default: p.published_at | date: '%Y' }}</dd>
+        </div>
+        <div>
+          <dt>{{ section.settings.label_price | escape }}</dt>
+          <dd class="num">{{ p.price | money }}</dd>
+        </div>
+      </dl>
+
+      {%- if p.description != blank -%}
+        <div class="lede" style="margin-top:1.4rem" data-rise>{{ p.description }}</div>
+      {%- endif -%}
+
+      {%- form 'product', p, class: 'notify', id: 'ProductForm' -%}
+        <select name="id" aria-label="{{ section.settings.label_variant | escape }}"
+                {% if p.variants.size == 1 %}hidden{% endif %}>
+          {%- for v in p.variants -%}
+            <option value="{{ v.id }}" {% if v == p.selected_or_first_available_variant %}selected{% endif %}
+                    {% unless v.available %}disabled{% endunless %}>
+              {{ v.title }} · {{ v.price | money }}{% unless v.available %} · {{ section.settings.sold_label | escape }}{% endunless %}
+            </option>
+          {%- endfor -%}
+        </select>
+        <button type="submit" {% unless p.available %}disabled{% endunless %}>
+          {%- if p.available -%}{{ section.settings.buy_label | escape }}{%- else -%}{{ section.settings.sold_label | escape }}{%- endif -%}
+        </button>
+      {%- endform -%}
+    </div>
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product",
+  "tag": "section",
+  "class": "domain-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "One lot · Issued to bearer" },
+    { "type": "text", "id": "label_accord", "label": "Accord label", "default": "Accord" },
+    { "type": "text", "id": "label_vintage", "label": "Vintage label", "default": "Vintage" },
+    { "type": "text", "id": "label_price", "label": "Price label", "default": "Transfer at" },
+    { "type": "text", "id": "label_variant", "label": "Variant label", "default": "Size" },
+    { "type": "text", "id": "buy_label", "label": "Buy button", "default": "Take it" },
+    { "type": "text", "id": "sold_label", "label": "Sold-out label", "default": "Closed" }
+  ]
+}
+{% endschema %}

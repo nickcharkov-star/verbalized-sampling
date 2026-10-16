@@ -106,3 +106,11 @@ ehthumbs.db
 Thumbs.db
 # Node
 node_modules/
+
+# theme preview output
+.preview/
+
+# The Python build-dir patterns above (lib/, build/, dist/) also match
+# scripts/lib/, which is source. Unignore the directory, then its contents.
+!scripts/lib/
+!scripts/lib/**

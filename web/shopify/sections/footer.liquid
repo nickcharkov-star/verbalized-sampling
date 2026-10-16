@@ -1,0 +1,24 @@
+<footer class="band" style="padding-block:0">
+  {%- comment -%}
+    The class sits on the inner wrapper, not on <footer>: a `footer.foot`
+    selector matches nothing here and the links run together on one line.
+  {%- endcomment -%}
+  <div class="band-in foot">
+    <small>{{ section.settings.left | default: shop.name | escape }}</small>
+    {%- for link in section.settings.menu.links -%}
+      <a href="{{ link.url }}">{{ link.title | escape }}</a>
+    {%- endfor -%}
+    <small>{{ section.settings.right | escape }}</small>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    { "type": "text", "id": "left", "label": "Left", "default": "Maison Domain · Oslo" },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "footer" },
+    { "type": "text", "id": "right", "label": "Right", "default": "Issued to bearer" }
+  ]
+}
+{% endschema %}

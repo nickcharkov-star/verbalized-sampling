@@ -1,0 +1,23 @@
+<header class="nav">
+  <a href="{{ routes.root_url }}" class="mark">{{ section.settings.wordmark | default: shop.name | escape }}</a>
+  <nav role="navigation" aria-label="Primary">
+    {%- for link in section.settings.menu.links -%}
+      <a href="{{ link.url }}">{{ link.title | escape }}</a>
+    {%- endfor -%}
+    {%- if section.settings.show_cart -%}
+      <a href="{{ routes.cart_url }}">{{ section.settings.cart_label | escape }}{% if cart.item_count > 0 %} ({{ cart.item_count }}){% endif %}</a>
+    {%- endif -%}
+  </nav>
+</header>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    { "type": "text", "id": "wordmark", "label": "Wordmark", "default": "Domain Black" },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    { "type": "checkbox", "id": "show_cart", "label": "Show the holding link", "default": true },
+    { "type": "text", "id": "cart_label", "label": "Holding label", "default": "Holding" }
+  ]
+}
+{% endschema %}

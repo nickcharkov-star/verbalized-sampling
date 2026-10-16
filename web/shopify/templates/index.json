@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "certificate": { "type": "domain-certificate", "settings": {} },
+    "five":        { "type": "domain-five",        "settings": {} },
+    "register":    { "type": "domain-register",    "settings": {} },
+    "seal":        { "type": "domain-seal",        "settings": {} }
+  },
+  "order": ["certificate", "five", "register", "seal"]
+}

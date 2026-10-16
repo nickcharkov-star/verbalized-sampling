@@ -1,0 +1,74 @@
+{{ 'domain-black.css' | asset_url | stylesheet_tag }}
+
+<section class="band seal-sec" id="section-{{ section.id }}">
+  <div class="band-in" style="display:grid;place-items:center;gap:inherit">
+
+    <svg class="seal" viewBox="0 0 200 200" role="img" aria-label="{{ section.settings.wordmark | escape }} seal">
+      <circle class="ink-path" cx="100" cy="100" r="88"/>
+      <circle class="ink-path" cx="100" cy="100" r="81" stroke-width=".6"/>
+      <circle class="ink-path" cx="100" cy="100" r="62"/>
+      <g data-seal-teeth></g>
+      <g class="mono-fill" transform="translate(100 100) scale(.52) translate(-100 -78)">
+        <path d="M74 50c-13 0-24 11-24 24s11 24 24 24c6 0 12-2 16-6v5h13V28H90v26c-4-3-10-4-16-4zm2 13c7 0 12 5 12 11s-5 11-12 11-12-5-12-11 5-11 12-11z"/>
+        <path d="M112 28v69h13v-5c4 4 10 6 16 6 13 0 24-11 24-24s-11-24-24-24c-6 0-12 1-16 4V28zm29 28c7 0 12 5 12 11s-5 11-12 11-12-5-12-11 5-11 12-11z"/>
+        <rect x="95" y="20" width="5" height="90" transform="rotate(16 97 65)"/>
+      </g>
+    </svg>
+
+    {% if section.settings.eyebrow != blank %}
+      <p class="eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    {% endif %}
+    <h2 class="lock-type">{{ section.settings.wordmark | escape }}</h2>
+    {% if section.settings.tagline != blank %}
+      <p class="script" style="font-size:clamp(1.7rem,1.1rem + 2.1vw,2.8rem);color:var(--gold);margin:0">
+        {{ section.settings.tagline | escape }}
+      </p>
+    {% endif %}
+
+    {% if section.settings.show_form %}
+      {%- form 'customer', class: 'notify' -%}
+        <input type="hidden" name="contact[tags]" value="newsletter">
+        <label for="Notify-{{ section.id }}" class="eyebrow" style="width:100%;text-align:center;margin-bottom:.3rem">
+          {{ section.settings.form_label | escape }}
+        </label>
+        <input
+          id="Notify-{{ section.id }}"
+          type="email"
+          name="contact[email]"
+          autocomplete="email"
+          placeholder="{{ section.settings.form_placeholder | escape }}"
+          required>
+        <button type="submit">{{ section.settings.form_button | escape }}</button>
+
+        {%- if form.errors -%}
+          <p class="said" role="alert">{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}</p>
+        {%- elsif form.posted_successfully? -%}
+          <p class="said" role="status">{{ section.settings.form_thanks | escape }}</p>
+        {%- endif -%}
+      {%- endform -%}
+    {% endif %}
+
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Seal",
+  "tag": "section",
+  "class": "domain-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Sealed at issue" },
+    { "type": "text", "id": "wordmark", "label": "Wordmark", "default": "Domain Black" },
+    { "type": "text", "id": "tagline", "label": "Tagline (script face)", "default": "it's yours" },
+
+    { "type": "header", "content": "Register form" },
+    { "type": "checkbox", "id": "show_form", "label": "Show the sign-up form", "default": true,
+      "info": "Posts to Shopify customers and tags them “newsletter”." },
+    { "type": "text", "id": "form_label", "label": "Form label", "default": "Be told when the next five are struck" },
+    { "type": "text", "id": "form_placeholder", "label": "Placeholder", "default": "you@example.com" },
+    { "type": "text", "id": "form_button", "label": "Button", "default": "Enter the register" },
+    { "type": "text", "id": "form_thanks", "label": "Success message", "default": "Entered. You will hear once, when there is something to hear." }
+  ],
+  "presets": [{ "name": "Seal" }]
+}
+{% endschema %}

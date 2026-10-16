@@ -1,0 +1,48 @@
+<section class="band five" id="section-{{ section.id }}">
+  <div class="band-in">
+    <div class="five-head">
+      <h1 class="display" style="font-size:clamp(1.5rem,1rem + 2.2vw,2.8rem)" data-rise>{{ collection.title | escape }}</h1>
+      <p class="eyebrow" data-rise>{{ collection.products_count }} {{ section.settings.counter | escape }}</p>
+    </div>
+    <hr class="rule">
+    {%- if collection.description != blank -%}
+      <div class="lede" style="margin-bottom:2rem" data-rise>{{ collection.description }}</div>
+    {%- endif -%}
+    <div class="rail" role="list">
+      {%- for product in collection.products -%}
+        {%- assign lot_alt = product.featured_image.alt | default: product.title -%}
+        <article class="lot" role="listitem">
+          <a href="{{ product.url }}" class="vignette" aria-label="{{ product.title | escape }}">
+            <canvas data-vignette aria-hidden="true"></canvas>
+            {%- if product.featured_image -%}
+              {{ product.featured_image | image_url: width: 900 | image_tag:
+                   class: 'lot-art', loading: 'lazy',
+                   widths: '240, 360, 540, 720, 900',
+                   sizes: '(min-width: 900px) 20vw, 60vw', alt: lot_alt }}
+            {%- else -%}
+              <span class="lot-art lot-empty" aria-hidden="true"></span>
+            {%- endif -%}
+          </a>
+          <div class="lot-meta">
+            <span class="lot-name">{{ product.title | escape }}</span>
+            <span class="lot-note">{{ product.metafields.domain.accord | default: product.price | money }}</span>
+          </div>
+        </article>
+      {%- else -%}
+        <p class="lede">{{ section.settings.empty | escape }}</p>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collection",
+  "tag": "section",
+  "class": "domain-section",
+  "settings": [
+    { "type": "text", "id": "counter", "label": "Counter word", "default": "lots" },
+    { "type": "text", "id": "empty", "label": "Empty message", "default": "Nothing struck in this collection yet." }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,275 @@
+/* ───────────────────────────────────────────────────────────────────────
+   DOMAIN BLACK — bearer instrument
+
+   Brief: modern new money raised by old money.
+
+   So the page is built as a security-engraved certificate. Guilloché —
+   the engine-turned rosette on share certificates, bearer bonds and watch
+   dials — is the actual visual language of inherited wealth, and it is
+   parametric mathematics, so it renders live rather than as a scan. Old
+   money's own artifact, drawn at 60fps by new technology. That tension is
+   the whole design: nothing here is a photograph of heritage, it is
+   heritage recomputed.
+
+   Layout: one engraved column on bond-black, flacons held in certificate
+   vignettes, specifications set as a share register.
+   ─────────────────────────────────────────────────────────────────────── */
+:root{
+  color-scheme: dark;
+
+  --bond:#0c0a09;          /* certificate ink, the ground */
+  --bond-2:#141010;        /* the second plate */
+  --paper:#ece3d6;         /* bond paper */
+  --paper-dim:#9d9183;     /* paper at reading weight */
+  --gold:#c9a227;          /* the monogram, the seal */
+  --gold-pale:#e8cf72;
+  --oxblood:#6d1f23;       /* the heraldic note */
+  --ember:#e2542a;         /* the flacon */
+  --line: color-mix(in srgb, var(--paper) 16%, transparent);
+  --line-soft: color-mix(in srgb, var(--paper) 8%, transparent);
+
+  --display:"Bodoni Moda","Didot","Bodoni MT",Georgia,serif;
+  --body:"Jost","Futura","Avenir Next",system-ui,sans-serif;
+  --script:"Pinyon Script","Snell Roundhand",cursive;
+
+  --gut-l: max(20px, env(safe-area-inset-left, 0px));
+  --gut-r: max(20px, env(safe-area-inset-right, 0px));
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bond);color:var(--paper);
+  font-family:var(--body);font-weight:300;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+img,canvas{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:1px solid var(--gold);outline-offset:4px}
+
+.band{padding-left:var(--gut-l);padding-right:var(--gut-r);position:relative}
+.band-in{max-width:1240px;margin-inline:auto;width:100%}
+
+/* engraved hairline rules, as on a printed instrument */
+.rule{height:1px;background:var(--line);border:0;margin:0}
+.rule-double{height:3px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:transparent;margin:0}
+
+.eyebrow{
+  font-size:.64rem;letter-spacing:.38em;text-transform:uppercase;
+  font-weight:400;color:var(--paper-dim);margin:0;
+}
+.gold{color:var(--gold)}
+.display{font-family:var(--display);font-weight:400;line-height:1;letter-spacing:-.012em;text-wrap:balance;margin:0}
+.lede{font-size:clamp(1rem,.94rem + .42vw,1.2rem);line-height:1.66;max-width:38ch;color:var(--paper-dim);margin:0}
+.script{font-family:var(--script);font-weight:400}
+.num{font-variant-numeric:tabular-nums;letter-spacing:.08em}
+
+/* ── nav ─────────────────────────────────────────────────────────── */
+header.nav{
+  position:fixed;inset:0 0 auto;z-index:50;
+  padding-left:var(--gut-l);padding-right:var(--gut-r);
+  padding-top:calc(env(safe-area-inset-top,0px) + .95rem);padding-bottom:.95rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  background:linear-gradient(var(--bond) 38%, transparent);
+}
+.nav a{font-size:.66rem;letter-spacing:.28em;text-transform:uppercase;color:var(--paper-dim);transition:color .45s}
+.nav a:hover{color:var(--paper)}
+.nav .mark{font-family:var(--display);font-size:.82rem;letter-spacing:.4em;color:var(--paper)}
+.nav nav{display:flex;gap:clamp(.85rem,2.2vw,2.1rem)}
+@media (max-width:640px){.nav nav a:nth-child(-n+2){display:none}}
+
+/* ── the certificate ─────────────────────────────────────────────── */
+.cert{padding-block:clamp(6.5rem,15vh,9.5rem) clamp(3rem,8vh,5rem);overflow:hidden}
+.cert-stage{position:relative;display:grid;place-items:center;isolation:isolate}
+/* the live engraving sits behind the lockup */
+/* Oversized on purpose: the rosette bleeds past the viewport so what you
+   see is a field of security printing, not a medallion sitting on a page. */
+#rosette{
+  position:absolute;inset:50% auto auto 50%;transform:translate(-50%,-50%);
+  width:min(190vw,1680px);height:min(190vw,1680px);
+  /* the global img,canvas{max-width:100%} reset would clamp this to the
+     column and squash the rosette into an ellipse half its diameter. */
+  max-width:none;aspect-ratio:1;
+  z-index:0;opacity:.72;pointer-events:none;
+  -webkit-mask-image:radial-gradient(closest-side,#000 58%,transparent 97%);
+  mask-image:radial-gradient(closest-side,#000 58%,transparent 97%);
+}
+.cert-lock{position:relative;z-index:1;text-align:center;display:grid;gap:clamp(.9rem,2.4vh,1.5rem);justify-items:center}
+.cert-head{display:flex;gap:clamp(.8rem,3vw,2.2rem);align-items:center;justify-content:center;flex-wrap:wrap}
+.wordmark{
+  font-size:clamp(2.6rem,1.1rem + 7.4vw,6.8rem);line-height:.92;
+  letter-spacing:.02em;text-transform:uppercase;
+}
+.wordmark .ch{display:inline-block;will-change:transform}
+.cert-sub{font-size:clamp(.66rem,.6rem + .2vw,.76rem);letter-spacing:.46em;text-transform:uppercase;color:var(--gold);margin:0}
+.cert-say{font-family:var(--script);font-size:clamp(1.9rem,1.2rem + 2.6vw,3.2rem);color:var(--paper);margin:0;line-height:1}
+
+/* the bearer strip — a real instrument carries one */
+.bearer{
+  margin-top:clamp(2rem,6vh,3.4rem);width:100%;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+}
+@media (max-width:760px){.bearer{grid-template-columns:repeat(2,1fr)}}
+.bearer div{
+  padding:.95rem clamp(.5rem,1.6vw,1.1rem);min-width:0;
+  display:grid;gap:.4rem;
+}
+.bearer div + div{border-left:1px solid var(--line-soft)}
+@media (max-width:760px){
+  .bearer div:nth-child(3){border-left:0}
+  .bearer div:nth-child(n+3){border-top:1px solid var(--line-soft)}
+}
+.bearer dt{font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:var(--paper-dim);margin:0}
+.bearer dd{margin:0;font-size:.92rem;letter-spacing:.06em}
+
+/* ── thesis ──────────────────────────────────────────────────────── */
+.thesis{padding-block:clamp(5rem,14vh,9rem)}
+.thesis-grid{display:grid;gap:clamp(2rem,5vw,4.5rem);grid-template-columns:1.55fr 1fr;align-items:end}
+@media (max-width:880px){.thesis-grid{grid-template-columns:1fr}}
+.thesis .display{font-size:clamp(1.85rem,1rem + 3.4vw,4rem);line-height:1.04}
+.thesis em{font-style:italic;color:var(--gold)}
+
+/* ── the five, in vignettes ──────────────────────────────────────── */
+.five{padding-block:clamp(4rem,10vh,7rem);background:var(--bond-2)}
+.five-head{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap;padding-bottom:1rem}
+.rail{
+  display:grid;grid-auto-flow:column;grid-auto-columns:minmax(238px,1fr);
+  gap:clamp(.9rem,2.4vw,1.8rem);overflow-x:auto;scroll-snap-type:x mandatory;
+  padding-block:clamp(1.8rem,4.5vh,3rem);
+  margin-inline:calc(var(--gut-l)*-1) calc(var(--gut-r)*-1);
+  padding-inline:var(--gut-l) var(--gut-r);scrollbar-width:thin;
+}
+.lot{scroll-snap-align:start;min-width:0;display:grid;gap:.9rem}
+.vignette{
+  position:relative;aspect-ratio:4/5;display:grid;place-items:center;
+  border:1px solid var(--line-soft);overflow:hidden;background:var(--bond);
+}
+.vignette canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.5}
+.vignette svg{position:relative;z-index:1;width:56%;height:auto}
+.lot-meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.25rem .8rem;align-items:baseline;min-width:0}
+.lot-name{font-family:var(--display);font-size:1.1rem;min-width:0}
+.lot-note{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--paper-dim);text-align:right;min-width:0}
+
+/* ── the register ────────────────────────────────────────────────── */
+.register{padding-block:clamp(5rem,13vh,8rem)}
+.reg-table{width:100%;border-collapse:collapse;margin-top:clamp(1.6rem,4vh,2.4rem);font-size:.88rem}
+.reg-table caption{text-align:left;padding-bottom:1rem}
+.reg-table th{
+  text-align:left;font-weight:400;font-size:.58rem;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--paper-dim);
+  padding:.7rem .8rem .7rem 0;border-bottom:1px solid var(--line);
+}
+.reg-table td{padding:.86rem .8rem .86rem 0;border-bottom:1px solid var(--line-soft);letter-spacing:.04em}
+.reg-table tr td:last-child,.reg-table tr th:last-child{text-align:right;padding-right:0}
+.reg-table .swatch{display:inline-block;width:.62rem;height:.62rem;margin-right:.6rem;vertical-align:baseline;border:1px solid rgba(255,255,255,.25)}
+@media (max-width:620px){ .reg-wrap{overflow-x:auto} .reg-table{min-width:460px} }
+
+/* ── film ────────────────────────────────────────────────────────── */
+.film{padding-block:clamp(5rem,13vh,8rem);background:var(--bond-2)}
+.film-grid{display:grid;gap:clamp(2rem,5vw,4rem);grid-template-columns:.85fr 1.15fr;align-items:center}
+@media (max-width:880px){.film-grid{grid-template-columns:1fr}}
+.frame{position:relative;aspect-ratio:9/16;max-width:min(100%,312px);border:1px solid var(--line-soft);display:grid;place-items:center;overflow:hidden;background:var(--bond)}
+.frame canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.42}
+.frame svg{position:relative;z-index:1;width:50%}
+.frame .slug{position:absolute;left:0;right:0;bottom:1rem;text-align:center;font-family:var(--script);font-size:1.6rem;color:var(--paper);z-index:1}
+.spec{list-style:none;margin:clamp(1.5rem,4vh,2.2rem) 0 0;padding:0}
+.spec li{display:flex;justify-content:space-between;gap:1.2rem;padding:.78rem 0;border-top:1px solid var(--line-soft);font-size:.86rem;letter-spacing:.04em}
+.spec li span:last-child{color:var(--paper-dim);text-align:right;font-variant-numeric:tabular-nums}
+
+/* ── the seal ────────────────────────────────────────────────────── */
+.seal-sec{padding-block:clamp(6rem,18vh,10rem);display:grid;place-items:center;text-align:center;gap:clamp(1.4rem,4vh,2.2rem)}
+.seal{width:clamp(130px,19vw,190px);height:auto}
+.seal .ink-path{fill:none;stroke:var(--gold);stroke-width:1.1;stroke-linecap:round}
+.seal .mono-fill{fill:var(--gold)}
+.lock-type{font-family:var(--display);font-size:clamp(1.15rem,.85rem + 1.6vw,2rem);letter-spacing:.46em;text-transform:uppercase;margin:0;padding-left:.46em}
+
+.notify{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;align-items:center;margin-top:.4rem}
+.notify input{
+  background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--paper);
+  font-family:var(--body);font-size:.92rem;font-weight:300;padding:.6rem .2rem;min-width:min(250px,68vw);
+}
+.notify input::placeholder{color:color-mix(in srgb,var(--paper) 38%,transparent)}
+.notify button{
+  background:transparent;border:1px solid var(--line);color:var(--paper);
+  font-family:var(--body);font-size:.64rem;letter-spacing:.28em;text-transform:uppercase;
+  padding:.72rem 1.5rem;cursor:pointer;transition:background .5s,color .5s,border-color .5s;
+}
+.notify button:hover{background:var(--gold);border-color:var(--gold);color:var(--bond)}
+.said{font-size:.76rem;letter-spacing:.14em;color:var(--gold);min-height:1.2em;margin:.5rem 0 0}
+
+/* the class sits on the inner wrapper, not on <footer> — a `footer.foot`
+   selector here matches nothing and the links run together */
+.foot{padding-block:clamp(2.2rem,6vh,3.4rem);display:flex;flex-wrap:wrap;gap:1rem 2.2rem;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line-soft)}
+.foot a,.foot small{font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--paper-dim)}
+.foot a:hover{color:var(--paper)}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
+
+/* ── Shopify: real product photography inside the vignette ───────────
+   The storefront renders <img class="lot-art">, not the inline SVG the
+   static preview uses. Both sit on the same engraved plate.            */
+.vignette{text-decoration:none;color:inherit}
+.lot-art{
+  position:relative;z-index:1;width:72%;height:auto;max-height:82%;
+  object-fit:contain;mix-blend-mode:normal;
+  filter:drop-shadow(10px 16px 22px rgba(0,0,0,.55));
+  transition:transform 1.1s cubic-bezier(.16,1,.3,1);
+}
+.vignette:hover .lot-art{transform:translateY(-6px) scale(1.02)}
+.lot-empty{
+  display:block;width:46%;aspect-ratio:3/4;
+  border:1px solid var(--line);
+  background:repeating-linear-gradient(135deg,transparent 0 7px,color-mix(in srgb,var(--paper) 7%,transparent) 7px 8px);
+}
+.reg-table a{border-bottom:1px solid transparent;transition:border-color .4s}
+.reg-table a:hover{border-bottom-color:var(--gold)}
+
+/* ── Shopify: the pages beyond the landing page ──────────────────────
+   The product page, cart, search and customer pages all reuse the
+   landing page's vocabulary — engraved vignette, register table,
+   bearer strip — so nothing needs a second visual language.          */
+.skip{
+  position:absolute;left:-9999px;top:0;z-index:99;
+  padding:.7rem 1.1rem;background:var(--bond);color:var(--paper);
+  border:1px solid var(--gold);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;
+}
+.skip:focus{left:1rem;top:1rem}
+
+.product{padding-block:clamp(3rem,9vh,6rem)}
+.product-grid{
+  display:grid;gap:clamp(1.8rem,5vw,4rem);align-items:center;
+  grid-template-columns:1fr;
+}
+@media (min-width:900px){
+  .product-grid{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}
+}
+.product-grid .frame{max-width:min(100%,460px);width:100%;justify-self:center;aspect-ratio:4/5}
+.product-side{min-width:0}
+.product-side .bearer{border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.product-side .notify{justify-content:flex-start;margin-top:1.8rem}
+
+/* form controls the storefront needs that the landing page did not */
+.notify select,
+.notify input[type="number"],
+.notify input[type="search"],
+.notify input[type="password"],
+.notify input[type="text"]{
+  background:transparent;border:0;border-bottom:1px solid var(--line);
+  color:var(--paper);font-family:var(--sans);font-size:.78rem;
+  letter-spacing:.12em;padding:.6rem .2rem;min-width:9rem;
+}
+.notify select{border:1px solid var(--line);padding:.6rem .8rem}
+.notify select option{background:var(--bond);color:var(--paper)}
+.notify button[disabled]{opacity:.42;cursor:not-allowed}
+.notify button[disabled]:hover{background:transparent;border-color:var(--line);color:var(--paper)}
+.reg-table input[type="number"]{
+  width:4.2rem;background:transparent;border:1px solid var(--line);
+  color:var(--paper);font-family:var(--sans);padding:.35rem .4rem;text-align:right;
+}
+.said{width:100%;text-align:center;font-size:.72rem;letter-spacing:.1em;color:var(--gold);margin:.6rem 0 0}
+
+/* the customer and cart pages stack as prose, not as a grid */
+.template-cart .reg-table td:first-child,
+.template-search .lot-meta{min-width:0}

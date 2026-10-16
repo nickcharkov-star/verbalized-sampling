@@ -1,0 +1,20 @@
+<section class="band seal-sec" id="section-{{ section.id }}">
+  <div class="band-in" style="display:grid;place-items:center;gap:1.2rem;text-align:center">
+    <h1 class="display" style="font-size:clamp(1.8rem,1.2rem + 2.6vw,3.2rem)">{{ section.settings.heading | escape }}</h1>
+    <p class="lede" style="max-width:40ch">{{ section.settings.body | escape }}</p>
+    <p><a class="eyebrow" href="{{ routes.root_url }}">{{ section.settings.link | escape }}</a></p>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "404",
+  "tag": "section",
+  "class": "domain-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "No such lot." },
+    { "type": "text", "id": "body", "label": "Body", "default": "The page you asked for is not in the register." },
+    { "type": "text", "id": "link", "label": "Link", "default": "Return to the register" }
+  ]
+}
+{% endschema %}
