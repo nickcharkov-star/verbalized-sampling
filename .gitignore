@@ -104,3 +104,5 @@ ablation_data/results/
 .Trashes
 ehthumbs.db
 Thumbs.db
+# Node
+node_modules/
