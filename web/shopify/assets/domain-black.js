@@ -1,229 +1,428 @@
 /* ═══════════════════════════════════════════════════════════════════════
    DOMAIN BLACK — theme behaviour
 
-   Liquid renders the content; this file only engraves and animates.
+   Liquid renders every word and every photograph. This file only draws
+   what cannot be written down: the engraving, the sloshing rules, the
+   sillage, and the flacon in three dimensions.
 
-   GUILLOCHÉ
-   A hypotrochoid swept with a slowly precessing phase, which is how an
-   engine-turning lathe actually cuts a rosette. Each plate is engraved once
-   to an offscreen bitmap at device resolution; the live effect comes from
-   compositing two plates turning against each other, so the moiré is real
-   interference rather than an animated filter, and it costs two drawImage
-   calls a frame instead of a hundred thousand line segments.
-
-   Degrades on purpose. With GSAP or Lenis blocked the page is still
-   complete and readable: every reveal animates *from* its resting state,
-   and smooth scroll falls back to the browser's own.
+   Everything here degrades. The flacon needs WebGL; the reveals need
+   GSAP; the smooth scroll needs Lenis. With none of them the page is
+   still the page, because every reveal animates *from* its resting
+   state — so the resting state is what a visitor without them sees.
    ═══════════════════════════════════════════════════════════════════════ */
-(function () {
-  "use strict";
+import { createFlacon } from './flacon.js';
 
-  var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const root  = document.documentElement;
+const DPR   = Math.min(devicePixelRatio || 1, 2);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const $     = (s, r = document) => r.querySelector(s);
+const $$    = (s, r = document) => [...r.querySelectorAll(s)];
 
-  function engravePlate(size, opts) {
-    var c = document.createElement("canvas");
-    c.width = c.height = size;
-    var g = c.getContext("2d");
-    if (!g) return c;
-
-    var R = opts.R, r = opts.r, d = opts.d;
-    var turns = opts.turns || 14, steps = opts.steps || 900, mid = size / 2;
-    var scale = (size / 2) * 0.96 / (Math.abs(R - r) + Math.abs(d));
-
-    g.translate(mid, mid);
-    g.lineWidth = opts.weight || 0.9;
-    g.lineJoin = "round";
-
-    for (var p = 0; p < turns; p++) {
-      var k = p / turns;
-      var dd = d * (1 + k * (opts.spread || 0.07));
-      var phase = k * (opts.precess || Math.PI * 2);
-      g.strokeStyle = opts.color.replace("ALPHA", (opts.alpha * (1 - k * 0.45)).toFixed(3));
-      g.beginPath();
-      for (var i = 0; i <= steps; i++) {
-        var t = (i / steps) * Math.PI * 2 * (opts.wraps || 13);
-        var a = (R - r) * Math.cos(t + phase) + dd * Math.cos(((R - r) / r) * t + phase);
-        var b = (R - r) * Math.sin(t + phase) - dd * Math.sin(((R - r) / r) * t + phase);
-        if (i === 0) g.moveTo(a * scale, b * scale); else g.lineTo(a * scale, b * scale);
-      }
-      g.stroke();
-    }
-
-    // A certificate vignette is cleared through the middle so the engraving
-    // frames the subject instead of printing under it.
-    if (opts.clear) {
-      g.globalCompositeOperation = "destination-out";
-      var hole = g.createRadialGradient(0, 0, 0, 0, 0, mid * opts.clear);
-      hole.addColorStop(0, "rgba(0,0,0,1)");
-      hole.addColorStop(.62, "rgba(0,0,0,.92)");
-      hole.addColorStop(1, "rgba(0,0,0,0)");
-      g.fillStyle = hole;
-      g.beginPath(); g.arc(0, 0, mid * opts.clear, 0, Math.PI * 2); g.fill();
-      g.globalCompositeOperation = "source-over";
-    }
-    return c;
+/* ── film grain ───────────────────────────────────────────────────────
+   Campaign photography is rarely as large as a hero wants it to be.
+   Grain is what lets a frame be shown big without pretending to be
+   sharper than it is. */
+(function grain () {
+  const c = document.createElement('canvas');
+  c.width = c.height = 180;
+  const g = c.getContext('2d');
+  if (!g) return;
+  const d = g.createImageData(180, 180);
+  for (let i = 0; i < d.data.length; i += 4) {
+    const v = 110 + Math.random() * 90;
+    d.data[i] = d.data[i + 1] = d.data[i + 2] = v;
+    d.data[i + 3] = 26;
   }
+  g.putImageData(d, 0, 0);
+  try { root.style.setProperty('--grain', `url("${c.toDataURL()}")`); } catch (e) {}
+})();
 
-  /* ── the hero rosette: two counter-turning plates ─────────────────── */
-  var rosetteEl = document.querySelector("[data-rosette]");
-  var rosette = null;
+/* ── the hero: her world changes when she opens it ───────────────────
+   One custom property, --open, drives the photograph's warmth, the
+   sillage, the glow on the tagline and the stone lifting off the 3D
+   flacon. The merchant supplies the photograph; the mask is centred on
+   wherever they say the flacon sits in it. */
+let openTarget = 0, openNow = 0, openPinned = false;
+const setOpen = v => { openTarget = clamp(v, 0, 1); };
 
-  if (rosetteEl) {
-    var ctx = rosetteEl.getContext("2d");
-    if (ctx) {
-      var plateSize = Math.min(1800, Math.round(1240 * DPR));
-      var plateA = engravePlate(plateSize, {
-        R: 170, r: 31, d: 97, turns: 11, wraps: 13, steps: 1500, spread: .055,
-        precess: Math.PI * 2, color: "rgba(201,162,39,ALPHA)", alpha: .3, weight: 1, clear: .46
-      });
-      var plateB = engravePlate(plateSize, {
-        R: 150, r: 23, d: 80, turns: 8, wraps: 9, steps: 1200, spread: .1,
-        precess: Math.PI * 1.4, color: "rgba(236,227,214,ALPHA)", alpha: .12, weight: .9, clear: .54
-      });
-      var state = { rot: 0, drift: 0, scale: 1 };
+const hero  = $('[data-hero]');
+const frame = $('[data-frame]');
 
-      var sizeRosette = function () {
-        rosetteEl.width = Math.round((rosetteEl.clientWidth || 320) * DPR);
-        rosetteEl.height = Math.round((rosetteEl.clientHeight || 320) * DPR);
-      };
-      var drawRosette = function () {
-        var w = rosetteEl.width, h = rosetteEl.height;
-        ctx.clearRect(0, 0, w, h);
-        var side = Math.min(w, h) * state.scale;
-        ctx.save(); ctx.translate(w / 2, h / 2); ctx.rotate(state.rot);
-        ctx.drawImage(plateA, -side / 2, -side / 2, side, side); ctx.restore();
-        ctx.save(); ctx.translate(w / 2, h / 2); ctx.rotate(-state.rot * 1.9 + state.drift);
-        ctx.drawImage(plateB, -side * .44, -side * .44, side * .88, side * .88); ctx.restore();
-      };
-      sizeRosette(); drawRosette();
-      window.addEventListener("resize", function () { sizeRosette(); drawRosette(); }, { passive: true });
-      rosette = { state: state, draw: drawRosette };
-    }
-  }
+if (hero && hero.dataset.shot) {
+  // Absolute, deliberately. A relative url() inside a custom property is
+  // resolved against the stylesheet that declares it, and this theme's CSS
+  // lives in assets/ — so "./assets/x.png" would be fetched from
+  // assets/assets/x.png. Shopify's own asset_url is already absolute; this
+  // keeps a local preview honest too.
+  const shotAbs = new URL(hero.dataset.shot, location.href).href;
+  root.style.setProperty('--shot', `url("${shotAbs}")`);
+}
+if (hero) {
+  // where the flacon sits in the photograph, as a percentage
+  if (hero.dataset.fx) root.style.setProperty('--fx', hero.dataset.fx + '%');
+  if (hero.dataset.fy) root.style.setProperty('--fy', hero.dataset.fy + '%');
+}
+if (frame) {
+  const pop = () => { openPinned = true; setOpen(1); };
+  frame.addEventListener('click', pop);
+  frame.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pop(); }
+  });
+}
 
-  /* ── vignette plates behind each product ──────────────────────────── */
-  var vignettes = document.querySelectorAll("canvas[data-vignette]");
-  if (vignettes.length) {
-    var vPlate = engravePlate(Math.round(560 * DPR), {
-      R: 170, r: 31, d: 97, turns: 13, wraps: 13, steps: 900, spread: .07,
-      precess: Math.PI * 2, color: "rgba(201,162,39,ALPHA)", alpha: .3, weight: .85, clear: .36
-    });
-    var paint = function (cv) {
-      var g = cv.getContext("2d"); if (!g) return;
-      cv.width = Math.round((cv.clientWidth || 240) * DPR);
-      cv.height = Math.round((cv.clientHeight || 300) * DPR);
-      var side = Math.max(cv.width, cv.height) * 1.08;
-      g.clearRect(0, 0, cv.width, cv.height);
-      g.drawImage(vPlate, (cv.width - side) / 2, (cv.height - side) / 2, side, side);
-    };
-    requestAnimationFrame(function () { vignettes.forEach(paint); });
-    window.addEventListener("resize", function () { vignettes.forEach(paint); }, { passive: true });
-  }
+/* ── sillage ──────────────────────────────────────────────────────── */
+(function sillage () {
+  const cv = $('[data-sillage]');
+  if (!cv) return;
+  const g = cv.getContext('2d');
+  if (!g) return;
+  let w = 0, h = 0, live = true;
+  const parts = [];
+  const fx = parseFloat(hero?.dataset.fx ?? 23.5) / 100;
+  const fy = parseFloat(hero?.dataset.fy ?? 53) / 100;
 
-  /* ── seal teeth, struck not hand-drawn ────────────────────────────── */
-  var teeth = document.querySelector("[data-seal-teeth]");
-  if (teeth) {
-    var marks = "";
-    for (var i = 0; i < 72; i++) {
-      var ang = (i / 72) * Math.PI * 2, lng = i % 6 === 0 ? 9 : 5;
-      marks += '<line x1="' + (100 + Math.cos(ang) * 70).toFixed(2) +
-               '" y1="' + (100 + Math.sin(ang) * 70).toFixed(2) +
-               '" x2="' + (100 + Math.cos(ang) * (70 + lng)).toFixed(2) +
-               '" y2="' + (100 + Math.sin(ang) * (70 + lng)).toFixed(2) +
-               '" stroke="#c9a227" stroke-width="' + (i % 6 === 0 ? 1.1 : .6) +
-               '" opacity="' + (i % 6 === 0 ? .9 : .5) + '"/>';
-    }
-    teeth.innerHTML = marks;
-  }
+  const size = () => {
+    w = cv.width = Math.round((cv.clientWidth || 300) * DPR);
+    h = cv.height = Math.round((cv.clientHeight || 533) * DPR);
+  };
+  size();
+  addEventListener('resize', size, { passive: true });
 
-  /* ── motion ───────────────────────────────────────────────────────── */
-  var hasGsap = typeof window.gsap !== "undefined";
-
-  if (!still && typeof window.Lenis !== "undefined") {
-    var lenis = new window.Lenis({ lerp: .075, wheelMultiplier: .9 });
-    if (hasGsap && window.ScrollTrigger) {
-      lenis.on("scroll", window.ScrollTrigger.update);
-      window.gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
-      window.gsap.ticker.lagSmoothing(0);
-    } else {
-      requestAnimationFrame(function raf(t) { lenis.raf(t); requestAnimationFrame(raf); });
-    }
-  }
-
-  // The rosette turns whether or not GSAP arrived. It is the page's one
-  // piece of ambient life and it costs two drawImage calls.
-  if (rosette && !still) {
-    var t0 = performance.now();
-    (function spin(now) {
-      var e = (now - t0) / 1000;
-      rosette.state.rot = e * .045;
-      rosette.state.drift = Math.sin(e * .22) * .12;
-      rosette.draw();
-      requestAnimationFrame(spin);
-    })(t0);
-  }
-
-  if (still || !hasGsap) return;
-  var gsap = window.gsap;
-  if (window.ScrollTrigger) gsap.registerPlugin(window.ScrollTrigger);
-
-  // Letters are split only once motion is certain, so the page at rest is
-  // ordinary selectable text.
-  document.querySelectorAll("[data-word]").forEach(function (w) {
-    var txt = w.textContent; w.textContent = "";
-    for (var i = 0; i < txt.length; i++) {
-      var s = document.createElement("span");
-      s.className = "ch"; s.textContent = txt[i]; w.appendChild(s);
-    }
+  const spawn = () => ({
+    x: w * (fx + (Math.random() - 0.5) * 0.10),
+    y: h * (fy - 0.06 + Math.random() * 0.05),
+    r: (0.7 + Math.random() * 2.2) * DPR,
+    vy: -(0.10 + Math.random() * 0.30) * DPR,
+    vx: (Math.random() - 0.5) * 0.10 * DPR,
+    a: 0, life: 0, max: 220 + Math.random() * 260,
+    sway: Math.random() * Math.PI * 2
   });
 
-  if (document.querySelector(".wordmark .ch")) {
-    gsap.timeline()
-      .from(".wordmark .ch", { yPercent: 46, opacity: 0, duration: 1.1, ease: "power3.out", stagger: .032 })
-      .from(".cert-sub", { opacity: 0, y: 10, duration: .8, ease: "power2.out" }, .15)
-      .from(".cert-say", { opacity: 0, duration: 1.2, ease: "power2.out" }, .45)
-      .from(".bearer div", { opacity: 0, y: 14, duration: .7, ease: "power2.out", stagger: .07 }, .6);
+  function frameLoop () {
+    requestAnimationFrame(frameLoop);
+    if (!live) return;
+    const open = parseFloat(getComputedStyle(root).getPropertyValue('--open')) || 0;
+    g.clearRect(0, 0, w, h);
+    if (open < 0.04) { parts.length = 0; return; }
+    if (parts.length < 46 * open) parts.push(spawn());
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i];
+      p.life++; p.sway += 0.012;
+      p.x += p.vx + Math.sin(p.sway) * 0.16 * DPR;
+      p.y += p.vy; p.vy *= 0.9985;
+      const k = p.life / p.max;
+      p.a = Math.sin(Math.min(1, k) * Math.PI) * 0.5 * open;
+      if (k >= 1 || p.y < -20) { parts.splice(i, 1); continue; }
+      const rg = g.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 5);
+      rg.addColorStop(0, `rgba(226,196,152,${p.a})`);
+      rg.addColorStop(1, 'rgba(226,196,152,0)');
+      g.fillStyle = rg;
+      g.beginPath(); g.arc(p.x, p.y, p.r * 5, 0, Math.PI * 2); g.fill();
+    }
   }
-
-  // the issue number is struck, not typed
-  var certno = document.querySelector("[data-certno]");
-  if (certno) {
-    var target = parseInt(certno.getAttribute("data-certno"), 10) || 1247;
-    var issue = { v: 0 };
-    gsap.to(issue, {
-      v: target, duration: 1.8, ease: "power2.out", delay: .5,
-      onUpdate: function () { certno.textContent = String(Math.round(issue.v)).padStart(4, "0"); }
-    });
-  }
-
-  if (!window.ScrollTrigger) return;
-
-  gsap.utils.toArray("[data-rise]").forEach(function (el) {
-    gsap.from(el, { y: 20, opacity: 0, duration: .85, ease: "power2.out",
-      scrollTrigger: { trigger: el, start: "top 88%", once: true } });
-  });
-
-  if (rosette && document.querySelector("[data-cert]")) {
-    gsap.to(rosette.state, { scale: 1.42, ease: "none",
-      scrollTrigger: { trigger: "[data-cert]", start: "top top", end: "bottom top", scrub: .8 } });
-  }
-
-  gsap.utils.toArray(".vignette .lot-art, .frame .lot-art").forEach(function (art) {
-    gsap.from(art, { yPercent: 8, ease: "none",
-      scrollTrigger: { trigger: art, start: "top bottom", end: "bottom top", scrub: 1 } });
-  });
-
-  gsap.utils.toArray(".seal .ink-path").forEach(function (p, i) {
-    var len = p.getTotalLength ? p.getTotalLength() : 600;
-    gsap.fromTo(p, { strokeDasharray: len, strokeDashoffset: len },
-      { strokeDashoffset: 0, duration: 1.6, ease: "power2.inOut", delay: i * .12,
-        scrollTrigger: { trigger: ".seal", start: "top 82%", once: true } });
-  });
-  if (teeth) {
-    gsap.from("[data-seal-teeth] line", {
-      opacity: 0, duration: .5, stagger: { each: .008, from: "random" },
-      scrollTrigger: { trigger: ".seal", start: "top 82%", once: true }
-    });
+  if (!still) requestAnimationFrame(frameLoop);
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(e => { live = e[0].isIntersecting; }).observe(cv);
   }
 })();
+
+/* ── the sloshing rules ───────────────────────────────────────────────
+   A meniscus drawn across the page, pushed by how fast you are
+   scrolling. It overshoots and settles, because liquid does. */
+const liquids = $$('[data-liquid]')
+  .map(cv => { const g = cv.getContext('2d'); return g ? { cv, g, phase: Math.random() * 100, live: true } : null; })
+  .filter(Boolean);
+
+let scrollV = 0, lastY = scrollY;
+
+function drawLiquid (L, t) {
+  const { cv, g } = L;
+  const w = cv.width = Math.round((cv.clientWidth || 800) * DPR);
+  const h = cv.height = Math.round((cv.clientHeight || 76) * DPR);
+  g.clearRect(0, 0, w, h);
+
+  const mid = h * 0.52;
+  const amp = (2.2 + Math.min(16, Math.abs(scrollV) * 0.5)) * DPR;
+  const tilt = clamp(scrollV * 0.22, -10, 10) * DPR;
+  const at = (u) => mid
+    + Math.sin(u * 7.2 + t * 0.9 + L.phase) * amp
+    + Math.sin(u * 17.5 - t * 1.6 + L.phase) * amp * 0.34
+    + (u - 0.5) * tilt;
+
+  g.beginPath();
+  g.moveTo(0, h);
+  for (let x = 0; x <= w; x += 6 * DPR) g.lineTo(x, at(x / w));
+  g.lineTo(w, h); g.closePath();
+  const fill = g.createLinearGradient(0, mid - amp * 2, 0, h);
+  fill.addColorStop(0, 'rgba(216,181,137,.16)');
+  fill.addColorStop(1, 'rgba(216,181,137,0)');
+  g.fillStyle = fill; g.fill();
+
+  g.beginPath();
+  for (let x = 0; x <= w; x += 4 * DPR) { const y = at(x / w); if (x === 0) g.moveTo(x, y); else g.lineTo(x, y); }
+  g.strokeStyle = 'rgba(226,196,152,.5)';
+  g.lineWidth = 1 * DPR;
+  g.stroke();
+}
+
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver(es => {
+    es.forEach(e => { const L = liquids.find(l => l.cv === e.target); if (L) L.live = e.isIntersecting; });
+  }, { rootMargin: '80px' });
+  liquids.forEach(L => io.observe(L.cv));
+}
+
+/* ── guilloché ────────────────────────────────────────────────────────
+   A hypotrochoid swept with a precessing phase, which is how an
+   engine-turning lathe cuts a rosette. Engraved once to an offscreen
+   bitmap at device resolution, then shared by every plate on the page. */
+function engrave (size, o) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  if (!g) return c;
+  const mid = size / 2;
+  const scale = mid * 0.96 / (Math.abs(o.R - o.r) + Math.abs(o.d));
+  g.translate(mid, mid);
+  g.lineWidth = o.weight;
+  g.lineJoin = 'round';
+  for (let p = 0; p < o.turns; p++) {
+    const k = p / o.turns;
+    const dd = o.d * (1 + k * o.spread);
+    const ph = k * o.precess;
+    g.strokeStyle = 'rgba(216,181,137,' + (o.alpha * (1 - k * 0.45)).toFixed(3) + ')';
+    g.beginPath();
+    for (let i = 0; i <= o.steps; i++) {
+      const t = (i / o.steps) * Math.PI * 2 * o.wraps;
+      const a = (o.R - o.r) * Math.cos(t + ph) + dd * Math.cos(((o.R - o.r) / o.r) * t + ph);
+      const b = (o.R - o.r) * Math.sin(t + ph) - dd * Math.sin(((o.R - o.r) / o.r) * t + ph);
+      if (i === 0) g.moveTo(a * scale, b * scale); else g.lineTo(a * scale, b * scale);
+    }
+    g.stroke();
+  }
+  // cleared through the middle, the way a certificate vignette is
+  g.globalCompositeOperation = 'destination-out';
+  const hole = g.createRadialGradient(0, 0, 0, 0, 0, mid * 0.40);
+  hole.addColorStop(0, 'rgba(0,0,0,1)');
+  hole.addColorStop(0.62, 'rgba(0,0,0,.92)');
+  hole.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = hole;
+  g.beginPath(); g.arc(0, 0, mid * 0.40, 0, Math.PI * 2); g.fill();
+  return c;
+}
+
+const plates = $$('[data-plate]');
+if (plates.length) {
+  const plate = engrave(Math.round(520 * DPR), {
+    R: 170, r: 31, d: 97, turns: 13, wraps: 13, steps: 900,
+    spread: 0.07, precess: Math.PI * 2, alpha: 0.30, weight: 0.85
+  });
+  const paint = cv => {
+    const g = cv.getContext('2d'); if (!g) return;
+    cv.width = Math.round((cv.clientWidth || 220) * DPR);
+    cv.height = Math.round((cv.clientHeight || 290) * DPR);
+    const side = Math.max(cv.width, cv.height) * 1.1;
+    g.clearRect(0, 0, cv.width, cv.height);
+    g.drawImage(plate, (cv.width - side) / 2, (cv.height - side) / 2, side, side);
+  };
+  requestAnimationFrame(() => plates.forEach(paint));
+  addEventListener('resize', () => plates.forEach(paint), { passive: true });
+}
+
+/* ── the seal's teeth, struck rather than drawn by hand ─────────────── */
+const teeth = $('[data-seal-teeth]');
+if (teeth) {
+  let m = '';
+  for (let i = 0; i < 72; i++) {
+    const a = (i / 72) * Math.PI * 2, L = i % 6 === 0 ? 9 : 5;
+    m += '<line x1="' + (100 + Math.cos(a) * 70).toFixed(2) +
+         '" y1="' + (100 + Math.sin(a) * 70).toFixed(2) +
+         '" x2="' + (100 + Math.cos(a) * (70 + L)).toFixed(2) +
+         '" y2="' + (100 + Math.sin(a) * (70 + L)).toFixed(2) +
+         '" stroke="#d8b589" stroke-width="' + (i % 6 === 0 ? 1.1 : 0.6) +
+         '" opacity="' + (i % 6 === 0 ? 0.9 : 0.5) + '"/>';
+  }
+  teeth.innerHTML = m;
+}
+
+/* ── the flacon ───────────────────────────────────────────────────── */
+const stage = $('[data-stage]');
+const canvas3d = $('[data-flacon]');
+let flacon = null;
+if (canvas3d) {
+  try {
+    flacon = createFlacon(canvas3d);
+    if (flacon) flacon.setDomain(+(canvas3d.dataset.domain || 1), true);
+  } catch (e) { flacon = null; }
+  if (!flacon && stage) stage.setAttribute('data-fallback', '');
+}
+
+/* Each detail row carries the move it wants the object to make, so a
+   merchant can add, remove or reorder them in the theme editor and the
+   object still answers. */
+let moveTo = null, moveT = 0;
+$$('[data-spec]').forEach(row => {
+  const go = () => {
+    $$('[data-spec]').forEach(r => r.setAttribute('aria-current', String(r === row)));
+    if (!flacon) return;
+    moveTo = {
+      spin:  parseFloat(row.dataset.spin  ?? 0),
+      open:  parseFloat(row.dataset.open  ?? 0),
+      tilt:  parseFloat(row.dataset.tilt  ?? 0),
+      level: parseFloat(row.dataset.level ?? 0.45)
+    };
+    moveT = 0;
+    flacon.state.spinV = 0;
+  };
+  row.addEventListener('mouseenter', go);
+  row.addEventListener('click', go);
+  row.addEventListener('focus', go);
+  row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+});
+
+/* ── choosing a world recolours the object ────────────────────────── */
+const rail = $('[data-rail]');
+function chooseWorld (el, spin) {
+  if (!el || !rail) return;
+  $$('[data-world]', rail).forEach(c => c.setAttribute('aria-current', String(c === el)));
+  if (flacon && el.dataset.i != null) { flacon.setDomain(+el.dataset.i); if (spin) flacon.spinBy(spin); }
+}
+if (rail) {
+  rail.addEventListener('click', e => chooseWorld(e.target.closest('[data-world]'), 0.010));
+  // Whichever card is nearest the rail's centre is the one the object
+  // wears. Scoped to the rail, which is its own scroller — a ScrollTrigger
+  // pointed at it would need a scrollerProxy to behave.
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => {
+      let best = null, bestRatio = 0.55;
+      for (const e of entries) if (e.intersectionRatio > bestRatio) { bestRatio = e.intersectionRatio; best = e.target; }
+      if (best) chooseWorld(best, 0);
+    }, { root: rail, threshold: [0.55, 0.75, 0.95] });
+    $$('[data-world]', rail).forEach(c => io.observe(c));
+  }
+}
+
+/* ── one loop drives everything that is always moving ─────────────── */
+let t0 = performance.now();
+(function tick (now) {
+  requestAnimationFrame(tick);
+  const dt = Math.min(0.05, (now - t0) / 1000); t0 = now;
+  const t = now / 1000;
+
+  const y = scrollY;
+  scrollV += ((y - lastY) - scrollV) * Math.min(1, dt * 12);
+  lastY = y;
+  scrollV *= Math.pow(0.12, dt);
+  if (flacon) flacon.nudge(scrollV * 0.5);
+
+  openNow += (openTarget - openNow) * Math.min(1, dt * (openPinned ? 2.6 : 7));
+  root.style.setProperty('--open', openNow.toFixed(4));
+  if (flacon && !moveTo) flacon.setOpen(openNow * 0.82);
+
+  if (flacon && moveTo) {
+    moveT = Math.min(1, moveT + dt * 1.25);
+    const k = moveT * moveT * (3 - 2 * moveT);
+    const s = flacon.state;
+    const d = ((moveTo.spin - s.spin) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+    s.spin += d * k * 0.12;
+    s.tiltX += (moveTo.tilt - s.tiltX) * k * 0.12;
+    flacon.setOpen(s.open + (moveTo.open - s.open) * k * 0.12);
+    flacon.setLevel(s.level + (moveTo.level - s.level) * k * 0.12);
+    if (moveT >= 1 && Math.abs(d) < 0.02) moveTo = null;
+  }
+
+  if (!still) liquids.forEach(L => { if (L.live) drawLiquid(L, t); });
+})(t0);
+liquids.forEach(L => drawLiquid(L, 0));   // never blank before motion starts
+
+/* ═══ motion, where the libraries arrived ═══════════════════════════ */
+if (!still && typeof window.Lenis !== 'undefined') {
+  const lenis = new window.Lenis({ lerp: 0.078, wheelMultiplier: 0.92 });
+  if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
+    if (window.ScrollTrigger) lenis.on('scroll', window.ScrollTrigger.update);
+    window.gsap.ticker.add(t => lenis.raf(t * 1000));
+    window.gsap.ticker.lagSmoothing(0);
+  } else {
+    const raf = t => { lenis.raf(t); requestAnimationFrame(raf); };
+    requestAnimationFrame(raf);
+  }
+}
+
+if (still || typeof window.gsap === 'undefined') {
+  // No GSAP: show the hero part-warmed, so the page is never stuck
+  // half-told for someone whose CDN is blocked.
+  setOpen(still ? 1 : 0.18);
+} else {
+  const gsap = window.gsap;
+  if (window.ScrollTrigger) gsap.registerPlugin(window.ScrollTrigger);
+
+  // split only once motion is certain; at rest this is ordinary text
+  $$('[data-word]').forEach(w => {
+    const txt = w.textContent; w.textContent = '';
+    for (const ch of txt) {
+      const s = document.createElement('span');
+      s.className = 'ch'; s.textContent = ch; w.appendChild(s);
+    }
+  });
+
+  if ($('.wordmark .ch')) {
+    gsap.timeline()
+      .from('.wordmark .ch', { yPercent: 52, opacity: 0, duration: 1.15, ease: 'power3.out', stagger: 0.03 })
+      .from('[data-frame]', { opacity: 0, scale: 0.94, duration: 1.3, ease: 'power3.out' }, 0.1)
+      .from('.hero-sub', { opacity: 0, y: 10, duration: 0.8, ease: 'power2.out' }, 0.5)
+      .from('.hero-say', { opacity: 0, duration: 1.2, ease: 'power2.out' }, 0.75)
+      .from('.hero-note', { opacity: 0, y: 8, duration: 0.9, ease: 'power2.out' }, 0.95)
+      .from('.scroll-cue', { opacity: 0, duration: 1, ease: 'power2.out' }, 1.15);
+  }
+
+  if (window.ScrollTrigger) {
+    const ST = window.ScrollTrigger;
+
+    if (hero) {
+      ST.create({
+        trigger: hero, start: 'top top', end: 'bottom top', scrub: true,
+        onUpdate: self => { if (!openPinned) setOpen(self.progress * 2.1); }
+      });
+    }
+
+    gsap.utils.toArray('[data-fade]').forEach(el => {
+      gsap.from(el, { y: 18, opacity: 0, duration: 0.9, ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 88%', once: true } });
+    });
+
+    gsap.utils.toArray('[data-line]').forEach((el, i) => {
+      gsap.from(el, { yPercent: 108, duration: 1.05, ease: 'power3.out', delay: i * 0.08,
+        scrollTrigger: { trigger: el.closest('section') || el, start: 'top 72%', once: true } });
+    });
+
+    gsap.utils.toArray('[data-world]').forEach((el, i) => {
+      gsap.from(el, { y: 26, opacity: 0, duration: 0.85, ease: 'power2.out', delay: (i % 5) * 0.06,
+        scrollTrigger: { trigger: rail || el, start: 'top 78%', once: true } });
+    });
+
+    gsap.utils.toArray('.reg-table tbody tr').forEach((el, i) => {
+      gsap.from(el, { opacity: 0, x: -12, duration: 0.6, ease: 'power2.out', delay: i * 0.05,
+        scrollTrigger: { trigger: el.closest('table'), start: 'top 86%', once: true } });
+    });
+
+    gsap.utils.toArray('.seal .ink').forEach((p, i) => {
+      const len = p.getTotalLength ? p.getTotalLength() : 600;
+      gsap.fromTo(p, { strokeDasharray: len, strokeDashoffset: len },
+        { strokeDashoffset: 0, duration: 1.6, ease: 'power2.inOut', delay: i * 0.12,
+          scrollTrigger: { trigger: '.seal', start: 'top 82%', once: true } });
+    });
+    if (teeth) {
+      gsap.from('[data-seal-teeth] line', {
+        opacity: 0, duration: 0.5, stagger: { each: 0.008, from: 'random' },
+        scrollTrigger: { trigger: '.seal', start: 'top 82%', once: true } });
+    }
+
+    if (flacon && stage) {
+      ST.create({
+        trigger: stage.closest('section') || stage, start: 'top 70%', end: 'bottom 40%', scrub: 0.6,
+        onUpdate: self => { if (!moveTo) flacon.setOpen(Math.sin(self.progress * Math.PI)); }
+      });
+    }
+  }
+}

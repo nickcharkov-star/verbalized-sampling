@@ -1,35 +1,67 @@
 # Domain Black — Shopify theme
 
-A complete Shopify Online Store 2.0 theme built around one idea: **a flacon is
-a bearer instrument.** Not a bottle you buy — a lot you hold, recorded in a
-register, issued to whoever carries it.
+A complete Shopify Online Store 2.0 theme for a modern fragrance house.
+Five compositions, one house. Nothing about the product changes: the flacons,
+their names, prices and photography stay the merchant's — the theme only
+frames them.
 
-The look is engraved security printing: guilloché rosettes, a bearer strip of
-facts, a share register, a struck seal. Modern new money, raised by old money.
+It is the same code as the standalone site in `web/`. The stylesheet and the
+behaviour file are shared verbatim, so the two can never drift apart.
 
-**Nothing about the product changes.** The five flacons, their names, prices
-and photography are the merchant's; the theme only frames them.
+---
+
+## What makes it different
+
+**The campaign photograph turns on.** The hero holds one photograph twice —
+cold, and warmed. A visitor presses the flacon (or simply scrolls) and the
+warm copy is revealed outward from the bottle, sillage rising off it, the
+whole room behind warming with it. One custom property, `--open`, drives all
+of it: the mask, the particles, the glow on the tagline and the stone lifting
+off the 3D flacon. The merchant tells the theme where in their photograph the
+flacon sits, so the warmth blooms from the right place.
+
+**The flacon is real geometry, not a sprite sheet.** A squircle body under a
+clearcoat, a knurled gold collar whose fluting is cut into the mesh, a raised
+and bevelled monogram, and a polished stone for a cap — generated from noise
+with the lot number as its seed, so Kingdom's stone is not Sovereign's stone.
+It turns on its own, answers a drag, and rocks its pour when you lift the
+stone. Each detail in the list turns the object to show what it names.
+
+**The rules slosh.** The horizontal rules between sections are a meniscus
+pushed by scroll speed. They overshoot and settle, because liquid does.
+
+**The engraving is drawn, not photographed.** A hypotrochoid swept with a
+precessing phase — how an engine-turning lathe actually cuts a rosette —
+engraved once to an offscreen bitmap at device resolution and shared by every
+plate on the page. Sharp at any size, weighs nothing, recolours from theme
+settings.
 
 ---
 
 ## What is in here
 
 ```
-assets/      domain-black.css   the whole visual system, one file
-             domain-black.js    guilloché engraving + motion
-layout/      theme.liquid       the page frame
-             password.liquid    the pre-launch page
-sections/    domain-certificate the hero: engraved rosette + bearer strip
-             domain-five        the five lots, each in a guilloché vignette
-             domain-register    the share register, driven by inventory
-             domain-seal        the struck seal + sign-up form
+assets/      domain-black.css      the whole visual system, one file
+             domain-black.js       behaviour: engraving, sillage, liquid, motion
+             flacon.js             the flacon in three dimensions
+             three.module.min.js   served from Assets, not a CDN
+             flacon-*.png          the five, pre-rendered, for the empty state
+             campaign-sovereign.png a campaign photograph to start from
+layout/      theme.liquid          the page frame
+             password.liquid       the pre-launch page
+sections/    domain-hero           the campaign photograph, and opening it
+             domain-flacon         the flacon in 3D, with detail blocks
+             domain-five           Five Worlds, from a collection
+             domain-register       the register table
+             domain-rule           a sloshing rule, to drop between sections
+             domain-seal           the struck seal and the sign-up
              header / footer
-             main-*             product, collection, cart, search, page, blog,
-                                article, 404, collections list
-snippets/    domain-scripts     the motion libraries, in one place
-templates/   *.json             which sections each page shows
-             customers/*        account, login, register, orders, addresses
-config/      settings_schema    colours, engraving strength, motion
+             main-*                product, collection, cart, search, page,
+                                   blog, article, 404, collections list
+snippets/    domain-scripts        the import map and the libraries
+templates/   *.json                which sections each page shows
+             customers/*           account, login, register, orders, addresses
+config/      settings_schema       colours, engraving strength, motion
 locales/     en.default.json
 ```
 
@@ -37,103 +69,105 @@ locales/     en.default.json
 
 **As a whole theme**
 
-1. Zip the contents of this folder (the folder's *contents*, not the folder).
-   `domain-black-theme.zip` next to this README is already that zip.
+1. `domain-black-theme.zip` next to this README is the upload.
 2. Shopify admin → **Online Store → Themes → Add theme → Upload zip file**.
-3. **Customize** to set the collection and the copy. Preview before publishing.
+3. **Customize** to choose the campaign photograph, the collection and the
+   copy. Preview before publishing.
 
-**As sections dropped into a theme you already use** (Dawn and any other OS 2.0
-theme)
+**As sections dropped into a theme you already use** (Dawn, or any OS 2.0 theme)
 
-1. Copy `assets/domain-black.css`, `assets/domain-black.js` into `assets/`.
-2. Copy `sections/domain-certificate.liquid`, `domain-five.liquid`,
-   `domain-register.liquid`, `domain-seal.liquid` into `sections/`.
-3. Copy `snippets/domain-scripts.liquid` into `snippets/`, and add
-   `{% render 'domain-scripts' %}` before `</body>` in `layout/theme.liquid`.
-4. Theme editor → **Add section** → the four show up under their own names.
-
-Each `domain-*` section loads the stylesheet itself, so it works dropped into a
-theme whose layout knows nothing about it. Inside this theme the layout loads
-it too; a repeated `<link>` to the same file costs nothing.
+1. Copy `assets/domain-black.css`, `domain-black.js`, `flacon.js`,
+   `three.module.min.js` and the five `flacon-*.png` into `assets/`.
+2. Copy the `domain-*.liquid` sections into `sections/`.
+3. Copy `snippets/domain-scripts.liquid` into `snippets/`, add
+   `{% render 'domain-scripts' %}` before `</body>` and
+   `{{ 'domain-black.css' | asset_url | stylesheet_tag }}` in `<head>`.
+4. Theme editor → **Add section** → they appear under their own names.
 
 ## Setting it up
 
 In **Customize**:
 
-- **Certificate hero** — eyebrow, wordmark, tagline, standfirst, and the four
-  columns of the bearer strip. The issue number counts up on load.
-- **The Five** — choose the collection. Product images are used **as-is**,
-  held inside an engraved vignette; nothing is cropped or recoloured.
-- **The Register** — choose the collection, set the run size and the column
-  headings. Inventory drives the "of run" column; anything unavailable reads
-  *Closed* in oxblood.
-- **Seal** — the sign-up form posts to Shopify customers and tags them
-  `newsletter`.
+- **Hero · campaign** — choose the photograph, then drag the two position
+  sliders until the marker sits on the flacon in your shot. That is where the
+  world warms from.
+- **The Flacon · 3D** — each detail is a block. A block carries the turn,
+  lift, tip and fill it wants, so adding your own detail is a block, not a
+  code change.
+- **Five Worlds** — choose the collection. Product images are used as-is
+  inside an engraved plate; nothing is cropped or recoloured.
+- **The Register** — inventory drives the run column; anything unavailable
+  reads *Closed* in oxblood.
+- **Sloshing rule** — drop between sections; set height and strength.
+- **Seal** — the sign-up posts to Shopify customers, tagged `newsletter`.
 
 ### Optional product metafields
 
-Set these under **Settings → Custom data → Products** and the register and
-product pages fill themselves in. Without them the theme falls back to product
-type, publish year and the section-wide run size — so it is never required.
+Set these under **Settings → Custom data → Products**. Each has a fallback, so
+none is required.
 
 | Namespace & key | Type | Shows as |
 |---|---|---|
-| `domain.accord` | Single line text | The Accord column, and the lot note |
+| `domain.theme` | Single line text | The disposition under the name ("Quiet Authority") |
+| `domain.accord` | Single line text | The note list, comma separated |
+| `domain.line` | Single line text | The one line of copy under the notes |
+| `domain.swatch` | Colour | The card's hover edge, and the register swatch |
 | `domain.vintage` | Single line text | The Vintage column |
-| `domain.swatch` | Colour | The square beside each lot name |
 | `domain.run` | Integer | Overrides the run size for that one lot |
 
-## How the engraving works
+## Motion, WebGL, and doing without either
 
-`domain-black.js` draws a hypotrochoid swept with a slowly precessing phase —
-which is how an engine-turning lathe actually cuts a rosette. Each plate is
-engraved once to an offscreen bitmap at device resolution; the live effect comes
-from compositing two plates turning against each other, so the moiré is real
-interference rather than an animated filter. It costs two `drawImage` calls a
-frame instead of a hundred thousand line segments.
+three.js is served from **Assets** through an import map, not a CDN, so the
+flacon works on a locked-down network. Where WebGL is missing the object is
+replaced by a line of text and the rest of the page is unchanged — the theme
+probes for WebGL before constructing a renderer, so nothing logs an error on
+the way.
 
-It is drawn, not photographed, so it is sharp at any size, weighs nothing, and
-recolours from theme settings.
+GSAP and Lenis load from a CDN in `snippets/domain-scripts.liquid` and are
+**optional at runtime**. Every reveal animates *from* its resting state, so
+the resting state is what a visitor without them sees; smooth scroll falls
+back to the browser's own. `prefers-reduced-motion` is honoured throughout —
+the flacon stops turning, the rules hold still, and the hero shows warmed
+rather than waiting to be opened.
 
-## Motion, and doing without it
-
-GSAP and Lenis load from a CDN in `snippets/domain-scripts.liquid`. Both are
-**optional at runtime**. If a CDN is blocked, the page still renders and reads
-correctly: every reveal animates *from* its resting state, so the resting state
-is what a visitor without the libraries sees, and smooth scroll falls back to
-the browser's own. `prefers-reduced-motion` is honoured throughout — the rosette
-stops turning and nothing slides.
-
-For production, self-host instead: upload `gsap.min.js`, `ScrollTrigger.min.js`
-and `lenis.min.js` to **Assets** and swap the three `<script src>` values in
-`snippets/domain-scripts.liquid` for `{{ 'gsap.min.js' | asset_url }}` and so
-on. The snippet has a comment saying the same.
+For production, self-host GSAP and Lenis too: upload `gsap.min.js`,
+`ScrollTrigger.min.js` and `lenis.min.js` to **Assets** and swap the three
+`<script src>` values in the snippet for `{{ 'gsap.min.js' | asset_url }}`
+and so on.
 
 ## What was checked before this was shared
 
-Run from the repository root:
+From the repository root:
 
 ```
 npm run theme:check     # structural check, exits non-zero on a problem
-npm run theme:preview   # renders the theme to .preview/ against mock store data
+npm run theme:preview   # renders the theme to .preview/ against mock data
 npm run theme:zip       # checks, then rebuilds domain-black-theme.zip
+node scripts/render-flacons.mjs   # re-render the five after a flacon change
 ```
 
-It checks that every required file exists, every JSON file parses, every Liquid
-file parses, every `{% schema %}` is valid JSON, every `section.settings.*` the
-Liquid reads is one the editor can actually set, every section a template orders
-exists, and every `{% render %}` and `{% section %}` points at a real file.
+`theme:check` verifies every required file exists, every JSON and Liquid file
+parses, every `{% schema %}` is valid JSON, every `section.settings.*` the
+Liquid reads is one the editor can actually set, every section a template
+orders exists, and every `{% render %}` and `{% section %}` points at a real
+file.
 
-`theme:preview` renders the sections offline against mock store data, including
-stand-in photography, so the whole page can be loaded in a browser without a
-store. The index and product pages were checked that way in Chromium at
-1440×900 and 390×844: no console errors, no failed requests, no horizontal
-overflow, with and without the motion libraries present.
+`theme:preview` renders the theme offline against a mock store, so the whole
+page can be loaded in a browser without one. It was then checked in Chromium
+at 1440×900 and 390×844, twice: no console errors, no failed requests, no
+horizontal overflow, and nothing left invisible after a full scroll — with
+the motion libraries present, with them blocked, and with WebGL disabled.
+
+A fault that only the theme could show up: `--shot` holds a URL, and a
+relative `url()` inside a custom property resolves against the stylesheet that
+declares it. With the CSS inline on the standalone site that was harmless;
+in the theme, where the CSS lives in `assets/`, it resolved to
+`assets/assets/…` and the photograph 404'd. The URL is made absolute now.
 
 ## Known limits
 
-- The theme has not been run against a live store from this environment — the
-  Shopify connector was not authorised and the storefront was unreachable, so
-  the checks above are structural and visual, not a live install.
-- Copy and the five lot names in the previews are placeholders. Replace them
-  with the real ones in **Customize**; the products themselves are untouched.
+- Not run against a live store from this environment — the Shopify connector
+  was not authorised and the storefront was unreachable, so these checks are
+  structural and visual, not a live install.
+- ES modules need the page served over http(s). Shopify always does; opening
+  the standalone `web/index.html` from `file://` will not load the flacon.

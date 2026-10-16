@@ -11,44 +11,32 @@ const engine = makeEngine('./assets/');
 
 /* ── mock store ──────────────────────────────────────────────────────── */
 const LOTS = [
-  ['Ember',  'Bitter orange, labdanum', 'MMXXVI', '#e2542a', 40, 24000, true,  '#a8360f', '#f07a4e'],
-  ['Noir',   'Haitian vetiver, smoke',  'MMXXVI', '#1d1715', 12, 26000, true,  '#000000', '#4a3f3a'],
-  ['Bone',   'Orris butter, ambrette',  'MMXXV',  '#ece3d6',  0, 24000, false, '#b9ab98', '#ffffff'],
-  ['Cobalt', 'Juniper, sea salt, fig',  'MMXXVI', '#2b4fb0', 74, 24000, true,  '#16296a', '#4a6fd0'],
-  ['Cacao',  'Tonka, suede, cocoa',     'MMXXV',  '#5c3a2a',  6, 28000, true,  '#321d13', '#8a5c42']
+  // [name, accord, vintage, swatch, qty, price(cents), available, theme, line]
+  ['Kingdom',   'Vanilla, Salt, Cannabis, Sandalwood',  'MMXXVI', '#171310', 40, 4000, true,
+   'Quiet Authority',    'For those whose presence speaks before they do.'],
+  ['Sovereign', 'Pomegranate, Orchard Fruits, Cocoa, Rum', 'MMXXVI', '#5b3a25', 12, 4000, true,
+   'Refined Indulgence', 'Luxury without excess.'],
+  ['Celestial', 'Orange, Lemon, Jasmine, Amber, Musk',  'MMXXVI', '#2e5e8e', 74, 4000, true,
+   'Light Beyond Reach', 'A quiet brilliance that never asks to be seen.'],
+  ['Crown',     'Vanilla, Cocoa, Amber, Sugar, Tonka Bean', 'MMXXV', '#e9dfcd', 0, 4000, false,
+   'Comfort Elevated',   'Confidence wrapped in comfort.'],
+  ['Empire',    'Peach, Blood Orange, Rum',             'MMXXV',  '#d9732a',  6, 4000, true,
+   'Magnetic Arrival',   'Every entrance deserves a signature.']
 ];
 
-/* Stand-in photography. A real store supplies its own; these exist so the
-   theme can be rendered and looked at without one. */
-const flacon = (lo, body, hi, i) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="300" height="400">
-<defs>
-<linearGradient id="b${i}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${lo}"/><stop offset=".34" stop-color="${body}"/><stop offset=".62" stop-color="${hi}"/><stop offset="1" stop-color="${lo}"/></linearGradient>
-<linearGradient id="c${i}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${hi}"/><stop offset=".5" stop-color="${body}"/><stop offset="1" stop-color="${lo}"/></linearGradient>
-<linearGradient id="k${i}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8f6f18"/><stop offset=".3" stop-color="#e8cf72"/><stop offset=".55" stop-color="#c9a227"/><stop offset="1" stop-color="#8a6a16"/></linearGradient>
-</defs>
-<path d="M150 28c34 0 62 17 62 40 0 16-13 25-28 28-12 2-20 6-34 6s-22-4-34-6c-15-3-28-12-28-28 0-23 28-40 62-40z" fill="url(#c${i})"/>
-<ellipse cx="128" cy="52" rx="20" ry="9" fill="#fff" opacity=".2"/>
-<rect x="128" y="100" width="44" height="12" rx="2" fill="url(#k${i})"/>
-<rect x="124" y="112" width="52" height="9" rx="2" fill="url(#k${i})"/>
-<rect x="62" y="121" width="176" height="248" rx="10" fill="url(#b${i})"/>
-<rect x="62" y="121" width="30" height="248" rx="10" fill="#000" opacity=".18"/>
-<rect x="104" y="131" width="18" height="228" rx="9" fill="#fff" opacity=".13"/>
-<g fill="url(#k${i})" opacity=".95">
-<path d="M126 196c-13 0-23 10-23 23s10 23 23 23c6 0 11-2 15-6v5h13v-74h-13v33c-4-3-9-4-15-4zm2 12c7 0 12 5 12 11s-5 11-12 11-12-5-12-11 5-11 12-11z"/>
-<path d="M166 167v74h13v-5c4 4 9 6 15 6 13 0 23-10 23-23s-10-23-23-23c-6 0-11 1-15 4v-33zm28 41c7 0 12 5 12 11s-5 11-12 11-12-5-12-11 5-11 12-11z"/>
-<rect x="140" y="160" width="4" height="88" transform="rotate(16 142 204)"/></g></svg>`;
-
-const products = LOTS.map(([name, accord, vintage, swatch, qty, price, available]) => ({
-  title: `The ${name}`,
+const products = LOTS.map(([name, accord, vintage, swatch, qty, price, available, theme, line]) => ({
+  title: name,
   handle: name.toLowerCase(),
   url: `/products/${name.toLowerCase()}`,
   type: 'Extrait de parfum',
-  price,
-  available,
+  price, available,
   published_at: '2026-02-01',
-  featured_image: { src: `./fixtures/${name.toLowerCase()}.svg`, alt: `The ${name} flacon` },
+  // the house's own renders stand in for merchant photography; a real store
+  // supplies its own, and the section uses whatever it finds as-is
+  featured_image: { src: `./assets/flacon-${name.toLowerCase()}.png`, alt: `The ${name} flacon` },
   variants: [{ inventory_quantity: qty }],
-  metafields: { domain: { accord, vintage, swatch, run: name === 'Bone' || name === 'Cacao' ? '90' : null } }
+  metafields: { domain: { accord, vintage, swatch, theme, line,
+                          run: available ? null : '90' } }
 }));
 
 const scope = {
@@ -105,6 +93,13 @@ for (const [key, node] of queue) {
   if (process.env.DB_COLLECTION && declaredHas(schema, 'collection')) {
     settings.collection = process.env.DB_COLLECTION;
   }
+  // an image_picker is empty until a merchant chooses one; stand one in so
+  // the preview exercises the populated path rather than the empty state
+  for (const s of schema.settings || []) {
+    if (s.type === 'image_picker' && s.id && settings[s.id] === undefined) {
+      settings[s.id] = { src: './assets/campaign-sovereign.png', alt: 'Campaign photograph', width: 270, height: 480 };
+    }
+  }
 
   // Every id the Liquid reads must exist in the schema, or the editor can
   // never set it and the storefront silently renders a blank.
@@ -142,16 +137,12 @@ const html = `<!doctype html>
 </head>
 <body class="template-${TEMPLATE}">
 ${body}
-<script src="./assets/domain-black.js" defer></script>
+<script type="importmap">{ "imports": { "three": "./assets/three.module.min.js" } }</script>
+<script type="module" src="./assets/domain-black.js"></script>
 </body>
 </html>`;
 
 mkdirSync(join(OUT, 'assets'), { recursive: true });
-mkdirSync(join(OUT, 'fixtures'), { recursive: true });
-LOTS.forEach(([name, , , , , , , lo, hi], i) => {
-  const [, , , body] = LOTS[i];
-  writeFileSync(join(OUT, 'fixtures', `${name.toLowerCase()}.svg`), flacon(lo, body, hi, i));
-});
 for (const f of readdirSync(join(THEME, 'assets'))) {
   copyFileSync(join(THEME, 'assets', f), join(OUT, 'assets', f));
 }

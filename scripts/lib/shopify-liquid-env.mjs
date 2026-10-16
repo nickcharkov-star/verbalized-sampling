@@ -127,6 +127,7 @@ export function makeEngine (assetBase = './assets/') {
   engine.registerFilter('placeholder_svg_tag', (s) => `<svg class="${s}"></svg>`);
   engine.registerFilter('inline_asset_content', (s) => String(s));
   engine.registerFilter('metafield_text', (s) => String(s));
+  engine.registerFilter('json', (v) => JSON.stringify(v));
   engine.registerFilter('default_errors', (e) => (e ? String(e) : ''));
   engine.registerFilter('format_address', (a) => {
     if (!a) return '';

@@ -1,0 +1,95 @@
+{%- comment -%}
+  The campaign photograph, and the moment it turns on: the visitor opens
+  the flacon and the room warms out from the bottle. The merchant supplies
+  the photograph and says where in it the flacon sits, so the warmth blooms
+  from the right place rather than from the middle of the frame.
+{%- endcomment -%}
+
+{%- assign shot = section.settings.shot -%}
+{%- if shot -%}{%- assign shot_url = shot | image_url: width: 900 -%}{%- endif -%}
+
+<section class="hero band" id="section-{{ section.id }}"
+         data-hero
+         data-shot="{{ shot_url }}"
+         data-fx="{{ section.settings.flacon_x }}"
+         data-fy="{{ section.settings.flacon_y }}">
+
+  <div class="hero-world" aria-hidden="true"></div>
+  <div class="hero-vig" aria-hidden="true"></div>
+
+  <div class="hero-in">
+    {%- if shot -%}
+      <div class="frame" data-frame role="button" tabindex="0"
+           aria-label="{{ section.settings.open_label | escape }}">
+        {{ shot | image_url: width: 900 | image_tag:
+             class: 'shot-cold', widths: '300, 500, 700, 900',
+             sizes: '(min-width: 940px) 30vw, 68vw', alt: '', aria-hidden: 'true' }}
+        {{ shot | image_url: width: 900 | image_tag:
+             class: 'shot-warm', widths: '300, 500, 700, 900',
+             sizes: '(min-width: 940px) 30vw, 68vw',
+             alt: shot.alt | default: section.settings.wordmark }}
+        <canvas data-sillage aria-hidden="true"></canvas>
+        <div class="frame-grain" aria-hidden="true"></div>
+        <span class="tap" aria-hidden="true"></span>
+        <span class="tap-label" aria-hidden="true">{{ section.settings.open_label | escape }}</span>
+      </div>
+    {%- else -%}
+      {%- comment -%} No photograph chosen yet: show the shape of the slot. {%- endcomment -%}
+      <div class="frame" aria-hidden="true" style="display:grid;place-items:center">
+        <span class="eyebrow" style="text-align:center;padding:1.4rem">
+          Choose a campaign photograph in the theme editor
+        </span>
+      </div>
+    {%- endif -%}
+
+    <div class="hero-type">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="hero-sub">{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+      <h1 class="display wordmark" aria-label="{{ section.settings.wordmark | escape }}">
+        {%- assign parts = section.settings.wordmark | split: ' ' -%}
+        {%- for part in parts -%}
+          <span data-word>{{ part }}</span>{% unless forloop.last %} {% endunless %}
+        {%- endfor -%}
+      </h1>
+      {%- if section.settings.tagline != blank -%}
+        <p class="script hero-say">{{ section.settings.tagline | escape }}</p>
+      {%- endif -%}
+      {%- if section.settings.note != blank -%}
+        <p class="hero-note">{{ section.settings.note | escape }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- if section.settings.show_cue -%}
+    <div class="scroll-cue" aria-hidden="true"><i></i><span>{{ section.settings.cue | escape }}</span></div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Hero · campaign",
+  "tag": "section",
+  "class": "domain-section",
+  "settings": [
+    { "type": "image_picker", "id": "shot", "label": "Campaign photograph",
+      "info": "Used three ways: blurred as the room behind everything, cold in the frame, and warmed as the visitor opens it. A portrait crop reads best." },
+    { "type": "range", "id": "flacon_x", "label": "Flacon position — across", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 24,
+      "info": "Where the flacon sits in the photograph. The warmth blooms out from here." },
+    { "type": "range", "id": "flacon_y", "label": "Flacon position — down", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 53 },
+
+    { "type": "header", "content": "Lockup" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "A Modern Fragrance House" },
+    { "type": "text", "id": "wordmark", "label": "Wordmark", "default": "Domain Black",
+      "info": "Each word animates in separately on load." },
+    { "type": "text", "id": "tagline", "label": "Tagline (script face)", "default": "It’s Yours." },
+    { "type": "text", "id": "note", "label": "Note", "default": "Five compositions · One House" },
+
+    { "type": "header", "content": "Invitation" },
+    { "type": "text", "id": "open_label", "label": "Open label", "default": "Open it" },
+    { "type": "checkbox", "id": "show_cue", "label": "Show the scroll cue", "default": true },
+    { "type": "text", "id": "cue", "label": "Scroll cue", "default": "Scroll" }
+  ],
+  "presets": [{ "name": "Hero · campaign" }]
+}
+{% endschema %}

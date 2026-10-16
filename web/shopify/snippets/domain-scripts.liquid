@@ -1,18 +1,26 @@
 {%- comment -%}
-  Motion libraries + theme behaviour.
+  Motion libraries, the 3D flacon, and theme behaviour.
 
   Include once per page, just before </body>:
       {% render 'domain-scripts' %}
 
-  Both libraries are optional at runtime. If a CDN is blocked the page
-  still renders and reads correctly — smooth scroll falls back to the
-  browser's own and every reveal is already in its resting state.
+  three.js is served from Assets, not a CDN, and reached through an
+  import map — so the flacon works on a locked-down network and nothing
+  silently half-loads. GSAP and Lenis are optional at runtime: with a
+  blocked CDN the page still renders and reads correctly, because every
+  reveal animates *from* its resting state.
 
-  To self-host instead (recommended for production): upload gsap.min.js,
-  ScrollTrigger.min.js and lenis.min.js to Assets and swap the three
-  <script src> values for {{ 'gsap.min.js' | asset_url }} and so on.
+  To self-host GSAP and Lenis too (recommended for production): upload
+  gsap.min.js, ScrollTrigger.min.js and lenis.min.js to Assets and swap
+  the three <script src> values for {{ 'gsap.min.js' | asset_url }} and
+  so on.
 {%- endcomment -%}
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script>
-<script src="{{ 'domain-black.js' | asset_url }}" defer></script>
+
+<script type="importmap">
+{ "imports": { "three": {{ 'three.module.min.js' | asset_url | json }} } }
+</script>
+<script type="module" src="{{ 'domain-black.js' | asset_url }}"></script>
