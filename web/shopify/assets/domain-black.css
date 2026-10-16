@@ -263,12 +263,34 @@ header.nav > *{pointer-events:auto}
   border-color:color-mix(in srgb,var(--w) 55%,transparent);transform:translateY(-5px);
 }
 .world-plate canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.46}
-.world-art{
-  position:relative;z-index:1;width:88%;height:auto;
-  filter:drop-shadow(0 20px 34px rgba(0,0,0,.65));
-  transition:transform 1.1s cubic-bezier(.16,1,.3,1);
+.world-plate{aspect-ratio:4/5}
+/* The composition's own lacquer, lit from the top-left the way the
+   bottle is. No photograph of a bottle that was never photographed —
+   the real pack shot drops into this plate the moment it exists. */
+.world-field{
+  position:absolute;inset:0;z-index:1;
+  background:
+    radial-gradient(118% 92% at 26% 14%,
+      color-mix(in srgb, var(--w) 72%, #fff 26%) 0%,
+      color-mix(in srgb, var(--w) 94%, #000 6%) 46%,
+      color-mix(in srgb, var(--w) 62%, #000 38%) 100%);
+  opacity:.9;
+  transition:opacity .8s, transform 1.1s cubic-bezier(.16,1,.3,1);
 }
-.world:hover .world-art,.world[aria-current="true"] .world-art{transform:translateY(-5px) scale(1.035)}
+.world:hover .world-field,.world[aria-current="true"] .world-field{opacity:1;transform:scale(1.015)}
+.world-plate::after{
+  content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(to bottom, transparent 44%, rgba(8,6,5,.62) 100%);
+}
+.world-num{z-index:3;color:var(--paper);mix-blend-mode:difference;font-size:.9rem}
+.world-world{font-size:.7rem;color:var(--paper-dim);line-height:1.5;margin-top:.2rem}
+.world-price{
+  font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--gold-deep);margin-top:.35rem;font-variant-numeric:tabular-nums;
+}
+/* the merchant's own photograph, when there is one, sits over the field */
+.world-art{position:relative;z-index:2;width:88%;height:auto;filter:drop-shadow(0 20px 34px rgba(0,0,0,.65));transition:transform 1.1s cubic-bezier(.16,1,.3,1)}
+.world:hover .world-art{transform:translateY(-5px) scale(1.035)}
 .world-num{
   position:absolute;left:.7rem;top:.55rem;z-index:2;font-family:var(--display);
   font-size:.8rem;letter-spacing:.14em;color:var(--paper-dim);
@@ -384,6 +406,24 @@ header.nav > *{pointer-events:auto}
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 @media (max-width:640px){ .moves .mv-d{display:none} .moves .mv-t{font-size:.66rem} }
 
+
+/* ═══ 3 · the campaign, shown as shot ═══════════════════════════════ */
+.campaign{padding-block:clamp(3rem,9vh,6rem)}
+.campaign-grid{
+  display:grid;gap:clamp(1.6rem,5vw,4rem);align-items:center;
+  grid-template-columns:1fr;
+}
+@media (min-width:880px){ .campaign-grid{grid-template-columns:auto minmax(0,1fr)} }
+.campaign-plate{margin:0;display:grid;gap:.8rem;justify-items:center}
+.campaign-plate img{
+  width:min(80vw,330px);height:auto;display:block;
+  border:1px solid var(--line);
+  box-shadow:0 44px 90px -34px rgba(0,0,0,.92), 0 0 0 1px rgba(216,181,137,.07);
+}
+.campaign-plate figcaption{
+  font-size:.58rem;letter-spacing:.26em;text-transform:uppercase;color:var(--paper-dim);
+}
+.campaign-side{min-width:0}
 
 /* ═══════════════════════════════════════════════════════════════════
    STOREFRONT — the pages beyond the landing page.

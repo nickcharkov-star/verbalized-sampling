@@ -30,13 +30,17 @@
             <a href="{{ product.url }}" class="world-plate" aria-label="{{ product.title | escape }}">
               <span class="world-num">{{ numerals[forloop.index0] }}</span>
               <canvas data-plate aria-hidden="true"></canvas>
+              {%- comment -%}
+                The merchant's own photograph, used as-is. With no photograph
+                the plate is the composition's own colour — never a drawing of
+                a bottle that was not photographed.
+              {%- endcomment -%}
+              <span class="world-field" aria-hidden="true"></span>
               {%- if product.featured_image -%}
                 {{ product.featured_image | image_url: width: 900 | image_tag:
                      class: 'world-art', loading: 'lazy',
                      widths: '240, 360, 540, 720, 900',
                      sizes: '(min-width: 900px) 20vw, 60vw', alt: alt }}
-              {%- else -%}
-                <span class="world-art lot-empty" aria-hidden="true"></span>
               {%- endif -%}
             </a>
             <div class="world-meta">
@@ -56,9 +60,15 @@
               {%- endif -%}
               {%- if product.metafields.domain.line != blank -%}
                 <span class="world-line">{{ product.metafields.domain.line }}</span>
-              {%- else -%}
-                <span class="world-line">{{ product.price | money }}</span>
               {%- endif -%}
+              {%- if product.metafields.domain.world != blank -%}
+                <span class="world-world">{{ product.metafields.domain.world }}</span>
+              {%- endif -%}
+              {%- assign v = product.selected_or_first_available_variant -%}
+              <span class="world-price">
+                {%- if v.title != blank and v.title != 'Default Title' -%}{{ v.title }} &middot; {% endif -%}
+                {{ product.price | money }}
+              </span>
             </div>
           </article>
         {%- endfor -%}
@@ -78,13 +88,12 @@
             <div class="world-plate">
               <span class="world-num">{{ numerals[forloop.index0] }}</span>
               <canvas data-plate aria-hidden="true"></canvas>
-              <img class="world-art" loading="lazy" decoding="async"
-                   src="{{ 'flacon-' | append: h | append: '.png' | asset_url }}"
-                   alt="The {{ names[forloop.index0] }} flacon">
+              <span class="world-field" aria-hidden="true"></span>
             </div>
             <div class="world-meta">
               <span class="world-name">{{ names[forloop.index0] }}</span>
               <span class="world-theme">Choose a collection</span>
+              <span class="world-price">20&thinsp;ml &middot; $40</span>
             </div>
           </article>
         {%- endfor -%}
@@ -105,7 +114,7 @@
       "info": "Product images are used as-is, held inside an engraved plate." },
     { "type": "range", "id": "count", "label": "Products shown", "min": 3, "max": 12, "step": 1, "default": 5 },
     { "type": "header", "content": "Metafields" },
-    { "type": "paragraph", "content": "Optional product metafields in the “domain” namespace fill the card: domain.theme (a short disposition, e.g. Quiet Authority), domain.accord (a comma-separated note list), domain.line (one line of copy), domain.swatch (a colour, used for the card’s hover edge). Without them the card falls back to product type and price." }
+    { "type": "paragraph", "content": "Optional product metafields in the “domain” namespace fill the card: domain.theme (a short disposition, e.g. Quiet Authority), domain.accord (a comma-separated note list), domain.line (one line of copy), domain.world (the room it evokes), domain.swatch (a colour, used for the card’s plate and hover edge). Without them the card falls back to product type and price." }
   ],
   "presets": [{ "name": "Five Worlds" }]
 }

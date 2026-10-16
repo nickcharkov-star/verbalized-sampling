@@ -50,15 +50,6 @@ export const MOVEMENTS = [
   { id: 'sillage', num: 'II',  name: 'Sillage',  note: 'The springs let go' },
   { id: 'relief',  num: 'III', name: 'Relief',   note: 'Luminance becomes depth' },
   { id: 'five',    num: 'IV',  name: 'The Five', note: 'Sorted into the collection' },
-  { id: 'flacon',  num: 'V',   name: 'Flacon',   note: 'One bottle, lit by its own pixels' }
+  { id: 'flacon',  num: 'V',   name: 'Flacon',   note: 'The bottle, lit by its own pixels' }
 ];
 
-/* How the object should stand when each detail of the flacon is named. */
-export const DETAIL_MOVES = [
-  { spin: 0.00, open: 1.00, tilt: -0.10, level: 0.45 },   // the stone
-  { spin: 0.10, open: 0.85, tilt: -0.22, level: 0.45 },   // the collar
-  { spin: 0.00, open: 0.00, tilt:  0.00, level: 0.45 },   // the monogram
-  { spin: 1.57, open: 0.00, tilt:  0.06, level: 0.45 },   // the squircle
-  { spin: 0.70, open: 0.00, tilt: -0.05, level: 0.45 },   // the lacquer
-  { spin: 0.25, open: 1.00, tilt:  0.26, level: 0.80 }    // the pour
-];

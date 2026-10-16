@@ -3,19 +3,18 @@
 
    Liquid renders every word and every photograph. This file only draws
    what cannot be written down: the engraving, the sloshing rules, the
-   sillage, and the flacon in three dimensions.
+   sillage, and the photograph taken apart to pixels.
 
-   Everything here degrades. The flacon needs WebGL; the reveals need
-   GSAP; the smooth scroll needs Lenis. With none of them the page is
+   Everything here degrades. The pixel field needs WebGL 2; the reveals
+   need GSAP; the smooth scroll needs Lenis. With none of them the page is
    still the page, because every reveal animates *from* its resting
    state — so the resting state is what a visitor without them sees.
    ═══════════════════════════════════════════════════════════════════════ */
 /* The only static import is the catalogue, which depends on nothing.
-   three.js is 687 KB; importing the flacon and the pixel field statically
-   meant one failed request took this whole module down with it — and with
-   it every reveal, the seal, the engraving, the sloshing rules. They are
-   loaded dynamically below, after the page already reads, so a failure
-   costs exactly the thing that failed. */
+   The pixel field is 35 KB of raw WebGL 2, and is still imported
+   dynamically: a static import would put every reveal, the seal, the
+   engraving and the sloshing rules behind one request, and a page that
+   loses that request loses all of them, silently. */
 import { MOVEMENTS } from './catalogue.js';
 
 function showFallback (sel, why) {
@@ -351,56 +350,14 @@ if (teeth) {
   teeth.innerHTML = m;
 }
 
-/* ── the flacon ───────────────────────────────────────────────────── */
-const stage = $('[data-stage]');
-const canvas3d = $('[data-flacon]');
-let flacon = null;
-
-if (canvas3d) (async () => {
-  try {
-    const { createFlacon } = await import('./flacon.js');
-    flacon = createFlacon(canvas3d);
-    if (flacon) { flacon.setDomain(+(canvas3d.dataset.domain || 1), true); return; }
-    showFallback('[data-stage]',
-      'This browser cannot run WebGL, so the flacon does not turn here. Everything else on this page reads the same.');
-  } catch (e) {
-    showFallback('[data-stage]',
-      'The 3D flacon could not be loaded. Everything else on this page reads the same.');
-  }
-})();
-
-/* Each detail row carries the move it wants the object to make, so a
-   merchant can add, remove or reorder them in the theme editor and the
-   object still answers. */
-let moveTo = null, moveT = 0;
-$$('[data-spec]').forEach(row => {
-  const go = () => {
-    $$('[data-spec]').forEach(r => r.setAttribute('aria-current', String(r === row)));
-    if (!flacon) return;
-    moveTo = {
-      spin:  parseFloat(row.dataset.spin  ?? 0),
-      open:  parseFloat(row.dataset.open  ?? 0),
-      tilt:  parseFloat(row.dataset.tilt  ?? 0),
-      level: parseFloat(row.dataset.level ?? 0.45)
-    };
-    moveT = 0;
-    flacon.state.spinV = 0;
-  };
-  row.addEventListener('mouseenter', go);
-  row.addEventListener('click', go);
-  row.addEventListener('focus', go);
-  row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
-});
-
-/* ── choosing a world recolours the object ────────────────────────── */
+/* ── whichever card is nearest the rail's centre is marked current ─── */
 const rail = $('[data-rail]');
-function chooseWorld (el, spin) {
+function chooseWorld (el) {
   if (!el || !rail) return;
   $$('[data-world]', rail).forEach(c => c.setAttribute('aria-current', String(c === el)));
-  if (flacon && el.dataset.i != null) { flacon.setDomain(+el.dataset.i); if (spin) flacon.spinBy(spin); }
 }
 if (rail) {
-  rail.addEventListener('click', e => chooseWorld(e.target.closest('[data-world]'), 0.010));
+  rail.addEventListener('click', e => chooseWorld(e.target.closest('[data-world]')));
   // Whichever card is nearest the rail's centre is the one the object
   // wears. Scoped to the rail, which is its own scroller — a ScrollTrigger
   // pointed at it would need a scrollerProxy to behave.
@@ -408,7 +365,7 @@ if (rail) {
     const io = new IntersectionObserver(entries => {
       let best = null, bestRatio = 0.55;
       for (const e of entries) if (e.intersectionRatio > bestRatio) { bestRatio = e.intersectionRatio; best = e.target; }
-      if (best) chooseWorld(best, 0);
+      if (best) chooseWorld(best);
     }, { root: rail, threshold: [0.55, 0.75, 0.95] });
     $$('[data-world]', rail).forEach(c => io.observe(c));
   }
@@ -425,23 +382,10 @@ let t0 = performance.now();
   scrollV += ((y - lastY) - scrollV) * Math.min(1, dt * 12);
   lastY = y;
   scrollV *= Math.pow(0.12, dt);
-  if (flacon) flacon.nudge(scrollV * 0.5);
 
   openNow += (openTarget - openNow) * Math.min(1, dt * (openPinned ? 2.6 : 7));
   root.style.setProperty('--open', openNow.toFixed(4));
-  if (flacon && !moveTo) flacon.setOpen(openNow * 0.82);
 
-  if (flacon && moveTo) {
-    moveT = Math.min(1, moveT + dt * 1.25);
-    const k = moveT * moveT * (3 - 2 * moveT);
-    const s = flacon.state;
-    const d = ((moveTo.spin - s.spin) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
-    s.spin += d * k * 0.12;
-    s.tiltX += (moveTo.tilt - s.tiltX) * k * 0.12;
-    flacon.setOpen(s.open + (moveTo.open - s.open) * k * 0.12);
-    flacon.setLevel(s.level + (moveTo.level - s.level) * k * 0.12);
-    if (moveT >= 1 && Math.abs(d) < 0.02) moveTo = null;
-  }
 
   // the photograph's movement is just where you are in its section
   if (pf) {
@@ -539,11 +483,5 @@ if (still || typeof window.gsap === 'undefined') {
         scrollTrigger: { trigger: '.seal', start: 'top 82%', once: true } });
     }
 
-    if (flacon && stage) {
-      ST.create({
-        trigger: stage.closest('section') || stage, start: 'top 70%', end: 'bottom 40%', scrub: 0.6,
-        onUpdate: self => { if (!moveTo) flacon.setOpen(Math.sin(self.progress * Math.PI)); }
-      });
-    }
   }
 }

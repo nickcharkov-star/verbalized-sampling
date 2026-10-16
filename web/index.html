@@ -7,7 +7,9 @@
 <meta name="description" content="A modern fragrance house. Five compositions, one house.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Jost:wght@200;300;400;500&family=Pinyon+Script&display=swap">
+<link rel="preload" as="image" href="./assets/campaign-sovereign.png" crossorigin="anonymous" fetchpriority="high">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Jost:wght@200;300;400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pinyon+Script&text=It%E2%80%99s%20Your.&display=swap">
 
 <style>
 :root{
@@ -99,7 +101,7 @@ header.nav > *{pointer-events:auto}
    270px social frame, so at this scale only the blur is honest */
 .hero-world{
   position:absolute;inset:-12%;z-index:0;
-  background-image:var(--shot);background-size:cover;background-position:52% 42%;
+  object-fit:cover;object-position:52% 42%;
   filter:blur(46px) saturate(calc(.5 + var(--open) * .85)) brightness(calc(.46 + var(--open) * .30));
   transform:scale(1.18) translateY(calc(var(--open) * -1.4%));
   transition:filter .2s linear;
@@ -257,38 +259,23 @@ header.nav > *{pointer-events:auto}
 .belief em{display:block;font-style:italic;font-size:.56em;color:var(--paper-dim);margin-top:.9rem;line-height:1.35}
 .belief .sig{margin-top:2.2rem;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--paper-dim)}
 
-/* ═══ 3 · the flacon, in three dimensions ═══════════════════════════ */
-.object{position:relative;padding-block:clamp(2rem,6vh,4rem)}
-.object-grid{
-  display:grid;gap:clamp(1.4rem,4vw,3rem);align-items:center;
+/* ═══ 3 · the campaign, shown as shot ═══════════════════════════════ */
+.campaign{padding-block:clamp(3rem,9vh,6rem)}
+.campaign-grid{
+  display:grid;gap:clamp(1.6rem,5vw,4rem);align-items:center;
   grid-template-columns:1fr;
 }
-@media (min-width:940px){ .object-grid{grid-template-columns:1.05fr .95fr} }
-.stage{
-  position:relative;aspect-ratio:4/5;width:100%;max-width:620px;margin-inline:auto;
+@media (min-width:880px){ .campaign-grid{grid-template-columns:auto minmax(0,1fr)} }
+.campaign-plate{margin:0;display:grid;gap:.8rem;justify-items:center}
+.campaign-plate img{
+  width:min(80vw,330px);height:auto;display:block;
+  border:1px solid var(--line);
+  box-shadow:0 44px 90px -34px rgba(0,0,0,.92), 0 0 0 1px rgba(216,181,137,.07);
 }
-.stage canvas{width:100%;height:100%;display:block}
-.stage-fallback{
-  position:absolute;inset:0;display:none;place-items:center;text-align:center;
-  padding:2rem;color:var(--paper-dim);font-size:.8rem;
+.campaign-plate figcaption{
+  font-size:.58rem;letter-spacing:.26em;text-transform:uppercase;color:var(--paper-dim);
 }
-.stage[data-fallback] .stage-fallback{display:grid}
-
-/* the annotations: the detail count, made visible */
-.spec{display:grid;gap:0;border-top:1px solid var(--line-soft)}
-.spec-row{
-  display:grid;grid-template-columns:2.4rem 1fr;gap:1rem;align-items:baseline;
-  padding:.95rem .2rem;border-bottom:1px solid var(--line-soft);
-  cursor:pointer;transition:background .5s,padding-left .5s;
-}
-.spec-row:hover,.spec-row[aria-current="true"]{background:color-mix(in srgb,var(--paper) 4%,transparent);padding-left:.7rem}
-.spec-n{font-family:var(--display);font-size:.78rem;color:var(--gold);letter-spacing:.06em}
-.spec-t{font-size:.86rem;letter-spacing:.02em}
-.spec-d{display:block;font-size:.72rem;color:var(--paper-dim);margin-top:.18rem;letter-spacing:.02em}
-
-.hint{display:flex;gap:.5rem;align-items:center;margin-top:1.3rem;
-  font-size:.58rem;letter-spacing:.26em;text-transform:uppercase;color:var(--paper-dim)}
-.hint span{width:22px;height:1px;background:var(--gold)}
+.campaign-side{min-width:0}
 
 /* ═══ 4 · five worlds ═══════════════════════════════════════════════ */
 .worlds{padding-block:clamp(3rem,9vh,6rem)}
@@ -312,12 +299,31 @@ header.nav > *{pointer-events:auto}
   border-color:color-mix(in srgb,var(--w) 55%,transparent);transform:translateY(-5px);
 }
 .world-plate canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.46}
-.world-art{
-  position:relative;z-index:1;width:88%;height:auto;
-  filter:drop-shadow(0 20px 34px rgba(0,0,0,.65));
-  transition:transform 1.1s cubic-bezier(.16,1,.3,1);
+.world-plate{aspect-ratio:4/5}
+/* The composition's own lacquer, lit from the top-left the way the
+   bottle is. No photograph of a bottle that was never photographed —
+   the real pack shot drops into this plate the moment it exists. */
+.world-field{
+  position:absolute;inset:0;z-index:1;
+  background:
+    radial-gradient(118% 92% at 26% 14%,
+      color-mix(in srgb, var(--w) 72%, #fff 26%) 0%,
+      color-mix(in srgb, var(--w) 94%, #000 6%) 46%,
+      color-mix(in srgb, var(--w) 62%, #000 38%) 100%);
+  opacity:.9;
+  transition:opacity .8s, transform 1.1s cubic-bezier(.16,1,.3,1);
 }
-.world:hover .world-art,.world[aria-current="true"] .world-art{transform:translateY(-5px) scale(1.035)}
+.world:hover .world-field,.world[aria-current="true"] .world-field{opacity:1;transform:scale(1.015)}
+.world-plate::after{
+  content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(to bottom, transparent 44%, rgba(8,6,5,.62) 100%);
+}
+.world-num{z-index:3;color:var(--paper);mix-blend-mode:difference;font-size:.9rem}
+.world-world{font-size:.7rem;color:var(--paper-dim);line-height:1.5;margin-top:.2rem}
+.world-price{
+  font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--gold-deep);margin-top:.35rem;font-variant-numeric:tabular-nums;
+}
 .world-num{
   position:absolute;left:.7rem;top:.55rem;z-index:2;font-family:var(--display);
   font-size:.8rem;letter-spacing:.14em;color:var(--paper-dim);
@@ -393,7 +399,7 @@ header.nav > *{pointer-events:auto}
   <a href="#main" class="mark">DOMAIN BLACK</a>
   <nav>
     <a href="#belief">House</a>
-    <a href="#object">The Flacon</a>
+    <a href="#campaign">Campaign</a>
     <a href="#worlds">Five Worlds</a>
     <a href="#register">Register</a>
   </nav>
@@ -403,14 +409,14 @@ header.nav > *{pointer-events:auto}
 
 <!-- ═══ 1 · the hero ══════════════════════════════════════════════ -->
 <section class="hero band" id="hero" data-hero>
-  <div class="hero-world" aria-hidden="true"></div>
+  <img class="hero-world" id="heroWorld" alt="" aria-hidden="true" decoding="async" crossorigin="anonymous">
   <div class="hero-vig" aria-hidden="true"></div>
 
   <div class="hero-in">
     <div class="frame" id="frame" data-frame role="button" tabindex="0"
          aria-label="Open the flacon — the photograph warms as it opens">
-      <img class="shot-cold" id="shotCold" alt="" aria-hidden="true">
-      <img class="shot-warm" id="shotWarm"
+      <img class="shot-cold" id="shotCold" alt="" aria-hidden="true" crossorigin="anonymous">
+      <img class="shot-warm" id="shotWarm" crossorigin="anonymous"
            alt="A woman holds the Sovereign flacon — a chocolate lacquer bottle with a gold db monogram and a polished stone cap.">
       <canvas id="sillage" data-sillage aria-hidden="true"></canvas>
       <div class="frame-grain" aria-hidden="true"></div>
@@ -468,64 +474,30 @@ header.nav > *{pointer-events:auto}
   </div>
 </section>
 
-<!-- ═══ 3 · the flacon ════════════════════════════════════════════ -->
-<section class="band object" id="object">
-  <div class="band-in object-grid">
-    <div class="stage" id="stage" data-stage>
-      <canvas id="flacon" aria-label="The Domain Black flacon, in three dimensions. Drag to turn it."></canvas>
-      <div class="stage-fallback">
-        <p>The flacon turns in three dimensions where WebGL is available.<br>
-           Everything else on this page reads the same without it.</p>
-      </div>
-    </div>
-
-    <div>
-      <p class="eyebrow" data-fade>The Flacon</p>
-      <h2 class="display" style="font-size:clamp(1.6rem,1.05rem + 2.4vw,2.9rem);margin-top:.6rem" data-fade>
-        Six decisions, held in the hand.
+<!-- ═══ 3 · the campaign ══════════════════════════════════════ -->
+<section class="band campaign" id="campaign">
+  <div class="band-in campaign-grid">
+    <figure class="campaign-plate">
+      <img id="campaignShot" alt="Domain Black campaign photograph — Sovereign, held." decoding="async" crossorigin="anonymous">
+      <figcaption>Sovereign &middot; campaign frame &middot; shown as shot</figcaption>
+    </figure>
+    <div class="campaign-side">
+      <p class="eyebrow" data-fade>The Campaign</p>
+      <h2 class="display" style="font-size:clamp(1.5rem,1rem + 2.3vw,2.9rem);margin-top:.6rem" data-fade>
+        Shown as shot.
       </h2>
-
-      <div class="spec" id="spec">
-        <div class="spec-row" data-spec="0" role="button" tabindex="0" aria-current="false">
-          <span class="spec-n">01</span>
-          <span class="spec-t">The stone
-            <span class="spec-d">Each cap is a polished stone, so no two sit quite the same way.</span></span>
-        </div>
-        <div class="spec-row" data-spec="1" role="button" tabindex="0" aria-current="false">
-          <span class="spec-n">02</span>
-          <span class="spec-t">The knurled collar
-            <span class="spec-d">Fluting cut into the gold, not printed on it. It flashes as the bottle turns.</span></span>
-        </div>
-        <div class="spec-row" data-spec="2" role="button" tabindex="0" aria-current="false">
-          <span class="spec-n">03</span>
-          <span class="spec-t">The monogram
-            <span class="spec-d">Raised, bevelled, struck through with the house diagonal.</span></span>
-        </div>
-        <div class="spec-row" data-spec="3" role="button" tabindex="0" aria-current="false">
-          <span class="spec-n">04</span>
-          <span class="spec-t">The squircle
-            <span class="spec-d">Not a cylinder and not a box — a superellipse, so it sits square and reads soft.</span></span>
-        </div>
-        <div class="spec-row" data-spec="4" role="button" tabindex="0" aria-current="false">
-          <span class="spec-n">05</span>
-          <span class="spec-t">The lacquer
-            <span class="spec-d">Satin under a clearcoat. The shine is on top of the colour, never in it.</span></span>
-        </div>
-        <div class="spec-row" data-spec="5" role="button" tabindex="0" aria-current="false">
-          <span class="spec-n">06</span>
-          <span class="spec-t">The pour
-            <span class="spec-d">Lift the stone and the extrait rocks in the neck, and keeps rocking after you stop.</span></span>
-        </div>
+      <div class="lede" style="margin-top:1.1rem" data-fade>
+        <p>Not retouched here, not recoloured, not cropped to fit a grid.
+           The frame as it was taken.</p>
+        <p>Everything else on this page is drawn &mdash; the engraving, the
+           rules, the field above. The photography is the one thing left
+           alone.</p>
       </div>
-
-      <p class="hint"><span></span>Drag to turn &middot; scroll to open</p>
     </div>
   </div>
 </section>
 
-<canvas class="liquid" data-liquid aria-hidden="true"></canvas>
-
-<!-- ═══ 4 · five worlds ═══════════════════════════════════════════ -->
+<!-- ═══ 4 · five worlds ═══════════════════════════════════════ -->
 <section class="band worlds" id="worlds">
   <div class="band-in">
     <div class="worlds-head">
@@ -614,7 +586,7 @@ header.nav > *{pointer-events:auto}
   <div class="band-in foot">
     <small>Domain Black</small>
     <a href="#worlds">Five Worlds</a>
-    <a href="#object">The Flacon</a>
+    <a href="#campaign">Campaign</a>
     <a href="#register">Register</a>
     <small>Presence, not trend</small>
   </div>
@@ -626,9 +598,6 @@ header.nav > *{pointer-events:auto}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 
-<script type="importmap">
-{ "imports": { "three": "./assets/three.module.min.js" } }
-</script>
 
 <script type="module">
 /* ═══════════════════════════════════════════════════════════════════
@@ -640,14 +609,13 @@ header.nav > *{pointer-events:auto}
    the resting state is what you get.
    ═══════════════════════════════════════════════════════════════════ */
 /* The only static import is the catalogue, which depends on nothing.
-   three.js is 687 KB; importing the flacon and the pixel field statically
-   meant one failed request took the whole module down with it — and with
-   it the products, the register, the seal, every reveal. They are loaded
-   dynamically below, after the page is already readable, so a failure
-   costs exactly the thing that failed. */
-import { DOMAINS, MOVEMENTS, DETAIL_MOVES } from './assets/catalogue.js';
+   The pixel field is 35 KB of raw WebGL 2 and is still imported
+   dynamically: a static import would put every product, the register, the
+   seal and every reveal behind one request, and a page that loses that
+   request loses everything, silently. */
+import { DOMAINS, MOVEMENTS } from './assets/catalogue.js';
 
-let flacon = null, pf = null;
+let pf = null;
 
 function showFallback (sel, why) {
   const el = document.querySelector(sel);
@@ -664,13 +632,16 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
 /* ── the photograph ───────────────────────────────────────────────
    One file, used three ways: the blurred room behind everything, the
-   cold frame, and the warm frame that is revealed out of the flacon. */
+   cold frame, and the warm frame revealed out from the bottle. */
 const SHOT = './assets/campaign-sovereign.png';
 document.getElementById('shotCold').src = SHOT;
 document.getElementById('shotWarm').src = SHOT;
 // absolute: a relative url() in a custom property resolves against the
 // stylesheet, which bites the moment this CSS moves to its own file
-root.style.setProperty('--shot', `url("${new URL(SHOT, location.href).href}")`);
+const heroWorld = document.getElementById('heroWorld');
+if (heroWorld) heroWorld.src = SHOT;
+const campaignImg = document.getElementById('campaignShot');
+if (campaignImg) campaignImg.src = SHOT;
 
 /* film grain, drawn once — the photograph is a 270px frame, and grain is
    what lets it be shown large without pretending to be sharp */
@@ -746,7 +717,7 @@ root.style.setProperty('--shot', `url("${new URL(SHOT, location.href).href}")`);
 
 /* ── opening: the hinge of the whole page ─────────────────────────
    --open drives the photograph's warmth, the sillage, the glow on the
-   tagline and the stone lifting off the 3D flacon. One number. */
+   tagline, and how far the field has come apart. One number. */
 let openTarget = 0, openNow = 0, openPinned = false;
 const setOpen = v => { openTarget = clamp(v, 0, 1); };
 
@@ -791,10 +762,24 @@ function pixelsSpan () {
   return total > 10 ? { top, total } : null;
 }
 
+/* Wait until the section is within reach of the viewport before fetching
+   the field at all, so the page arrives and reads before anything that
+   only matters once you scroll. */
+function whenNear (el, margin = '15% 0px') {
+  return new Promise(res => {
+    if (!el || !('IntersectionObserver' in window)) return res();
+    const io = new IntersectionObserver(es => {
+      if (es[0].isIntersecting) { io.disconnect(); res(); }
+    }, { rootMargin: margin });
+    io.observe(el);
+  });
+}
+
 const pfReady = pfCanvas ? (async () => {
   try {
+    await whenNear(pixelsSec);
     const { createPixelField } = await import('./assets/pixelfield.js');
-    pf = createPixelField(pfCanvas, { photo: SHOT, shape: './assets/flacon-sovereign.png' });
+    pf = createPixelField(pfCanvas, { photo: SHOT, shape: './assets/flacon-silhouette.png' });
     if (!pf) {
       showFallback('[data-pixels]',
         'This movement needs WebGL 2 with float render targets, which this browser does not offer. Everything else on this page reads the same.');
@@ -913,17 +898,17 @@ DOMAINS.forEach((d, i) => {
   el.dataset.i = String(i);
   el.innerHTML =
     '<div class="world-plate">' +
-      '<span class="world-num">' + d.num + '</span>' +
       '<canvas data-plate aria-hidden="true"></canvas>' +
-      '<img class="world-art" loading="lazy" decoding="async" ' +
-        'src="./assets/flacon-' + d.name.toLowerCase() + '.png" ' +
-        'alt="The ' + d.name + ' flacon">' +
+      '<span class="world-field"></span>' +
+      '<span class="world-num">' + d.num + '</span>' +
     '</div>' +
     '<div class="world-meta">' +
       '<span class="world-name">' + d.name + '</span>' +
       '<span class="world-theme">' + d.theme + '</span>' +
       '<span class="world-notes">' + d.notes.map(n => '<span>' + n + '</span>').join('<span>·</span>') + '</span>' +
       '<span class="world-line">' + d.line + '</span>' +
+      '<span class="world-world">' + d.world + '</span>' +
+      '<span class="world-price">20&thinsp;ml &middot; $40</span>' +
     '</div>';
   rail.appendChild(el);
   plates.push(el.querySelector('[data-plate]'));
@@ -1014,56 +999,21 @@ if (teeth) {
   teeth.innerHTML = m;
 }
 
-/* ── the flacon ───────────────────────────────────────────────────── */
-/* loaded after the page reads; see the note on the static import */
-const flaconReady = (async () => {
-  try {
-    const { createFlacon } = await import('./assets/flacon.js');
-    flacon = createFlacon(document.getElementById('flacon'));
-    // Sovereign — the bottle she is holding in the photograph above
-    if (flacon) { flacon.setDomain(1, true); return; }
-    showFallback('[data-stage]',
-      'This browser cannot run WebGL, so the flacon does not turn here. Everything else on this page reads the same.');
-  } catch (e) {
-    showFallback('[data-stage]',
-      'The 3D flacon could not be loaded. Everything else on this page reads the same.');
-  }
-})();
-
-/* the six details, each one a move the object actually makes */
-const MOVES = DETAIL_MOVES;
-let moveTo = null, moveT = 0;
-
-document.querySelectorAll('[data-spec]').forEach(row => {
-  const go = () => {
-    const i = +row.dataset.spec;
-    document.querySelectorAll('[data-spec]').forEach(r => r.setAttribute('aria-current', String(r === row)));
-    if (!flacon) return;
-    moveTo = MOVES[i]; moveT = 0;
-    flacon.state.spinV = 0;
-  };
-  row.addEventListener('mouseenter', go);
-  row.addEventListener('click', go);
-  row.addEventListener('focus', go);
-  row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
-});
-
 /* choosing a world recolours the object */
-function chooseWorld (el, spin) {
+function chooseWorld (el) {
   if (!el) return;
   [...rail.children].forEach(c => c.setAttribute('aria-current', String(c === el)));
-  if (flacon) { flacon.setDomain(+el.dataset.i); if (spin) flacon.spinBy(spin); }
 }
-rail.addEventListener('click', e => chooseWorld(e.target.closest('.world'), 0.010));
+rail.addEventListener('click', e => chooseWorld(e.target.closest('.world')));
 
-/* and so does scrolling the rail — whichever card is nearest its centre
-   is the one the object wears. Scoped to the rail, which is its own
-   scroller; a ScrollTrigger pointed at it would need a scrollerProxy. */
+/* whichever card is nearest the rail's centre is the one marked current.
+   Scoped to the rail, which is its own scroller; a ScrollTrigger pointed
+   at it would need a scrollerProxy. */
 if ('IntersectionObserver' in window) {
   const io = new IntersectionObserver(entries => {
     let best = null, bestRatio = 0.55;
     for (const e of entries) if (e.intersectionRatio > bestRatio) { bestRatio = e.intersectionRatio; best = e.target; }
-    if (best) chooseWorld(best, 0);
+    if (best) chooseWorld(best);
   }, { root: rail, threshold: [0.55, 0.75, 0.95] });
   [...rail.children].forEach(c => io.observe(c));
 }
@@ -1075,30 +1025,15 @@ let t0 = performance.now();
   const dt = Math.min(0.05, (now - t0) / 1000); t0 = now;
   const t = now / 1000;
 
-  // scroll speed, smoothed — the liquid and the flacon both read it
+  // scroll speed, smoothed — the rules and the pixel field both read it
   const y = scrollY;
   scrollV += ((y - lastY) - scrollV) * Math.min(1, dt * 12);
   lastY = y;
   scrollV *= Math.pow(0.12, dt);
-  if (flacon) flacon.nudge(scrollV * 0.5);
 
   // --open eases toward its target so the warming never snaps
   openNow += (openTarget - openNow) * Math.min(1, dt * (openPinned ? 2.6 : 7));
   root.style.setProperty('--open', openNow.toFixed(4));
-  if (flacon && !moveTo) flacon.setOpen(openNow * 0.82);
-
-  // a detail, once chosen, is eased into rather than cut to
-  if (flacon && moveTo) {
-    moveT = Math.min(1, moveT + dt * 1.25);
-    const k = moveT * moveT * (3 - 2 * moveT);
-    const s = flacon.state;
-    const d = ((moveTo.spin - s.spin) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
-    s.spin += d * k * 0.12;
-    s.tiltX += (moveTo.tilt - s.tiltX) * k * 0.12;
-    flacon.setOpen(s.open + (moveTo.open - s.open) * k * 0.12);
-    flacon.setLevel(s.level + (moveTo.level - s.level) * k * 0.12);
-    if (moveT >= 1 && Math.abs(d) < 0.02) moveTo = null;
-  }
 
   // the photograph's movement is just where you are in its section
   if (pf) {
@@ -1201,14 +1136,6 @@ if (still || typeof gsap === 'undefined') {
       gsap.from('[data-seal-teeth] line', {
         opacity: 0, duration: 0.5, stagger: { each: 0.008, from: 'random' },
         scrollTrigger: { trigger: '.seal', start: 'top 82%', once: true } });
-    }
-
-      // scrolling past the object lifts the stone off it
-    if (flacon) {
-      ScrollTrigger.create({
-        trigger: '#object', start: 'top 70%', end: 'bottom 40%', scrub: 0.6,
-        onUpdate: self => { if (!moveTo) flacon.setOpen(Math.sin(self.progress * Math.PI)); }
-      });
     }
   }
 }

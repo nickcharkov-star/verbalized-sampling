@@ -20,6 +20,17 @@ of it: the mask, the particles, the glow on the tagline and the stone lifting
 off the 3D flacon. The merchant tells the theme where in their photograph the
 flacon sits, so the warmth blooms from the right place.
 
+**No mock-ups.** Nothing on this theme draws a bottle that was not
+photographed. Where there is no pack shot, a composition's plate is its own
+lacquer colour and its words — never an illustration standing in for the
+product. Drop the real photography into **Five Worlds** and it takes the
+plate as-is.
+
+**No 3D library.** The pixel field is 35 KB of raw WebGL 2. It used to lean
+on three.js — 671 KB for a renderer, four render targets, two programs and a
+perspective matrix, about five percent of the library. The simulation was
+always raw GLSL; only the plumbing was borrowed.
+
 **The photograph is taken apart, pixel by pixel.** One particle per pixel of
 the campaign shot — a 270 × 480 image is 129,600 of them — simulated entirely
 on the GPU in ping-pong float textures. Scroll position through the section
@@ -31,13 +42,6 @@ they most resemble, each pile shaped like a flacon; and all of them
 reassembled into one bottle. Dragging pushes the field aside, pressing pulls
 it back in. On a portrait screen the five piles stack rather than shrinking
 into thumbnails.
-
-**The flacon is real geometry, not a sprite sheet.** A squircle body under a
-clearcoat, a knurled gold collar whose fluting is cut into the mesh, a raised
-and bevelled monogram, and a polished stone for a cap — generated from noise
-with the lot number as its seed, so Kingdom's stone is not Sovereign's stone.
-It turns on its own, answers a drag, and rocks its pour when you lift the
-stone. Each detail in the list turns the object to show what it names.
 
 **The rules slosh.** The horizontal rules between sections are a meniscus
 pushed by scroll speed. They overshoot and settle, because liquid does.
@@ -56,16 +60,14 @@ settings.
 assets/      domain-black.css      the whole visual system, one file
              domain-black.js       behaviour: engraving, sillage, liquid, motion
              catalogue.js          the five compositions, dependency-free
-             flacon.js             the flacon in three dimensions
              pixelfield.js         the photograph as a GPU particle field
-             three.module.min.js   served from Assets, not a CDN
-             flacon-*.png          the five, pre-rendered, for the empty state
+             flacon-silhouette.png the flacon, cut from the campaign frame
              campaign-sovereign.png a campaign photograph to start from
 layout/      theme.liquid          the page frame
              password.liquid       the pre-launch page
 sections/    domain-hero           the campaign photograph, and opening it
              domain-pixels         that photograph, taken apart to pixels
-             domain-flacon         the flacon in 3D, with detail blocks
+             domain-campaign       the photograph shown whole, unaltered
              domain-five           Five Worlds, from a collection
              domain-register       the register table
              domain-rule           a sloshing rule, to drop between sections
@@ -91,9 +93,8 @@ locales/     en.default.json
 
 **As sections dropped into a theme you already use** (Dawn, or any OS 2.0 theme)
 
-1. Copy `assets/domain-black.css`, `domain-black.js`, `flacon.js`,
-   `pixelfield.js`, `three.module.min.js` and the five `flacon-*.png` into
-   `assets/`.
+1. Copy `assets/domain-black.css`, `domain-black.js`, `catalogue.js`,
+   `pixelfield.js` and `flacon-silhouette.png` into `assets/`.
 2. Copy the `domain-*.liquid` sections into `sections/`.
 3. Copy `snippets/domain-scripts.liquid` into `snippets/`, add
    `{% render 'domain-scripts' %}` before `</body>` and
@@ -107,10 +108,10 @@ In **Customize**:
 - **Hero · campaign** — choose the photograph, then drag the two position
   sliders until the marker sits on the flacon in your shot. That is where the
   world warms from.
-- **The photograph · pixels** — choose the photograph, pick which flacon the
-  final movement assembles into (or supply your own transparent PNG as the
-  silhouette), and set how much scrolling the five movements take.
-- **The Flacon · 3D** — each detail is a block. A block carries the turn,
+- **The photograph · pixels** — choose the photograph and how much scrolling
+  the five movements take. The final movement reassembles into the flacon cut
+  from the campaign frame; supply your own transparent PNG to override it.
+- **The campaign** — the photograph again, shown whole and unaltered.
   lift, tip and fill it wants, so adding your own detail is a block, not a
   code change.
 - **Five Worlds** — choose the collection. Product images are used as-is
@@ -130,26 +131,25 @@ none is required.
 | `domain.theme` | Single line text | The disposition under the name ("Quiet Authority") |
 | `domain.accord` | Single line text | The note list, comma separated |
 | `domain.line` | Single line text | The one line of copy under the notes |
+| `domain.world` | Single line text | The room it evokes, under the line |
 | `domain.swatch` | Colour | The card's hover edge, and the register swatch |
 | `domain.vintage` | Single line text | The Vintage column |
 | `domain.run` | Integer | Overrides the run size for that one lot |
 
 ## Motion, WebGL, and doing without either
 
-**Nothing on the page depends on anything that can fail.** three.js is
-687 KB, and the flacon and the pixel field both need it — so they are
-imported *dynamically*, after the page already reads. Only the catalogue is
-imported statically, and it depends on nothing. If three.js never arrives,
-the products, the register, the engraving, the seal and every reveal are
-still there, and the two sections that lost something say which and why. A
+**Nothing on the page depends on anything that can fail.** The pixel field
+is imported *dynamically*, and only once its section is within reach of the
+viewport. Only the catalogue is
+imported statically, and it depends on nothing. If the pixel field never
+arrives, the products, the register, the engraving, the seal and every reveal
+are still there, and the section that lost something says what and why. A
 static import put all of that behind one request, and a page that lost it
 lost everything, silently.
 
-The pixel field needs **WebGL 2 with float render targets** and the flacon
-needs WebGL; both probe for it before constructing a renderer, so a browser
-without it gets a line of text and no console error. three.js is served from
-**Assets** through an import map, not a CDN, so both work on a locked-down
-network. Where WebGL is missing the object is
+The pixel field needs **WebGL 2 with float render targets** and probes for
+it before touching a context, so a browser without it gets a line of text and
+no console error. There is no library to fetch, from a CDN or anywhere else. Where WebGL is missing the object is
 replaced by a line of text and the rest of the page is unchanged — the theme
 probes for WebGL before constructing a renderer, so nothing logs an error on
 the way.
@@ -190,14 +190,17 @@ horizontal overflow, and nothing left invisible after a full scroll — with
 the motion libraries present, with them blocked, and with WebGL disabled.
 
 Each movement of the pixel field is screenshot separately from a bench page
-and looked at — a particle system cannot be checked any other way. Four of the
-six bugs in it were only visible that way, including a silhouette whose
-thickness came from distance-to-centre, which domed every shape into a ball.
+and looked at — a particle system cannot be checked any other way. Most of its
+bugs were only ever visible that way: a silhouette whose thickness came from
+distance-to-centre and domed every shape into a ball; and, in the move off
+three.js, blending left enabled for the simulation passes, which blended each
+new velocity against the old using an alpha of zero and discarded every write,
+so the photograph sat perfectly still in all five movements.
 
-The suite includes a check that loads the page with three.js blocked and
-asserts that all five products, all five register rows, the seal's 72 teeth,
-the movement index and the engraved plates are still present, and that both
-3D sections have said what they lost.
+The suite includes a check that loads the page with the pixel field blocked
+and asserts that all five products with their prices, all five register rows,
+the seal's 72 teeth, the movement index and the engraved plates are still
+present, and that the section which lost something has said so.
 
 A fault that only the theme could show up: `--shot` holds a URL, and a
 relative `url()` inside a custom property resolves against the stylesheet that

@@ -4,86 +4,6 @@
       "type": "domain-hero",
       "settings": {}
     },
-    "flacon": {
-      "type": "domain-flacon",
-      "settings": {},
-      "blocks": {
-        "b1": {
-          "type": "detail",
-          "settings": {
-            "title": "The stone",
-            "body": "Each cap is a polished stone, so no two sit quite the same way.",
-            "spin": 0,
-            "open": 1,
-            "tilt": -0.1,
-            "level": 0.45
-          }
-        },
-        "b2": {
-          "type": "detail",
-          "settings": {
-            "title": "The knurled collar",
-            "body": "Fluting cut into the gold, not printed on it. It flashes as the bottle turns.",
-            "spin": 0.1,
-            "open": 0.85,
-            "tilt": -0.22,
-            "level": 0.45
-          }
-        },
-        "b3": {
-          "type": "detail",
-          "settings": {
-            "title": "The monogram",
-            "body": "Raised, bevelled, struck through with the house diagonal.",
-            "spin": 0,
-            "open": 0,
-            "tilt": 0,
-            "level": 0.45
-          }
-        },
-        "b4": {
-          "type": "detail",
-          "settings": {
-            "title": "The squircle",
-            "body": "Not a cylinder and not a box \u2014 a superellipse, so it sits square and reads soft.",
-            "spin": 1.6,
-            "open": 0,
-            "tilt": 0.06,
-            "level": 0.45
-          }
-        },
-        "b5": {
-          "type": "detail",
-          "settings": {
-            "title": "The lacquer",
-            "body": "Satin under a clearcoat. The shine is on top of the colour, never in it.",
-            "spin": 0.7,
-            "open": 0,
-            "tilt": -0.05,
-            "level": 0.45
-          }
-        },
-        "b6": {
-          "type": "detail",
-          "settings": {
-            "title": "The pour",
-            "body": "Lift the stone and the extrait rocks in the neck, and keeps rocking after you stop.",
-            "spin": 0.25,
-            "open": 1,
-            "tilt": 0.26,
-            "level": 0.8
-          }
-        }
-      },
-      "block_order": [
-        "b1",
-        "b2",
-        "b3",
-        "b4",
-        "b5",
-        "b6"
-      ]
-    },
     "five": {
       "type": "domain-five",
       "settings": {}
@@ -111,13 +31,17 @@
     "pixels": {
       "type": "domain-pixels",
       "settings": {}
+    },
+    "campaign": {
+      "type": "domain-campaign",
+      "settings": {}
     }
   },
   "order": [
     "hero",
     "pixels",
     "rule1",
-    "flacon",
+    "campaign",
     "rule2",
     "five",
     "register",

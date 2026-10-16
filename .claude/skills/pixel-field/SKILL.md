@@ -72,6 +72,10 @@ field swirls instead of piling particles into the noise's troughs.
 
 ## Baking a silhouette
 
+Cut the shape out of the photograph itself where you can — a silhouette
+traced from the real subject is the real subject, and a drawn stand-in is a
+drawn stand-in however good it looks. See the `photo-cutout` skill.
+
 To reassemble into a shape, bake one seat per particle from a PNG's alpha:
 
 1. Draw the PNG to a 256×256 canvas, read `getImageData`.
@@ -118,13 +122,33 @@ volume with `z = (hash(ref) - 0.5) * 2.0 * thickness`.
    throws a temporal-dead-zone `ReferenceError` and the whole module dies
    silently. Declare shared state before anything that observes.
 
+## Write it against WebGL 2, not a 3D library
+
+three.js gives you a renderer, render targets, shader programs, a point cloud
+and a perspective matrix — about five percent of its surface, for ~690 KB.
+The simulation is raw GLSL either way; only the plumbing is borrowed, and the
+plumbing is a few hundred lines: compile and link, two ping-pong framebuffer
+pairs of `RGBA32F`, a fullscreen-quad VAO, a points VAO carrying one `vec2`
+per particle, and `perspective()` / `lookAt()`. Dropping the library took one
+page from 1456 KB to 559 KB.
+
+Two things bite in the port:
+
+- **Blending must be off for the simulation passes.** Leave it on and each
+  new velocity is blended against the old one using the velocity's own alpha
+  — which is zero — so every write is discarded and nothing moves. three.js
+  toggles it per material, so this only shows up once you own the state.
+  `gl.disable(BLEND)` in the sim pass, `gl.enable(BLEND)` before the points.
+- **Bind attribute locations before linking.** `gl.bindAttribLocation(p, 0,
+  'aRef')`. With one attribute per program you will usually get 0 anyway,
+  and "usually" is the problem.
+
 ## Never import the heavy thing statically
 
-three.js is ~690 KB and both the field and any 3D object need it. If the
-page's module imports them at the top:
+If the page's module imports the field at the top:
 
 ```js
-import { createPixelField } from './pixelfield.js';   // → imports three
+import { createPixelField } from './pixelfield.js';
 ```
 
 then one failed request for three.js takes down **the entire module** — every
@@ -147,8 +171,9 @@ let field = null;
 })();
 ```
 
-Then test it: block the dependency with `page.route('**/three*.js', r => r.abort())`
-and assert the content is all still there. A page that silently loses
+Then test it: block the dependency with
+`page.route('**/pixelfield.js', r => r.abort())` and assert the content is
+all still there. A page that silently loses
 everything looks identical to a page that never loaded.
 
 ## Capability check, and degrading

@@ -5,11 +5,17 @@
    a 270 × 480 photograph becomes 129,600 particles, and the photograph
    you see is those particles sitting still.
 
-   The simulation never touches the CPU. Position and velocity live in two
-   pairs of floating-point render targets, ping-ponged each frame by a
+   Written directly against WebGL 2. It used to lean on three.js, which
+   is 671 KB, for a renderer, four render targets, two shader programs,
+   a point cloud and a perspective matrix — about five percent of the
+   library, for twenty times the weight of this file. The simulation was
+   always raw GLSL; only the plumbing was borrowed, and the plumbing is
+   a few hundred lines.
+
+   The simulation never touches the CPU. Position and velocity live in
+   two pairs of floating-point framebuffers, ping-ponged each frame by a
    fragment shader; the point cloud's vertex shader reads the position
-   texture back out. The only CPU work per frame is setting a handful of
-   uniforms, so the particle count costs almost nothing to raise.
+   texture back out. The only CPU work per frame is a handful of uniforms.
 
    FIVE MOVEMENTS
 
@@ -20,35 +26,69 @@
      III Relief     each pixel pushed along z by its own luminance, so the
                     flat frame becomes a surface you can look across.
      IV  The Five   every pixel flies to whichever of the five house
-                    colours it most resembles — and each of those five
-                    piles is a flacon. The photograph sorts itself into
-                    the collection it belongs to.
-     V   Flacon     all 129,600 reassemble into one bottle.
+                    colours it most resembles.
+     V   Flacon     all of them reassemble into one silhouette, rank-
+                    matched by luminance so it arrives lit.
 
    The pointer is a force the whole time: it pushes the field away, and
    pressing pulls it back in.
    ═══════════════════════════════════════════════════════════════════════ */
-import * as THREE from 'three';
-
 export { MOVEMENTS } from './catalogue.js';
 import { MOVEMENTS } from './catalogue.js';
 
 /* The house palette, as the sorter sees it. A pixel joins whichever of
    these it is nearest in linear RGB. */
 const PALETTE = [
-  [0x17 / 255, 0x13 / 255, 0x10 / 255],   // I   Kingdom
-  [0x5b / 255, 0x3a / 255, 0x25 / 255],   // II  Sovereign
-  [0x2e / 255, 0x5e / 255, 0x8e / 255],   // III Celestial
-  [0xe9 / 255, 0xdf / 255, 0xcd / 255],   // IV  Crown
-  [0xd9 / 255, 0x73 / 255, 0x2a / 255]    // V   Empire
+  0x17 / 255, 0x13 / 255, 0x10 / 255,   // I   Kingdom
+  0x5b / 255, 0x3a / 255, 0x25 / 255,   // II  Sovereign
+  0x2e / 255, 0x5e / 255, 0x8e / 255,   // III Celestial
+  0xe9 / 255, 0xdf / 255, 0xcd / 255,   // IV  Crown
+  0xd9 / 255, 0x73 / 255, 0x2a / 255    // V   Empire
 ];
 
-/* ── shared GLSL ──────────────────────────────────────────────────── */
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
-/* Simplex noise (Ashima Arts / Stefan Gustavson, MIT). Curl of this is
-   what carries the sillage: divergence-free, so the field swirls instead
-   of piling up. */
-const NOISE = /* glsl */`
+/* ── just enough matrix maths ─────────────────────────────────────── */
+function perspective (fovyDeg, aspect, near, far) {
+  const f = 1 / Math.tan(fovyDeg * Math.PI / 360), nf = 1 / (near - far);
+  return new Float32Array([
+    f / aspect, 0, 0, 0,
+    0, f, 0, 0,
+    0, 0, (far + near) * nf, -1,
+    0, 0, 2 * far * near * nf, 0
+  ]);
+}
+
+function lookAt (ex, ey, ez, cx, cy, cz) {
+  let zx = ex - cx, zy = ey - cy, zz = ez - cz;
+  let l = Math.hypot(zx, zy, zz) || 1; zx /= l; zy /= l; zz /= l;
+  // up is +Y; the camera never rolls, so the cross products stay simple
+  let xx = zz, xy = 0, xz = -zx;
+  l = Math.hypot(xx, xy, xz) || 1; xx /= l; xy /= l; xz /= l;
+  const yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
+  return new Float32Array([
+    xx, yx, zx, 0,
+    xy, yy, zy, 0,
+    xz, yz, zz, 0,
+    -(xx * ex + xy * ey + xz * ez),
+    -(yx * ex + yy * ey + yz * ez),
+    -(zx * ex + zy * ey + zz * ez), 1
+  ]);
+}
+
+/* ── shaders ──────────────────────────────────────────────────────── */
+const SIM_VERT = `#version 300 es
+precision highp float;
+
+in vec2 aPos;
+out vec2 vRef;
+void main(){ vRef = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }
+`;
+
+const VEL_FRAG = `#version 300 es
+precision highp float;
+out vec4 fragColor;
+
 vec3 mod289(vec3 x){ return x - floor(x * (1.0/289.0)) * 289.0; }
 vec4 mod289(vec4 x){ return x - floor(x * (1.0/289.0)) * 289.0; }
 vec4 permute(vec4 x){ return mod289(((x*34.0)+1.0)*x); }
@@ -104,11 +144,7 @@ vec3 curl(vec3 p){
   float n5 = snoise(vec3(p.x + e, p.y, p.z));
   float n6 = snoise(vec3(p.x - e, p.y, p.z));
   return normalize(vec3(n1 - n2 - (n3 - n4), n3 - n4 - (n5 - n6), n5 - n6 - (n1 - n2)) + 1e-6);
-}`;
-
-/* Where a particle belongs, per movement. Shared by both simulation
-   passes so the spring and the damping agree about the destination. */
-const TARGET = /* glsl */`
+}
 uniform vec2  uPlane;        // world size of the photograph
 uniform float uMode;         // 0..4, fractional while crossfading
 uniform float uDepth;        // relief displacement
@@ -138,7 +174,7 @@ float hash12(vec2 p){
 }
 
 vec3 targetFor(float mode, vec2 ref, vec3 col, float lum){
-  vec4 shapeTex = texture2D(uShape, ref);
+  vec4 shapeTex = texture(uShape, ref);
   vec2 shape = shapeTex.xy - 0.5;
   // thickness comes from the baked distance-to-edge, so the pile has the
   // volume of a flacon rather than of a ball
@@ -149,7 +185,7 @@ vec3 targetFor(float mode, vec2 ref, vec3 col, float lum){
   if (mode < 2.5) return homePos(ref) + vec3(0.0, 0.0, (lum - 0.42) * uDepth);  // III
 
   if (mode < 3.5){                                                      // IV
-    vec4 mixTex = texture2D(uShapeMix, ref);
+    vec4 mixTex = texture(uShapeMix, ref);
     vec2 mshape = mixTex.xy - 0.5;
     float mthru = (hash12(ref * 97.3) - 0.5) * 2.0 * mixTex.z;
     int lot = nearestLot(col);
@@ -164,27 +200,18 @@ vec3 blendTarget(vec2 ref, vec3 col, float lum){
   float lo = floor(uMode), hi = min(lo + 1.0, 4.0);
   float k  = smoothstep(0.0, 1.0, uMode - lo);
   return mix(targetFor(lo, ref, col, lum), targetFor(hi, ref, col, lum), k);
-}`;
+}
 
-const SIM_VERT = /* glsl */`
-varying vec2 vRef;
-void main(){ vRef = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
-
-/* ── velocity ─────────────────────────────────────────────────────── */
-const VEL_FRAG = /* glsl */`
-precision highp float;
-varying vec2 vRef;
+in vec2 vRef;
 uniform sampler2D uPos, uVel, uPhoto;
 uniform float uTime, uDt, uSillage, uSwirl;
 uniform vec4  uPointer;      // xyz world, w = press (−1 pull … +1 push)
 uniform float uPointerR;
-${NOISE}
-${TARGET}
 
 void main(){
-  vec4 P = texture2D(uPos, vRef);
-  vec4 V = texture2D(uVel, vRef);
-  vec3 col = texture2D(uPhoto, vRef).rgb;
+  vec4 P = texture(uPos, vRef);
+  vec4 V = texture(uVel, vRef);
+  vec3 col = texture(uPhoto, vRef).rgb;
   float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));
 
   vec3 tgt = blendTarget(vRef, col, lum);
@@ -217,35 +244,39 @@ void main(){
   }
 
   vel *= pow(mix(0.015, 0.34, uSillage), uDt);   // damping
-  gl_FragColor = vec4(vel, V.w);
+  fragColor = vec4(vel, V.w);
 }`;
 
-/* ── position ─────────────────────────────────────────────────────── */
-const POS_FRAG = /* glsl */`
+const POS_FRAG = `#version 300 es
 precision highp float;
-varying vec2 vRef;
+out vec4 fragColor;
+
+
+in vec2 vRef;
 uniform sampler2D uPos, uVel;
 uniform float uDt;
 void main(){
-  vec4 P = texture2D(uPos, vRef);
-  vec3 V = texture2D(uVel, vRef).xyz;
-  gl_FragColor = vec4(P.xyz + V * uDt, P.w);
+  vec4 P = texture(uPos, vRef);
+  vec3 V = texture(uVel, vRef).xyz;
+  fragColor = vec4(P.xyz + V * uDt, P.w);
 }`;
 
-/* ── the point cloud ──────────────────────────────────────────────── */
-const DRAW_VERT = /* glsl */`
+const DRAW_VERT = `#version 300 es
 precision highp float;
-attribute vec2 aRef;
-uniform sampler2D uPos, uPhoto;
-uniform float uSize, uPixelRatio, uSillage;
-varying vec3 vCol;
-varying float vFade;
-void main(){
-  vec3 p = texture2D(uPos, aRef).xyz;
-  vCol = texture2D(uPhoto, aRef).rgb;
 
-  vec4 mv = modelViewMatrix * vec4(p, 1.0);
-  gl_Position = projectionMatrix * mv;
+
+in vec2 aRef;
+uniform sampler2D uPos, uPhoto;
+uniform mat4 uProj, uView;
+uniform float uSize, uPixelRatio, uSillage;
+out vec3 vCol;
+out float vFade;
+void main(){
+  vec3 p = texture(uPos, aRef).xyz;
+  vCol = texture(uPhoto, aRef).rgb;
+
+  vec4 mv = uView * vec4(p, 1.0);
+  gl_Position = uProj * mv;
 
   // a pixel keeps its size on screen until it travels, then it thins out
   float travel = clamp(abs(p.z) * 0.6 + uSillage * 0.5, 0.0, 1.0);
@@ -253,16 +284,19 @@ void main(){
   gl_PointSize = uSize * uPixelRatio * (300.0 / -mv.z) * (1.0 + travel * 0.5);
 }`;
 
-const DRAW_FRAG = /* glsl */`
+const DRAW_FRAG = `#version 300 es
 precision highp float;
-varying vec3 vCol;
-varying float vFade;
+out vec4 fragColor;
+
+
+in vec3 vCol;
+in float vFade;
 void main(){
   // round, with a soft shoulder — square points read as a glitch, not a grain
   vec2 d = gl_PointCoord - 0.5;
   float a = smoothstep(0.5, 0.18, length(d));
   if (a < 0.01) discard;
-  gl_FragColor = vec4(vCol, a * vFade);
+  fragColor = vec4(vCol, a * vFade);
 }`;
 
 /* ═══════════════════════════════════════════════════════════════════ */
@@ -270,68 +304,92 @@ export function createPixelField (canvas, opts = {}) {
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const DPR = Math.min(devicePixelRatio || 1, 2);
 
-  // Probe before constructing: a WebGLRenderer without WebGL throws *and*
-  // logs its own console error, on a path meant to degrade quietly.
-  const probe = document.createElement('canvas');
-  const gl2 = probe.getContext('webgl2');
-  if (!gl2) return null;
-  // float render targets are what the whole simulation lives in
-  if (!gl2.getExtension('EXT_color_buffer_float')) return null;
+  const gl = canvas.getContext('webgl2', {
+    antialias: false, alpha: true, premultipliedAlpha: false,
+    depth: false, powerPreference: 'high-performance'
+  });
+  if (!gl) return null;
+  // the whole simulation lives in floating-point framebuffers
+  if (!gl.getExtension('EXT_color_buffer_float')) return null;
 
-  let renderer;
-  try {
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true });
-  } catch (e) { return null; }
-  if (!renderer.getContext()) return null;
+  /* ── tiny GL helpers ─────────────────────────────────────────────── */
+  function shader (type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src.trim());
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      throw new Error('shader: ' + gl.getShaderInfoLog(s));
+    }
+    return s;
+  }
+  function program (vs, fs, attrib) {
+    const p = gl.createProgram();
+    gl.attachShader(p, shader(gl.VERTEX_SHADER, vs));
+    gl.attachShader(p, shader(gl.FRAGMENT_SHADER, fs));
+    // bind before linking: the only attribute each of these has must be 0,
+    // and the linker is free to number them otherwise
+    if (attrib) gl.bindAttribLocation(p, 0, attrib);
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+      throw new Error('link: ' + gl.getProgramInfoLog(p));
+    }
+    // uniform locations, looked up once
+    const u = {};
+    const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+    for (let i = 0; i < n; i++) {
+      const info = gl.getActiveUniform(p, i);
+      const name = info.name.replace(/\[0\]$/, '');
+      u[name] = gl.getUniformLocation(p, info.name);
+    }
+    return { p, u };
+  }
 
-  renderer.setPixelRatio(DPR);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.setClearColor(0x000000, 0);
+  function floatTexture (w, h, data = null) {
+    const t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, w, h, 0, gl.RGBA, gl.FLOAT, data);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return t;
+  }
+  function target (w, h, data = null) {
+    const tex = floatTexture(w, h, data);
+    const fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    if (!ok) throw new Error('framebuffer incomplete');
+    return { tex, fbo, w, h };
+  }
 
-  const scene  = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-  camera.position.set(0, 0, 6.4);
-
-  /* ── the simulation's own little scene ──────────────────────────── */
-  const simScene = new THREE.Scene();
-  const simCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const simQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), null);
-  simScene.add(simQuad);
+  let simProgVel, simProgPos, drawProg, quadVAO, pointVAO;
+  let posA, posB, velA, velB, photoTex, shapeTex, shapeMixTex;
+  let raf = 0, visible = true, disposed = false;
 
   const state = {
     mode: 0, modeTarget: 0, sillage: 0, swirl: 1,
-    pointer: new THREE.Vector4(0, 0, 0, 0), pointerR: 0.9,
+    pointer: [0, 0, 0, 0], pointerR: 0.9,
     press: 0, ready: false, cols: 0, rows: 0, count: 0
   };
 
-  let posA, posB, velA, velB, velMat, posMat, points, drawMat;
-  let clusterUniform = null, clusterScaleU = null;
-  let photoTex = null, shapeTex = null, shapeMixTex = null;
-  let raf = 0, visible = true, disposed = false;
-
-  const rtOpts = {
-    type: THREE.FloatType, format: THREE.RGBAFormat,
-    minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter,
-    depthBuffer: false, stencilBuffer: false, generateMipmaps: false
-  };
-  const makeRT = (w, h) => new THREE.WebGLRenderTarget(w, h, rtOpts);
-
-  function seedTexture (cols, rows, plane) {
-    // The photograph's own grid, as the starting position — so the first
-    // frame on screen is the photograph, not a cloud settling into one.
-    const data = new Float32Array(cols * rows * 4);
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const i = (y * cols + x) * 4;
-        data[i]     = ((x + 0.5) / cols - 0.5) * plane.x;
-        data[i + 1] = (0.5 - (y + 0.5) / rows) * plane.y;
-        data[i + 2] = 0;
-        data[i + 3] = 1;
-      }
+  /* Read the photograph's own luminance, one value per particle, so the
+     deal below can be rank-matched instead of shuffled. */
+  function photoLuminance (img, cols, rows) {
+    const c = document.createElement('canvas');
+    c.width = cols; c.height = rows;
+    const g = c.getContext('2d', { willReadFrequently: true });
+    if (!g) return null;
+    g.drawImage(img, 0, 0, cols, rows);
+    let px;
+    try { px = g.getImageData(0, 0, cols, rows).data; } catch (e) { return null; }
+    const lum = new Float32Array(cols * rows);
+    for (let i = 0; i < lum.length; i++) {
+      lum[i] = (px[i * 4] * 0.2126 + px[i * 4 + 1] * 0.7152 + px[i * 4 + 2] * 0.0722) / 255;
     }
-    const t = new THREE.DataTexture(data, cols, rows, THREE.RGBAFormat, THREE.FloatType);
-    t.needsUpdate = true;
-    return t;
+    return lum;
   }
 
   /* ── bake the flacon silhouette into one target per particle ──────
@@ -482,112 +540,96 @@ export function createPixelField (canvas, opts = {}) {
     } else {
       lit.set(mix);                 // nothing to rank-match on
     }
-    const mk = arr => {
-      const t = new THREE.DataTexture(arr, cols, rows, THREE.RGBAFormat, THREE.FloatType);
-      t.needsUpdate = true;
-      return t;
-    };
-    return { lit: mk(lit), mix: mk(mix) };
+    return { lit, mix };          // plain Float32Arrays; the caller uploads
   }
   function gcd (a, b) { while (b) { const t = b; b = a % b; a = t; } return a; }
+  /* ── build, once the images are in ───────────────────────────────── */
+  const extent = { photo: [2, 2], five: [2, 2], one: [2, 2] };
+  let clusters = new Float32Array(15), clusterScale = 0.98, shapeScale = 2.9;
+  let plane = [1.125, 2];
+  let camZ = 4.2, camX = 0, camY = 0;
+  let aspect = 1;
 
-  /* ── build, once both images are in ─────────────────────────────── */
   function build (photoImg, shapeImg) {
     const iw = photoImg.naturalWidth || photoImg.width;
     const ih = photoImg.naturalHeight || photoImg.height;
 
-    // One particle per pixel, unless the device says otherwise. The cap is
-    // about keeping a phone's fill rate sane, not about the maths.
+    // one particle per pixel, unless the device says otherwise — the cap is
+    // about a phone's fill rate, not about the maths
     const cap = opts.maxParticles || (DPR > 1.5 && innerWidth < 700 ? 90000 : 200000);
-    let scale = Math.min(1, Math.sqrt(cap / (iw * ih)));
+    const scale = Math.min(1, Math.sqrt(cap / (iw * ih)));
     const cols = Math.max(8, Math.round(iw * scale));
     const rows = Math.max(8, Math.round(ih * scale));
     const count = cols * rows;
     state.cols = cols; state.rows = rows; state.count = count;
 
-    const aspect = iw / ih;
-    const plane = new THREE.Vector2(aspect * 2.0, 2.0);
+    plane = [(iw / ih) * 2.0, 2.0];
+    extent.photo = [plane[0], plane[1]];
+    extent.one = [shapeScale, shapeScale];
 
-    photoTex = new THREE.Texture(photoImg);
-    photoTex.flipY = false;          // v = 0 is the photograph's top row
-    photoTex.colorSpace = THREE.SRGBColorSpace;
-    photoTex.minFilter = photoTex.magFilter = THREE.LinearFilter;
-    photoTex.generateMipmaps = false;
-    photoTex.needsUpdate = true;
+    // the photograph. UNPACK_FLIP_Y stays false so v = 0 is the top row —
+    // flipping it is what put the photograph on its head once before.
+    photoTex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, photoTex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, photoImg);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
     const photoLum = photoLuminance(photoImg, cols, rows);
     const baked = shapeImg ? bakeShape(shapeImg, cols, rows, photoLum) : null;
-    shapeTex = baked ? baked.lit : null;
-    shapeMixTex = baked ? baked.mix : null;
-    if (!shapeTex) {
-      // No silhouette: fall back to a disc so movements IV and V still work.
-      const d = new Float32Array(cols * rows * 4);
-      for (let i = 0; i < cols * rows; i++) {
-        const a = i * 2.39996323, r = Math.sqrt(i / (cols * rows)) * 0.5;
-        d[i * 4] = 0.5 + Math.cos(a) * r;
-        d[i * 4 + 1] = 0.5 + Math.sin(a) * r;
-        d[i * 4 + 2] = Math.sqrt(1 - Math.min(1, (r / 0.5) ** 2));
-        d[i * 4 + 3] = 1;
+
+    let lit, mix;
+    if (baked) { lit = baked.lit; mix = baked.mix; }
+    else {
+      // no silhouette supplied: a filled disc, so IV and V still read
+      lit = new Float32Array(count * 4);
+      for (let i = 0; i < count; i++) {
+        const a = i * 2.39996323, r = Math.sqrt(i / count) * 0.5;
+        lit[i * 4] = 0.5 + Math.cos(a) * r;
+        lit[i * 4 + 1] = 0.5 + Math.sin(a) * r;
+        lit[i * 4 + 2] = Math.sqrt(Math.max(0, 1 - (r / 0.5) ** 2));
+        lit[i * 4 + 3] = 1;
       }
-      shapeTex = new THREE.DataTexture(d, cols, rows, THREE.RGBAFormat, THREE.FloatType);
-      shapeTex.needsUpdate = true;
-      shapeMixTex = shapeTex;
+      mix = lit;
     }
+    shapeTex = floatTexture(cols, rows, lit);
+    shapeMixTex = (mix === lit) ? shapeTex : floatTexture(cols, rows, mix);
 
-    posA = makeRT(cols, rows); posB = makeRT(cols, rows);
-    velA = makeRT(cols, rows); velB = makeRT(cols, rows);
+    // the photograph's own grid as the starting position, so the first
+    // frame on screen is the photograph rather than a cloud settling
+    const seed = new Float32Array(count * 4);
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const i = (y * cols + x) * 4;
+        seed[i]     = ((x + 0.5) / cols - 0.5) * plane[0];
+        seed[i + 1] = (0.5 - (y + 0.5) / rows) * plane[1];
+        seed[i + 3] = 1;
+      }
+    }
+    posA = target(cols, rows, seed);
+    posB = target(cols, rows, seed);
+    velA = target(cols, rows, new Float32Array(count * 4));
+    velB = target(cols, rows, new Float32Array(count * 4));
 
-    const seed = seedTexture(cols, rows, plane);
-    const blit = new THREE.ShaderMaterial({
-      uniforms: { uTex: { value: seed } },
-      vertexShader: SIM_VERT,
-      fragmentShader: 'precision highp float; varying vec2 vRef; uniform sampler2D uTex;' +
-                      'void main(){ gl_FragColor = texture2D(uTex, vRef); }'
-    });
-    simQuad.material = blit;
-    for (const rt of [posA, posB]) { renderer.setRenderTarget(rt); renderer.render(simScene, simCam); }
-    blit.uniforms.uTex.value = new THREE.DataTexture(
-      new Float32Array(cols * rows * 4), cols, rows, THREE.RGBAFormat, THREE.FloatType);
-    blit.uniforms.uTex.value.needsUpdate = true;
-    for (const rt of [velA, velB]) { renderer.setRenderTarget(rt); renderer.render(simScene, simCam); }
-    renderer.setRenderTarget(null);
-    seed.dispose(); blit.dispose();
+    simProgVel = program(SIM_VERT, VEL_FRAG, 'aPos');
+    simProgPos = program(SIM_VERT, POS_FRAG, 'aPos');
+    drawProg   = program(DRAW_VERT, DRAW_FRAG, 'aRef');
 
-    const common = {
-      uPlane: { value: plane },
-      uMode: { value: 0 },
-      uDepth: { value: 1.35 },
-      uPalette: { value: PALETTE.map(c => new THREE.Vector3(...c)) },
-      uCluster: { value: [-2.08, -1.04, 0, 1.04, 2.08].map(x => new THREE.Vector3(x, 0, 0)) },
-      uClusterScale: { value: 0.98 },
-      uShape: { value: shapeTex },
-      uShapeMix: { value: shapeMixTex },
-      uShapeScale: { value: 2.9 }
-    };
+    // a fullscreen quad for the simulation passes
+    quadVAO = gl.createVertexArray();
+    gl.bindVertexArray(quadVAO);
+    const qb = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, qb);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
-    clusterUniform = common.uCluster.value;
-    clusterScaleU  = common.uClusterScale;
-    extent.photo = [plane.x, plane.y];
-    extent.one   = [common.uShapeScale.value, common.uShapeScale.value];
-    layoutClusters();
-
-    velMat = new THREE.ShaderMaterial({
-      uniforms: Object.assign({
-        uPos: { value: null }, uVel: { value: null }, uPhoto: { value: photoTex },
-        uTime: { value: 0 }, uDt: { value: 0.016 },
-        uSillage: { value: 0 }, uSwirl: { value: 1 },
-        uPointer: { value: state.pointer }, uPointerR: { value: state.pointerR }
-      }, common),
-      vertexShader: SIM_VERT, fragmentShader: VEL_FRAG
-    });
-
-    posMat = new THREE.ShaderMaterial({
-      uniforms: { uPos: { value: null }, uVel: { value: null }, uDt: { value: 0.016 } },
-      vertexShader: SIM_VERT, fragmentShader: POS_FRAG
-    });
-
+    // one vertex per particle, carrying only its own (u,v) into the
+    // simulation textures
     const refs = new Float32Array(count * 2);
-    const verts = new Float32Array(count * 3);
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
         const i = y * cols + x;
@@ -595,49 +637,79 @@ export function createPixelField (canvas, opts = {}) {
         refs[i * 2 + 1] = (y + 0.5) / rows;
       }
     }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
-    geo.setAttribute('aRef', new THREE.BufferAttribute(refs, 2));
-    geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 14);
+    pointVAO = gl.createVertexArray();
+    gl.bindVertexArray(pointVAO);
+    const pb = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, pb);
+    gl.bufferData(gl.ARRAY_BUFFER, refs, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    gl.bindVertexArray(null);
 
-    drawMat = new THREE.ShaderMaterial({
-      uniforms: {
-        uPos: { value: posA.texture }, uPhoto: { value: photoTex },
-        uSize: { value: opts.pointSize || 0.030 },
-        uPixelRatio: { value: DPR }, uSillage: { value: 0 }
-      },
-      vertexShader: DRAW_VERT, fragmentShader: DRAW_FRAG,
-      transparent: true, depthWrite: false, depthTest: true
-    });
-
-    points = new THREE.Points(geo, drawMat);
-    points.frustumCulled = false;
-    scene.add(points);
+    gl.disable(gl.DEPTH_TEST);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     state.ready = true;
     resize();
   }
 
-  /* ── pointer ──────────────────────────────────────────────────── */
-  const ndc = new THREE.Vector2();
-  const ray = new THREE.Raycaster();
-  const plane0 = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
-  const hit = new THREE.Vector3();
-  let pointerIn = false;
+  /* ── layout and camera ───────────────────────────────────────────── */
+  function layoutClusters () {
+    const portrait = aspect < 0.95;
+    const cs = portrait ? 1.12 : 0.98;
+    const gap = cs * 1.12;
+    clusterScale = cs;
+    for (let i = 0; i < 5; i++) {
+      const o = (i - 2) * gap;
+      clusters[i * 3]     = portrait ? 0 : o;
+      clusters[i * 3 + 1] = portrait ? -o : 0;
+      clusters[i * 3 + 2] = 0;
+    }
+    const span = gap * 4 + cs;
+    extent.five = portrait ? [cs, span] : [span, cs];
+  }
+  function fitFor (w, h) {
+    const t = Math.tan(32 * Math.PI / 360);
+    const a = Math.max(0.3, aspect);
+    return Math.max(h / 2 / t, w / 2 / (t * a)) * 1.22;
+  }
+  function fitCamera () {
+    const zP = fitFor(extent.photo[0], extent.photo[1]);
+    const zF = fitFor(extent.five[0], extent.five[1]);
+    const zO = fitFor(extent.one[0], extent.one[1]);
+    const k34 = clamp(state.mode - 2, 0, 1);
+    const k45 = clamp(state.mode - 3, 0, 1);
+    camZ = zP + (zF - zP) * k34 + (zO - zF) * k45;
+  }
 
+  function resize () {
+    const w = canvas.clientWidth || 800, h = canvas.clientHeight || 500;
+    canvas.width = Math.round(w * DPR);
+    canvas.height = Math.round(h * DPR);
+    aspect = w / h;
+    layoutClusters();
+    fitCamera();
+  }
+  const ro = ('ResizeObserver' in window) ? new ResizeObserver(resize) : null;
+  if (ro) ro.observe(canvas); else addEventListener('resize', resize);
+
+  /* ── pointer ─────────────────────────────────────────────────────── */
+  let pointerIn = false;
   function movePointer (clientX, clientY) {
     const r = canvas.getBoundingClientRect();
-    ndc.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
-    ray.setFromCamera(ndc, camera);
-    if (ray.ray.intersectPlane(plane0, hit)) {
-      state.pointer.set(hit.x, hit.y, 0, state.pointer.w);
-      pointerIn = true;
-    }
+    // unproject the cursor onto the z = 0 plane, by hand
+    const ndcX = ((clientX - r.left) / r.width) * 2 - 1;
+    const ndcY = -((clientY - r.top) / r.height) * 2 + 1;
+    const t = Math.tan(32 * Math.PI / 360);
+    state.pointer[0] = camX + ndcX * t * Math.max(0.3, aspect) * camZ;
+    state.pointer[1] = camY + ndcY * t * camZ;
+    state.pointer[2] = 0;
+    pointerIn = true;
   }
   const onMove = e => movePointer(e.clientX, e.clientY);
   const onTouch = e => { if (e.touches[0]) movePointer(e.touches[0].clientX, e.touches[0].clientY); };
   const onDown = () => { state.press = -1; };          // press pulls it back in
-  const onUp   = () => { state.press = 0; };
+  const onUp = () => { state.press = 0; };
   const onLeave = () => { pointerIn = false; };
 
   canvas.addEventListener('pointermove', onMove);
@@ -649,58 +721,24 @@ export function createPixelField (canvas, opts = {}) {
   addEventListener('touchend', onUp);
   canvas.style.touchAction = 'pan-y';
 
-  /* ── size ─────────────────────────────────────────────────────── */
-  function resize () {
-    const w = canvas.clientWidth || 800, h = canvas.clientHeight || 500;
-    renderer.setSize(w, h, false);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-    layoutClusters();
-    fitCamera();
-    if (drawMat) drawMat.uniforms.uPixelRatio.value = DPR * Math.min(1.6, Math.max(0.7, w / 900));
-  }
-  /* Five piles in a row is the wrong shape for a phone — each ends up the
-     size of a thumbnail. On a portrait canvas they stack instead, and the
-     camera fits whichever arrangement is in use. */
-  function layoutClusters () {
-    if (!clusterUniform) return;
-    const portrait = camera.aspect < 0.95;
-    const cs = portrait ? 1.12 : 0.98;
-    const gap = cs * 1.12;
-    clusterScaleU.value = cs;
-    for (let i = 0; i < 5; i++) {
-      const o = (i - 2) * gap;
-      clusterUniform[i].set(portrait ? 0 : o, portrait ? -o : 0, 0);
-    }
-    const span = gap * 4 + cs;
-    extent.five = portrait ? [cs, span] : [span, cs];
+  /* ── one simulation pass ─────────────────────────────────────────── */
+  function pass (prog, dst, binds, setUniforms) {
+    gl.disable(gl.BLEND);          // a simulation pass replaces, never blends
+    gl.useProgram(prog.p);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, dst.fbo);
+    gl.viewport(0, 0, dst.w, dst.h);
+    binds.forEach(([name, tex], i) => {
+      if (prog.u[name] === undefined) return;
+      gl.activeTexture(gl.TEXTURE0 + i);
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.uniform1i(prog.u[name], i);
+    });
+    if (setUniforms) setUniforms(prog.u);
+    gl.bindVertexArray(quadVAO);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 
-  // How far back the camera has to stand is a question with an answer:
-  // fit the movement's own bounding box. Magic constants here clipped the
-  // five piles off the sides of a phone.
-  let camZ = 4.2;
-  const extent = { photo: [2, 2], five: [2, 2], one: [2, 2] };
-  function fitFor (w, h) {
-    const t = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
-    const a = Math.max(0.3, camera.aspect);
-    return Math.max(h / 2 / t, w / 2 / (t * a)) * 1.22;   // a little air
-  }
-  function fitCamera () {
-    const zPhoto = fitFor(extent.photo[0], extent.photo[1]);
-    const zFive  = fitFor(extent.five[0],  extent.five[1]);
-    const zOne   = fitFor(extent.one[0],   extent.one[1]);
-    // keyed to the movement indices, so the dolly has arrived by the time
-    // the movement has: IV is mode 3, not mode 3.2.
-    const m = state.mode;
-    const k34 = Math.max(0, Math.min(1, m - 2));   // III → IV
-    const k45 = Math.max(0, Math.min(1, m - 3));   // IV  → V
-    camZ = zPhoto + (zFive - zPhoto) * k34 + (zOne - zFive) * k45;
-  }
-  const ro = ('ResizeObserver' in window) ? new ResizeObserver(resize) : null;
-  if (ro) ro.observe(canvas); else addEventListener('resize', resize);
-
-  /* ── frame ────────────────────────────────────────────────────── */
+  /* ── frame ───────────────────────────────────────────────────────── */
   let t0 = performance.now(), simTime = 0;
 
   function step (now) {
@@ -713,47 +751,66 @@ export function createPixelField (canvas, opts = {}) {
 
     // the movement eases rather than cuts, and the targets crossfade
     state.mode += (state.modeTarget - state.mode) * Math.min(1, dt * 2.1);
-    // sillage is how slack the springs are; movement II is its home
     const wantSillage = (state.mode > 0.5 && state.mode < 1.9)
       ? 1 - Math.abs(state.mode - 1.35) / 0.85 : 0;
     state.sillage += (Math.max(0, wantSillage) - state.sillage) * Math.min(1, dt * 1.8);
+    state.pointer[3] = pointerIn ? (state.press < 0 ? -1.15 : 0.85) : 0;
 
-    state.pointer.w = pointerIn ? (state.press < 0 ? -1.15 : 0.85) : 0;
-
-    const u = velMat.uniforms;
-    u.uTime.value = simTime;
-    u.uDt.value = dt;
-    u.uMode.value = state.mode;
-    u.uSillage.value = state.sillage;
-    u.uSwirl.value = still ? 0.12 : state.swirl;
-    u.uPointerR.value = state.pointerR;
+    const common = u => {
+      gl.uniform2f(u.uPlane, plane[0], plane[1]);
+      gl.uniform1f(u.uMode, state.mode);
+      gl.uniform1f(u.uDepth, 1.35);
+      gl.uniform3fv(u.uPalette, PALETTE);
+      gl.uniform3fv(u.uCluster, clusters);
+      gl.uniform1f(u.uClusterScale, clusterScale);
+      gl.uniform1f(u.uShapeScale, shapeScale);
+    };
 
     // velocity, then position; ping-pong both
-    u.uPos.value = posA.texture; u.uVel.value = velA.texture;
-    simQuad.material = velMat;
-    renderer.setRenderTarget(velB); renderer.render(simScene, simCam);
+    pass(simProgVel, velB,
+      [['uPos', posA.tex], ['uVel', velA.tex], ['uPhoto', photoTex],
+       ['uShape', shapeTex], ['uShapeMix', shapeMixTex]],
+      u => {
+        common(u);
+        gl.uniform1f(u.uTime, simTime);
+        gl.uniform1f(u.uDt, dt);
+        gl.uniform1f(u.uSillage, state.sillage);
+        gl.uniform1f(u.uSwirl, still ? 0.12 : state.swirl);
+        gl.uniform4fv(u.uPointer, state.pointer);
+        gl.uniform1f(u.uPointerR, state.pointerR);
+      });
     [velA, velB] = [velB, velA];
 
-    posMat.uniforms.uPos.value = posA.texture;
-    posMat.uniforms.uVel.value = velA.texture;
-    posMat.uniforms.uDt.value = dt;
-    simQuad.material = posMat;
-    renderer.setRenderTarget(posB); renderer.render(simScene, simCam);
+    pass(simProgPos, posB, [['uPos', posA.tex], ['uVel', velA.tex]],
+      u => gl.uniform1f(u.uDt, dt));
     [posA, posB] = [posB, posA];
-
-    renderer.setRenderTarget(null);
-    drawMat.uniforms.uPos.value = posA.texture;
-    drawMat.uniforms.uSillage.value = state.sillage;
 
     // relief is the one movement that wants a look from the side
     fitCamera();
     const want = (state.mode > 1.6 && state.mode < 2.6) ? 1 : 0;
-    camera.position.x += ((want ? Math.sin(simTime * 0.33) * 1.5 : 0) - camera.position.x) * Math.min(1, dt * 1.4);
-    camera.position.y += ((want ? Math.sin(simTime * 0.21) * 0.5 : 0) - camera.position.y) * Math.min(1, dt * 1.4);
-    camera.position.z += (camZ - camera.position.z) * Math.min(1, dt * 2.6);
-    camera.lookAt(0, 0, 0);
+    camX += ((want ? Math.sin(simTime * 0.33) * 1.5 : 0) - camX) * Math.min(1, dt * 1.4);
+    camY += ((want ? Math.sin(simTime * 0.21) * 0.5 : 0) - camY) * Math.min(1, dt * 1.4);
 
-    renderer.render(scene, camera);
+    // draw
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    gl.enable(gl.BLEND);           // the point cloud, and only it, blends
+    gl.useProgram(drawProg.p);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, posA.tex);
+    gl.uniform1i(drawProg.u.uPos, 0);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, photoTex);
+    gl.uniform1i(drawProg.u.uPhoto, 1);
+    gl.uniformMatrix4fv(drawProg.u.uProj, false, perspective(32, Math.max(0.3, aspect), 0.1, 100));
+    gl.uniformMatrix4fv(drawProg.u.uView, false, lookAt(camX, camY, camZ, 0, 0, 0));
+    gl.uniform1f(drawProg.u.uSize, opts.pointSize || 0.030);
+    gl.uniform1f(drawProg.u.uPixelRatio, DPR * clamp(canvas.clientWidth / 900, 0.7, 1.6));
+    gl.uniform1f(drawProg.u.uSillage, state.sillage);
+    gl.bindVertexArray(pointVAO);
+    gl.drawArrays(gl.POINTS, 0, state.count);
+    gl.bindVertexArray(null);
   }
 
   if ('IntersectionObserver' in window) {
@@ -763,12 +820,7 @@ export function createPixelField (canvas, opts = {}) {
     }, { rootMargin: '140px' }).observe(canvas);
   }
 
-  /* ── load, then go ────────────────────────────────────────────── */
-  /* Load once with crossOrigin set — that is what lets the canvas be read
-     for luminance — and, if the server sends no CORS header, the request
-     fails outright rather than merely tainting. So retry without it: the
-     reads are already wrapped, and a shuffled deal is better than no
-     photograph at all. */
+  /* ── load, then go ───────────────────────────────────────────────── */
   const loadOnce = (src, anon) => new Promise(res => {
     const im = new Image();
     if (anon) im.crossOrigin = 'anonymous';
@@ -776,28 +828,28 @@ export function createPixelField (canvas, opts = {}) {
     im.onerror = () => res(null);
     im.src = src;
   });
-  const load = async src => {
-    if (!src) return null;
-    return (await loadOnce(src, true)) || (await loadOnce(src, false));
-  };
+  // crossOrigin lets the canvas be read for luminance, but against a server
+  // that sends no CORS header it fails the request outright rather than
+  // merely tainting — so retry without, and fall back to the shuffled deal
+  const load = async src => src
+    ? (await loadOnce(src, true)) || (await loadOnce(src, false))
+    : null;
 
   const ready = Promise.all([load(opts.photo), load(opts.shape)]).then(([p, s]) => {
-    if (disposed) return null;
-    if (!p) return null;
-    build(p, s);
+    if (disposed || !p) return null;
+    try { build(p, s); } catch (e) { return null; }
     raf = requestAnimationFrame(step);
     return api;
-  });
+  }).catch(() => null);
 
   const api = {
     state, MOVEMENTS, ready,
-    setMovement (i) { state.modeTarget = Math.max(0, Math.min(MOVEMENTS.length - 1, i)); },
+    setMovement (i) { state.modeTarget = clamp(i, 0, MOVEMENTS.length - 1); },
     movement: () => Math.round(state.mode),
-    debug: () => ({ aspect: +camera.aspect.toFixed(3), z: +camera.position.z.toFixed(2),
-                    camZ: +camZ.toFixed(2), mode: +state.mode.toFixed(2),
-                    extent: JSON.parse(JSON.stringify(extent)) }),
-    scrub (v) { state.modeTarget = Math.max(0, Math.min(MOVEMENTS.length - 1, v)); },
+    scrub (v) { state.modeTarget = clamp(v, 0, MOVEMENTS.length - 1); },
     setSwirl (v) { state.swirl = v; },
+    debug: () => ({ aspect: +aspect.toFixed(3), z: +camZ.toFixed(2),
+                    mode: +state.mode.toFixed(2), count: state.count }),
     resize,
     dispose () {
       disposed = true;
@@ -807,11 +859,8 @@ export function createPixelField (canvas, opts = {}) {
       canvas.removeEventListener('pointerdown', onDown);
       removeEventListener('pointerup', onUp);
       canvas.removeEventListener('pointerleave', onLeave);
-      [posA, posB, velA, velB].forEach(rt => rt && rt.dispose());
-      photoTex && photoTex.dispose();
-      shapeTex && shapeTex.dispose();
-      shapeMixTex && shapeMixTex !== shapeTex && shapeMixTex.dispose();
-      renderer.dispose();
+      [posA, posB, velA, velB].forEach(t => { if (t) { gl.deleteTexture(t.tex); gl.deleteFramebuffer(t.fbo); } });
+      [photoTex, shapeTex, shapeMixTex].forEach(t => t && gl.deleteTexture(t));
     }
   };
   return api;

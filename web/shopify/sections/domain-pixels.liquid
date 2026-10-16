@@ -18,7 +18,7 @@
          data-pixels
          data-shot="{{ shot_url }}"
          data-shape="{{ section.settings.shape_image | default: nil | image_url: width: 900 | default: '' }}"
-         data-shape-asset="{{ 'flacon-' | append: section.settings.shape | append: '.png' | asset_url }}"
+         data-shape-asset="{{ 'flacon-silhouette.png' | asset_url }}"
          style="min-height:{{ section.settings.length }}vh"
          aria-labelledby="pixelsTitle-{{ section.id }}">
   <div class="pixels-sticky">
@@ -57,18 +57,8 @@
   "settings": [
     { "type": "image_picker", "id": "shot", "label": "Campaign photograph",
       "info": "Every pixel becomes a particle. A portrait crop reads best. Very large files make a lot of particles — around a megapixel is plenty." },
-    { "type": "select", "id": "shape", "label": "Reassembles into",
-      "options": [
-        { "value": "kingdom",   "label": "Kingdom" },
-        { "value": "sovereign", "label": "Sovereign" },
-        { "value": "celestial", "label": "Celestial" },
-        { "value": "crown",     "label": "Crown" },
-        { "value": "empire",    "label": "Empire" }
-      ],
-      "default": "sovereign",
-      "info": "Which flacon the final movement assembles. Uses the rendered bottles shipped with the theme." },
     { "type": "image_picker", "id": "shape_image", "label": "Or your own silhouette",
-      "info": "A PNG with transparency. Its opaque area is the shape the pixels reassemble into — overrides the choice above." },
+      "info": "A PNG with transparency. Its opaque area is the shape the pixels reassemble into. Leave empty to use the flacon cut from the campaign frame that ships with the theme." },
     { "type": "range", "id": "length", "label": "Scroll length", "min": 200, "max": 600, "step": 20, "unit": "vh", "default": 420,
       "info": "How much scrolling the five movements take." },
 

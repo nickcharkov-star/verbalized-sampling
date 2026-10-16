@@ -31,9 +31,9 @@ const products = LOTS.map(([name, accord, vintage, swatch, qty, price, available
   type: 'Extrait de parfum',
   price, available,
   published_at: '2026-02-01',
-  // the house's own renders stand in for merchant photography; a real store
-  // supplies its own, and the section uses whatever it finds as-is
-  featured_image: { src: `./assets/flacon-${name.toLowerCase()}.png`, alt: `The ${name} flacon` },
+  // no stand-in photography: a store without pack shots is the honest
+  // default, and the section falls back to the composition's own colour
+  featured_image: null,
   variants: [{ inventory_quantity: qty }],
   metafields: { domain: { accord, vintage, swatch, theme, line,
                           run: available ? null : '90' } }
