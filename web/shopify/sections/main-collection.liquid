@@ -13,7 +13,6 @@
         {%- assign lot_alt = product.featured_image.alt | default: product.title -%}
         <article class="lot" role="listitem">
           <a href="{{ product.url }}" class="vignette" aria-label="{{ product.title | escape }}">
-            <canvas data-vignette aria-hidden="true"></canvas>
             {%- if product.featured_image -%}
               {{ product.featured_image | image_url: width: 900 | image_tag:
                    class: 'lot-art', loading: 'lazy',
@@ -25,7 +24,7 @@
           </a>
           <div class="lot-meta">
             <span class="lot-name">{{ product.title | escape }}</span>
-            <span class="lot-note">{{ product.metafields.domain.accord | default: product.price | money }}</span>
+            <span class="lot-note">{% if product.metafields.domain.accord != blank %}{{ product.metafields.domain.accord | escape }} &mdash; {% endif %}{{ product.price | money }}</span>
           </div>
         </article>
       {%- else -%}
@@ -41,8 +40,8 @@
   "tag": "section",
   "class": "domain-section",
   "settings": [
-    { "type": "text", "id": "counter", "label": "Counter word", "default": "lots" },
-    { "type": "text", "id": "empty", "label": "Empty message", "default": "Nothing struck in this collection yet." }
+    { "type": "text", "id": "counter", "label": "Counter word", "default": "compositions" },
+    { "type": "text", "id": "empty", "label": "Empty message", "default": "Nothing in this collection yet." }
   ]
 }
 {% endschema %}

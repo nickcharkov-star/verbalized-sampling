@@ -1,49 +1,47 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   PIXEL FIELD — the campaign photograph, taken apart.
+   THE PRINT — one photograph, taken apart to its dots.
 
-   One particle per pixel of the original file. Nothing is sampled down:
-   a 270 × 480 photograph becomes 129,600 particles, and the photograph
-   you see is those particles sitting still.
+   One particle per pixel of the photograph (capped by the device), and
+   the photograph you see is those particles sitting still. On paper each
+   particle is drawn as a halftone dot: sized by how much ink that pixel
+   would carry, coloured by the pixel itself, so the lineup reads as a
+   print and comes apart as one.
 
-   Written directly against WebGL 2. It used to lean on three.js, which
-   is 671 KB, for a renderer, four render targets, two shader programs,
-   a point cloud and a perspective matrix — about five percent of the
-   library, for twenty times the weight of this file. The simulation was
-   always raw GLSL; only the plumbing was borrowed, and the plumbing is
-   a few hundred lines.
-
-   The simulation never touches the CPU. Position and velocity live in
-   two pairs of floating-point framebuffers, ping-ponged each frame by a
-   fragment shader; the point cloud's vertex shader reads the position
+   Written directly against WebGL 2, no library. Position and velocity
+   live in two pairs of floating-point framebuffers, ping-ponged each frame
+   by a fragment shader; the point cloud's vertex shader reads the position
    texture back out. The only CPU work per frame is a handful of uniforms.
 
    FIVE MOVEMENTS
 
-     I   Frame      every pixel at home. The photograph, held together
-                    by a spring per particle.
+     I   The Plate  every dot where the photograph put it, held there by a
+                    spring per particle.
      II  Sillage    the springs let go. Curl noise carries the image off
                     like scent, and it drifts back when you stop.
-     III Relief     each pixel pushed along z by its own luminance, so the
-                    flat frame becomes a surface you can look across.
-     IV  The Five   every pixel flies to whichever of the five house
-                    colours it most resembles.
-     V   Flacon     all of them reassemble into one silhouette, rank-
-                    matched by luminance so it arrives lit.
+     III Relief     each dot pushed along z by its own darkness, so the
+                    flat print becomes a surface you can look across.
+     IV  The Five   every dot flies to whichever of the five lacquers it
+                    most resembles.
+     V   Celestial  given a second photograph, every dot moves to its own
+                    place in it and takes that picture's colour, so the
+                    lineup regroups into one bottle's real photograph.
+                    Without one, the dots fill a baked silhouette instead.
 
    The pointer is a force the whole time: it pushes the field away, and
    pressing pulls it back in.
    ═══════════════════════════════════════════════════════════════════════ */
+
 export { MOVEMENTS } from './catalogue.js';
 import { MOVEMENTS } from './catalogue.js';
 
 /* The house palette, as the sorter sees it. A pixel joins whichever of
    these it is nearest in linear RGB. */
 const PALETTE = [
-  0x17 / 255, 0x13 / 255, 0x10 / 255,   // I   Kingdom
-  0x5b / 255, 0x3a / 255, 0x25 / 255,   // II  Sovereign
-  0x2e / 255, 0x5e / 255, 0x8e / 255,   // III Celestial
-  0xe9 / 255, 0xdf / 255, 0xcd / 255,   // IV  Crown
-  0xd9 / 255, 0x73 / 255, 0x2a / 255    // V   Empire
+  0x14 / 255, 0x11 / 255, 0x10 / 255,   // I   Kingdom
+  0x5c / 255, 0x2a / 255, 0x18 / 255,   // II  Sovereign
+  0x1b / 255, 0x2a / 255, 0x9a / 255,   // III Celestial
+  0xe3 / 255, 0xd6 / 255, 0xc2 / 255,   // IV  Crown
+  0xc8 / 255, 0x41 / 255, 0x0f / 255    // V   Empire
 ];
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -154,6 +152,8 @@ uniform float uClusterScale;
 uniform sampler2D uShape;    // rank-matched seats — the lit bottle, movement V
 uniform sampler2D uShapeMix; // shuffled seats — the colour piles, movement IV
 uniform float uShapeScale;
+uniform vec2  uPlane2;       // world size of the second photograph, movement V
+uniform float uSecond;       // 1 when there is a second photograph
 
 vec3 homePos(vec2 ref){
   return vec3((ref.x - 0.5) * uPlane.x, (0.5 - ref.y) * uPlane.y, 0.0);
@@ -193,7 +193,9 @@ vec3 targetFor(float mode, vec2 ref, vec3 col, float lum){
     for (int i = 0; i < 5; i++) if (i == lot) c = uCluster[i];
     return c + vec3(mshape * uClusterScale, mthru * uClusterScale * 0.30 + (lum - 0.5) * 0.06);
   }
-  return vec3(shape * uShapeScale, thru * uShapeScale * 0.26 + (lum - 0.5) * 0.10);   // V
+  if (uSecond > 0.5)                                                   // V
+    return vec3((ref.x - 0.5) * uPlane2.x, (0.5 - ref.y) * uPlane2.y, 0.0);
+  return vec3(shape * uShapeScale, thru * uShapeScale * 0.26 + (lum - 0.5) * 0.10);
 }
 
 vec3 blendTarget(vec2 ref, vec3 col, float lum){
@@ -266,14 +268,14 @@ precision highp float;
 
 
 in vec2 aRef;
-uniform sampler2D uPos, uPhoto;
+uniform sampler2D uPos, uPhoto, uPhoto2;
 uniform mat4 uProj, uView;
-uniform float uSize, uPixelRatio, uSillage;
+uniform float uSize, uPixelRatio, uSillage, uPaper, uMorph;
 out vec3 vCol;
 out float vFade;
 void main(){
   vec3 p = texture(uPos, aRef).xyz;
-  vCol = texture(uPhoto, aRef).rgb;
+  vCol = mix(texture(uPhoto, aRef).rgb, texture(uPhoto2, aRef).rgb, uMorph);
 
   vec4 mv = uView * vec4(p, 1.0);
   gl_Position = uProj * mv;
@@ -281,7 +283,11 @@ void main(){
   // a pixel keeps its size on screen until it travels, then it thins out
   float travel = clamp(abs(p.z) * 0.6 + uSillage * 0.5, 0.0, 1.0);
   vFade = 1.0 - travel * 0.45;
-  gl_PointSize = uSize * uPixelRatio * (300.0 / -mv.z) * (1.0 + travel * 0.5);
+  // on paper a dot is as big as the ink it carries: dark pixels print
+  // large, light ones barely mark the sheet — which is all a halftone is
+  float ink = 1.0 - dot(vCol, vec3(0.299, 0.587, 0.114));
+  float halftone = mix(1.0, 0.28 + 1.2 * sqrt(ink), uPaper);
+  gl_PointSize = uSize * uPixelRatio * (300.0 / -mv.z) * (1.0 + travel * 0.5) * halftone;
 }`;
 
 const DRAW_FRAG = `#version 300 es
@@ -546,11 +552,11 @@ export function createPixelField (canvas, opts = {}) {
   /* ── build, once the images are in ───────────────────────────────── */
   const extent = { photo: [2, 2], five: [2, 2], one: [2, 2] };
   let clusters = new Float32Array(15), clusterScale = 0.98, shapeScale = 2.9;
-  let plane = [1.125, 2];
+  let plane = [1.125, 2], plane2 = null, photo2Tex = null;
   let camZ = 4.2, camX = 0, camY = 0;
   let aspect = 1;
 
-  function build (photoImg, shapeImg) {
+  function build (photoImg, shapeImg, secondImg) {
     const iw = photoImg.naturalWidth || photoImg.width;
     const ih = photoImg.naturalHeight || photoImg.height;
 
@@ -566,6 +572,18 @@ export function createPixelField (canvas, opts = {}) {
     plane = [(iw / ih) * 2.0, 2.0];
     extent.photo = [plane[0], plane[1]];
     extent.one = [shapeScale, shapeScale];
+    if (secondImg) {
+      plane2 = [((secondImg.naturalWidth || secondImg.width) / (secondImg.naturalHeight || secondImg.height)) * 2.0, 2.0];
+      extent.one = [plane2[0], plane2[1]];
+      photo2Tex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, photo2Tex);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, secondImg);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
 
     // the photograph. UNPACK_FLIP_Y stays false so v = 0 is the top row —
     // flipping it is what put the photograph on its head once before.
@@ -764,6 +782,8 @@ export function createPixelField (canvas, opts = {}) {
       gl.uniform3fv(u.uCluster, clusters);
       gl.uniform1f(u.uClusterScale, clusterScale);
       gl.uniform1f(u.uShapeScale, shapeScale);
+      gl.uniform2f(u.uPlane2, plane2 ? plane2[0] : 1, plane2 ? plane2[1] : 1);
+      gl.uniform1f(u.uSecond, plane2 ? 1 : 0);
     };
 
     // velocity, then position; ping-pong both
@@ -803,11 +823,17 @@ export function createPixelField (canvas, opts = {}) {
     gl.uniform1i(drawProg.u.uPos, 0);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, photoTex);
     gl.uniform1i(drawProg.u.uPhoto, 1);
+    // without a second photograph, sample the first again: the mix is a no-op
+    gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, photo2Tex || photoTex);
+    gl.uniform1i(drawProg.u.uPhoto2, 2);
+    const morph = plane2 ? clamp(state.mode - 3, 0, 1) : 0;
+    gl.uniform1f(drawProg.u.uMorph, morph * morph * (3 - 2 * morph));
     gl.uniformMatrix4fv(drawProg.u.uProj, false, perspective(32, Math.max(0.3, aspect), 0.1, 100));
     gl.uniformMatrix4fv(drawProg.u.uView, false, lookAt(camX, camY, camZ, 0, 0, 0));
     gl.uniform1f(drawProg.u.uSize, opts.pointSize || 0.030);
     gl.uniform1f(drawProg.u.uPixelRatio, DPR * clamp(canvas.clientWidth / 900, 0.7, 1.6));
     gl.uniform1f(drawProg.u.uSillage, state.sillage);
+    gl.uniform1f(drawProg.u.uPaper, opts.paper ? 1 : 0);
     gl.bindVertexArray(pointVAO);
     gl.drawArrays(gl.POINTS, 0, state.count);
     gl.bindVertexArray(null);
@@ -835,9 +861,9 @@ export function createPixelField (canvas, opts = {}) {
     ? (await loadOnce(src, true)) || (await loadOnce(src, false))
     : null;
 
-  const ready = Promise.all([load(opts.photo), load(opts.shape)]).then(([p, s]) => {
+  const ready = Promise.all([load(opts.photo), load(opts.shape), load(opts.second)]).then(([p, s, s2]) => {
     if (disposed || !p) return null;
-    try { build(p, s); } catch (e) { return null; }
+    try { build(p, s, s2); } catch (e) { return null; }
     raf = requestAnimationFrame(step);
     return api;
   }).catch(() => null);

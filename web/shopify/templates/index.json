@@ -1,51 +1,303 @@
 {
   "sections": {
-    "hero": {
-      "type": "domain-hero",
+    "cover": {
+      "type": "domain-cover",
+      "blocks": {
+        "line-sovereign": {
+          "type": "line",
+          "settings": {
+            "num": "Nº II",
+            "name": "Sovereign",
+            "theme": "Refined Indulgence",
+            "x": 19
+          }
+        },
+        "line-crown": {
+          "type": "line",
+          "settings": {
+            "num": "Nº IV",
+            "name": "Crown",
+            "theme": "Comfort Elevated",
+            "x": 34
+          }
+        },
+        "line-kingdom": {
+          "type": "line",
+          "settings": {
+            "num": "Nº I",
+            "name": "Kingdom",
+            "theme": "Quiet Authority",
+            "x": 46
+          }
+        },
+        "line-celestial": {
+          "type": "line",
+          "settings": {
+            "num": "Nº III",
+            "name": "Celestial",
+            "theme": "Light Beyond Reach",
+            "x": 66
+          }
+        },
+        "line-empire": {
+          "type": "line",
+          "settings": {
+            "num": "Nº V",
+            "name": "Empire",
+            "theme": "Magnetic Arrival",
+            "x": 88
+          }
+        }
+      },
+      "block_order": [
+        "line-sovereign",
+        "line-crown",
+        "line-kingdom",
+        "line-celestial",
+        "line-empire"
+      ],
       "settings": {}
     },
-    "five": {
-      "type": "domain-five",
+    "contents": {
+      "type": "domain-contents",
+      "settings": {}
+    },
+    "belief": {
+      "type": "domain-belief",
+      "settings": {}
+    },
+    "worlds": {
+      "type": "domain-worlds",
+      "blocks": {
+        "world-kingdom": {
+          "type": "world",
+          "settings": {
+            "key": "kingdom",
+            "alt": "Kingdom: a matte black flacon with a black stone cap, gold collar and gold monogram, between cannabis leaves, salt crystals and sandalwood.",
+            "frame": "S231",
+            "num": "Nº I",
+            "name": "Kingdom",
+            "theme": "Quiet Authority",
+            "line": "For those whose presence speaks before they do.",
+            "accord": "Vanilla, salt, cannabis, sandalwood",
+            "room": "Dark walnut, black stone, and morning fog.",
+            "format": "Eau de Parfum",
+            "size": "20 ml",
+            "price": "$40",
+            "lacquer": "#1d1d1d",
+            "tint": "#e4e1db",
+            "detail": "logo-macro",
+            "detail_alt": "The gold db monogram on Kingdom's matte black body, close up, under the black stone cap.",
+            "detail_caption": "The monogram, close",
+            "detail_frame": "S094",
+            "use_product_image": false
+          }
+        },
+        "world-sovereign": {
+          "type": "world",
+          "settings": {
+            "key": "sovereign",
+            "alt": "Sovereign: a chocolate-brown flacon with a glossy brown stone cap and gold monogram, among pomegranate, orchids, cacao and a glass of rum.",
+            "frame": "S228",
+            "num": "Nº II",
+            "name": "Sovereign",
+            "theme": "Refined Indulgence",
+            "line": "Luxury without excess.",
+            "accord": "Pomegranate, orchard fruits, cocoa, rum",
+            "room": "A private library. Leather, espresso, and dark woods.",
+            "format": "Eau de Parfum",
+            "size": "20 ml",
+            "price": "$40",
+            "lacquer": "#7e3d23",
+            "tint": "#ecdfd5",
+            "detail": "trio",
+            "detail_alt": "Three Domain Black flacons, in chocolate, ivory and black, on carved white plaster.",
+            "detail_caption": "Three on plaster",
+            "detail_frame": "S182",
+            "use_product_image": false
+          }
+        },
+        "world-celestial": {
+          "type": "world",
+          "settings": {
+            "key": "celestial",
+            "alt": "Celestial: a cobalt-blue flacon with a blue stone cap and gold monogram, beside blood orange, amber crystals and jasmine.",
+            "frame": "S227",
+            "num": "Nº III",
+            "name": "Celestial",
+            "theme": "Light Beyond Reach",
+            "line": "A quiet brilliance that never asks to be seen.",
+            "accord": "Orange, lemon, jasmine, amber, musk",
+            "room": "Blue hour, open sky, and glass architecture.",
+            "format": "Eau de Parfum",
+            "size": "20 ml",
+            "price": "$40",
+            "lacquer": "#223076",
+            "tint": "#e0e1ea",
+            "detail": "travel",
+            "detail_alt": "The 10 ml Domain Black atomiser with a gold cap, on marble in daylight with oranges and white blossom.",
+            "detail_caption": "The 10 ml, in daylight",
+            "detail_frame": "S219",
+            "use_product_image": false
+          }
+        },
+        "world-crown": {
+          "type": "world",
+          "settings": {
+            "key": "crown",
+            "alt": "Crown: an ivory flacon with a white stone cap and gold monogram, among vanilla pods, white flowers, whipped cream, tonka beans and sugar.",
+            "frame": "S229",
+            "num": "Nº IV",
+            "name": "Crown",
+            "theme": "Comfort Elevated",
+            "line": "Confidence wrapped in comfort.",
+            "accord": "Vanilla, cocoa, amber, sugar, tonka bean",
+            "room": "Cashmere, cream stone, and soft candlelight.",
+            "format": "Eau de Parfum",
+            "size": "20 ml",
+            "price": "$40",
+            "lacquer": "#ebe6db",
+            "tint": "#f0eae0",
+            "detail": "crown-copper",
+            "detail_alt": "Crown in grey light against a copper wall, its gold monogram catching the light.",
+            "detail_caption": "Crown, copper",
+            "detail_frame": "S146",
+            "use_product_image": false
+          }
+        },
+        "world-empire": {
+          "type": "world",
+          "settings": {
+            "key": "empire",
+            "alt": "Empire: an orange flacon with a glossy orange stone cap and gold monogram, between peaches, blood orange slices and ice.",
+            "frame": "S230",
+            "num": "Nº V",
+            "name": "Empire",
+            "theme": "Magnetic Arrival",
+            "line": "Every entrance deserves a signature.",
+            "accord": "Peach, blood orange, rum",
+            "room": "Golden sunset over a modern city.",
+            "format": "Eau de Parfum",
+            "size": "20 ml",
+            "price": "$40",
+            "lacquer": "#db440d",
+            "tint": "#f0ded1",
+            "detail": "empire-blocks",
+            "detail_alt": "Empire tilted on terracotta blocks against a deep blue sky.",
+            "detail_caption": "Empire on terracotta",
+            "detail_frame": "S042",
+            "use_product_image": false
+          }
+        }
+      },
+      "block_order": [
+        "world-kingdom",
+        "world-sovereign",
+        "world-celestial",
+        "world-crown",
+        "world-empire"
+      ],
+      "settings": {}
+    },
+    "print": {
+      "type": "domain-print",
+      "settings": {}
+    },
+    "contact": {
+      "type": "domain-contact",
+      "settings": {}
+    },
+    "covers": {
+      "type": "domain-covers",
       "settings": {}
     },
     "register": {
       "type": "domain-register",
+      "blocks": {
+        "row-kingdom": {
+          "type": "row",
+          "settings": {
+            "num": "I",
+            "name": "Kingdom",
+            "theme": "Quiet Authority",
+            "accord": "Vanilla, salt, cannabis, sandalwood",
+            "lacquer": "#1d1d1d",
+            "price_small": "$40",
+            "price_large": "Soon"
+          }
+        },
+        "row-sovereign": {
+          "type": "row",
+          "settings": {
+            "num": "II",
+            "name": "Sovereign",
+            "theme": "Refined Indulgence",
+            "accord": "Pomegranate, orchard fruits, cocoa, rum",
+            "lacquer": "#7e3d23",
+            "price_small": "$40",
+            "price_large": "Soon"
+          }
+        },
+        "row-celestial": {
+          "type": "row",
+          "settings": {
+            "num": "III",
+            "name": "Celestial",
+            "theme": "Light Beyond Reach",
+            "accord": "Orange, lemon, jasmine, amber, musk",
+            "lacquer": "#223076",
+            "price_small": "$40",
+            "price_large": "Soon"
+          }
+        },
+        "row-crown": {
+          "type": "row",
+          "settings": {
+            "num": "IV",
+            "name": "Crown",
+            "theme": "Comfort Elevated",
+            "accord": "Vanilla, cocoa, amber, sugar, tonka bean",
+            "lacquer": "#ebe6db",
+            "price_small": "$40",
+            "price_large": "Soon"
+          }
+        },
+        "row-empire": {
+          "type": "row",
+          "settings": {
+            "num": "V",
+            "name": "Empire",
+            "theme": "Magnetic Arrival",
+            "accord": "Peach, blood orange, rum",
+            "lacquer": "#db440d",
+            "price_small": "$40",
+            "price_large": "Soon"
+          }
+        }
+      },
+      "block_order": [
+        "row-kingdom",
+        "row-sovereign",
+        "row-celestial",
+        "row-crown",
+        "row-empire"
+      ],
       "settings": {}
     },
-    "seal": {
-      "type": "domain-seal",
-      "settings": {}
-    },
-    "rule1": {
-      "type": "domain-rule",
-      "settings": {}
-    },
-    "rule2": {
-      "type": "domain-rule",
-      "settings": {}
-    },
-    "rule3": {
-      "type": "domain-rule",
-      "settings": {}
-    },
-    "pixels": {
-      "type": "domain-pixels",
-      "settings": {}
-    },
-    "campaign": {
-      "type": "domain-campaign",
+    "colophon": {
+      "type": "domain-colophon",
       "settings": {}
     }
   },
   "order": [
-    "hero",
-    "pixels",
-    "rule1",
-    "campaign",
-    "rule2",
-    "five",
+    "cover",
+    "contents",
+    "belief",
+    "worlds",
+    "print",
+    "contact",
+    "covers",
     "register",
-    "rule3",
-    "seal"
+    "colophon"
   ]
 }

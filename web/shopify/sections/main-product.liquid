@@ -1,7 +1,6 @@
 {%- comment -%}
-  The product page as a certificate for a single lot: the merchant's own
-  photograph held inside an engraved vignette, the facts of the lot set as a
-  register entry, and the form that transfers it.
+  The product page: the merchant's own photograph placed as a plate, the
+  facts set out the way the issue sets out each world, and the form.
 {%- endcomment -%}
 {%- assign p = product -%}
 {%- assign lot_alt = p.featured_image.alt | default: p.title -%}
@@ -10,7 +9,6 @@
   <div class="band-in product-grid">
 
     <div class="plate">
-      <canvas data-vignette aria-hidden="true"></canvas>
       {%- if p.featured_image -%}
         {{ p.featured_image | image_url: width: 1400 | image_tag:
              class: 'lot-art',
@@ -75,13 +73,13 @@
   "tag": "section",
   "class": "domain-section",
   "settings": [
-    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "One lot · Issued to bearer" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Domain Black · Eau de Parfum" },
     { "type": "text", "id": "label_accord", "label": "Accord label", "default": "Accord" },
-    { "type": "text", "id": "label_vintage", "label": "Vintage label", "default": "Vintage" },
-    { "type": "text", "id": "label_price", "label": "Price label", "default": "Transfer at" },
+    { "type": "text", "id": "label_vintage", "label": "Year label", "default": "Year" },
+    { "type": "text", "id": "label_price", "label": "Price label", "default": "Price" },
     { "type": "text", "id": "label_variant", "label": "Variant label", "default": "Size" },
-    { "type": "text", "id": "buy_label", "label": "Buy button", "default": "Take it" },
-    { "type": "text", "id": "sold_label", "label": "Sold-out label", "default": "Closed" }
+    { "type": "text", "id": "buy_label", "label": "Buy button", "default": "Add to bag" },
+    { "type": "text", "id": "sold_label", "label": "Sold-out label", "default": "Sold out" }
   ]
 }
 {% endschema %}

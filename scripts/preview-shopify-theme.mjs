@@ -93,13 +93,8 @@ for (const [key, node] of queue) {
   if (process.env.DB_COLLECTION && declaredHas(schema, 'collection')) {
     settings.collection = process.env.DB_COLLECTION;
   }
-  // an image_picker is empty until a merchant chooses one; stand one in so
-  // the preview exercises the populated path rather than the empty state
-  for (const s of schema.settings || []) {
-    if (s.type === 'image_picker' && s.id && settings[s.id] === undefined) {
-      settings[s.id] = { src: './assets/campaign-sovereign.png', alt: 'Campaign photograph', width: 270, height: 480 };
-    }
-  }
+  // image_pickers stay empty, as on a fresh install: the sections fall
+  // back to the photographs bundled with the theme, which is the path to prove
 
   // Every id the Liquid reads must exist in the schema, or the editor can
   // never set it and the storefront silently renders a blank.
@@ -122,23 +117,22 @@ for (const [key, node] of queue) {
 
 /* ── wrap it the way a theme's layout/theme.liquid would ─────────────── */
 const html = `<!doctype html>
-<html lang="en" class="no-js">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Domain Black — theme preview</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Jost:wght@200;300;400;500&family=Pinyon+Script&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..600;1,6..96,400&family=Jost:wght@400;500&family=Pinyon+Script&display=swap">
 <link rel="stylesheet" href="./assets/domain-black.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 </head>
 <body class="template-${TEMPLATE}">
+<a class="skip" href="#main">Skip to content</a>
 ${body}
-<script type="importmap">{ "imports": { "three": "./assets/three.module.min.js" } }</script>
-<script type="module" src="./assets/domain-black.js"></script>
+<script>window.DB_PHOTO_BASE = "./assets/";</script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script>
+<script type="module" src="./assets/issue.js"></script>
 </body>
 </html>`;
 

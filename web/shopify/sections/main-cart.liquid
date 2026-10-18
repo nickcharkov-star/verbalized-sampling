@@ -6,7 +6,7 @@
       {%- form 'cart', cart -%}
         <div class="reg-wrap">
           <table class="reg-table">
-            <thead><tr><th scope="col">Lot</th><th scope="col">Quantity</th><th scope="col">Total</th></tr></thead>
+            <thead><tr><th scope="col">Composition</th><th scope="col">Quantity</th><th scope="col">Total</th></tr></thead>
             <tbody>
               {%- for item in cart.items -%}
                 <tr>
@@ -39,10 +39,10 @@
   "tag": "section",
   "class": "domain-section",
   "settings": [
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Your holding" },
-    { "type": "text", "id": "empty", "label": "Empty message", "default": "Nothing held yet." },
-    { "type": "text", "id": "continue", "label": "Continue link", "default": "See what is open" },
-    { "type": "text", "id": "checkout", "label": "Checkout button", "default": "Settle" }
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Your bag" },
+    { "type": "text", "id": "empty", "label": "Empty message", "default": "Your bag is empty." },
+    { "type": "text", "id": "continue", "label": "Continue link", "default": "See the five" },
+    { "type": "text", "id": "checkout", "label": "Checkout button", "default": "Check out" }
   ]
 }
 {% endschema %}

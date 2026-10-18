@@ -1,26 +1,5 @@
 {
   "current": {
-    "wordmark": "Domain Black",
-    "ink_gold": "#c9a227",
-    "ink_paper": "#ece3d6",
-    "bg_bond": "#0c0a09",
-    "accent_oxblood": "#6d1f23",
-    "engrave_opacity": 70,
-    "smooth_scroll": true,
-    "spin_rosette": true
-  },
-  "presets": {
-    "Bearer": {
-      "ink_gold": "#c9a227",
-      "ink_paper": "#ece3d6",
-      "bg_bond": "#0c0a09",
-      "engrave_opacity": 70
-    },
-    "Bone": {
-      "ink_gold": "#8a6a16",
-      "ink_paper": "#2b2622",
-      "bg_bond": "#ece3d6",
-      "engrave_opacity": 55
-    }
+    "smooth_scroll": true
   }
 }

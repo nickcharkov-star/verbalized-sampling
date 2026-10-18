@@ -2,35 +2,22 @@
   {
     "name": "theme_info",
     "theme_name": "Domain Black",
-    "theme_version": "1.0.0",
-    "theme_author": "Maison Domain",
+    "theme_version": "2.0.0",
+    "theme_author": "Domain Black",
     "theme_documentation_url": "https://domainblack.shop",
     "theme_support_url": "https://domainblack.shop"
   },
   {
     "name": "Mark",
     "settings": [
-      { "type": "image_picker", "id": "favicon", "label": "Favicon" },
-      { "type": "text", "id": "wordmark", "label": "Wordmark", "default": "Domain Black" }
-    ]
-  },
-  {
-    "name": "Engraving",
-    "settings": [
-      { "type": "paragraph", "content": "The guilloché is drawn in the browser from the colours below. It is not an image, so it stays crisp at any size and costs nothing to download." },
-      { "type": "color", "id": "ink_gold", "label": "Engraving (primary)", "default": "#c9a227" },
-      { "type": "color", "id": "ink_paper", "label": "Engraving (secondary)", "default": "#ece3d6" },
-      { "type": "color", "id": "bg_bond", "label": "Bond", "default": "#0c0a09" },
-      { "type": "color", "id": "accent_oxblood", "label": "Closed / sold out", "default": "#6d1f23" },
-      { "type": "range", "id": "engrave_opacity", "label": "Engraving strength", "min": 20, "max": 100, "step": 5, "unit": "%", "default": 70 }
+      { "type": "image_picker", "id": "favicon", "label": "Favicon" }
     ]
   },
   {
     "name": "Motion",
     "settings": [
       { "type": "checkbox", "id": "smooth_scroll", "label": "Smooth scrolling", "default": true,
-        "info": "Always disabled for visitors who ask for reduced motion." },
-      { "type": "checkbox", "id": "spin_rosette", "label": "Turn the hero engraving", "default": true }
+        "info": "Always off for visitors who ask for reduced motion." }
     ]
   }
 ]

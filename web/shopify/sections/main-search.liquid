@@ -12,7 +12,6 @@
           {%- assign lot_alt = item.featured_image.alt | default: item.title -%}
           <article class="lot" role="listitem">
             <a href="{{ item.url }}" class="vignette" aria-label="{{ item.title | escape }}">
-              <canvas data-vignette aria-hidden="true"></canvas>
               {%- if item.featured_image -%}
                 {{ item.featured_image | image_url: width: 900 | image_tag:
                      class: 'lot-art', loading: 'lazy',
@@ -39,7 +38,7 @@
   "class": "domain-section",
   "settings": [
     { "type": "text", "id": "heading", "label": "Heading", "default": "Search the register" },
-    { "type": "text", "id": "placeholder", "label": "Placeholder", "default": "Lot, accord, vintage" },
+    { "type": "text", "id": "placeholder", "label": "Placeholder", "default": "Kingdom, vanilla, Eau de Parfum" },
     { "type": "text", "id": "submit", "label": "Button", "default": "Search" },
     { "type": "text", "id": "none", "label": "No results", "default": "Nothing in the register matches." }
   ]

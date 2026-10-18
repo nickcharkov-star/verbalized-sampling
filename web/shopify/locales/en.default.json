@@ -3,8 +3,8 @@
     "accessibility": { "skip_to_content": "Skip to content" },
     "search": { "placeholder": "Search", "submit": "Search", "results": "Results", "no_results": "Nothing found." },
     "pagination": { "previous": "Previous", "next": "Next" },
-    "newsletter": { "label": "Be told when the next five are struck", "submit": "Enter the register" },
-    "404": { "title": "No such lot.", "body": "The page you asked for is not in the register.", "link": "Return to the register" }
+    "newsletter": { "label": "Hear about the next issue first", "submit": "Enter the register" },
+    "404": { "title": "No such page.", "body": "The page you asked for is not in the register.", "link": "Return to the register" }
   },
   "products": {
     "product": {
@@ -16,7 +16,7 @@
     }
   },
   "cart": {
-    "general": { "title": "Your holding", "empty": "Nothing held yet.", "subtotal": "Subtotal", "checkout": "Settle", "remove": "Remove", "continue": "Continue" }
+    "general": { "title": "Your bag", "empty": "Nothing held yet.", "subtotal": "Subtotal", "checkout": "Check out", "remove": "Remove", "continue": "Continue" }
   },
   "customer": {
     "account": { "title": "Account", "orders": "Orders", "logout": "Log out" },

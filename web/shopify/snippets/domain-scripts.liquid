@@ -1,22 +1,16 @@
 {%- comment -%}
-  Motion libraries and theme behaviour.
+  The issue's moving parts. Include once, just before </body>.
 
-  Include once per page, just before </body>:
-      {% render 'domain-scripts' %}
+  issue.js is the same file the site runs. It imports the press (halftone.js)
+  and the print (pixelfield.js) dynamically, so either can fail to arrive
+  without taking any content with it. Shopify keeps every asset in one flat
+  folder; DB_PHOTO_BASE tells the script where the photographs live.
 
-  There is no 3D library any more: the pixel field is written directly
-  against WebGL 2 and is 35 KB, where three.js was 671 KB for about five
-  percent of its surface. GSAP and Lenis stay optional at runtime — with a
-  blocked CDN the page still renders and reads, because every reveal
-  animates *from* its resting state.
-
-  To self-host them (recommended for production): upload gsap.min.js,
-  ScrollTrigger.min.js and lenis.min.js to Assets and swap the three
-  <script src> values for {{ 'gsap.min.js' | asset_url }} and so on.
+  Lenis is optional: with a blocked CDN the page scrolls natively. To
+  self-host it, upload lenis.min.js to Assets and use {{ 'lenis.min.js' | asset_url }}.
 {%- endcomment -%}
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script>window.DB_PHOTO_BASE = "{{ 'lineup-800.webp' | asset_url | split: 'lineup-800.webp' | first }}";</script>
+{%- if settings.smooth_scroll -%}
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script>
-
-<script type="module" src="{{ 'domain-black.js' | asset_url }}"></script>
+{%- endif -%}
+<script type="module" src="{{ 'issue.js' | asset_url }}"></script>

@@ -91,6 +91,38 @@ For **thickness**, run a two-pass chamfer distance transform over the mask and
 store `sqrt(distance / maxDistance)`. Then scatter particles through the
 volume with `z = (hash(ref) - 0.5) * 2.0 * thickness`.
 
+## On paper: dots, not glow
+
+On a dark page the points glow; on a light page they should print. Draw
+each particle with normal alpha blending over a transparent clear (the
+page's paper shows through), coloured by its pixel, and **sized by the ink
+it would carry**:
+
+```glsl
+float ink = 1.0 - dot(vCol, vec3(0.299, 0.587, 0.114));
+gl_PointSize = base * mix(1.0, 0.28 + 1.2 * sqrt(ink), uPaper);
+```
+
+Dark pixels print large, light ones barely mark the sheet — that is what a
+halftone is, and the photograph reads as a print at rest.
+
+## End on the real thing, not a silhouette
+
+Reassembling the particles into a product *silhouette* gives a shape in
+the wrong colours — the lineup's browns poured into a blue bottle's
+outline. A user who launched that bottle reads it as a mock-up. Give the
+last movement a **second photograph** instead: each particle's target is
+its own (u, v) placed in the second frame, and its colour crossfades to
+the second photograph sampled at the same (u, v).
+
+```glsl
+if (uSecond > 0.5) return vec3((ref.x - 0.5) * uPlane2.x, (0.5 - ref.y) * uPlane2.y, 0.0);
+// draw: vCol = mix(texture(uPhoto, aRef).rgb, texture(uPhoto2, aRef).rgb, uMorph);
+```
+
+The particles that were the lineup become the product's own catalogue
+photograph — the real bottle, made of the same dots.
+
 ## Six bugs that cost real time
 
 1. **The image renders upside down.** `THREE.Texture.flipY` defaults to
@@ -216,10 +248,17 @@ and let the camera fit whichever arrangement is in use.
 ## Reference implementation
 
 `web/assets/pixelfield.js` in this repository: five movements, pointer push
-and press-to-pull, aspect-aware layout, and the silhouette bake with the
-distance transform.
+and press-to-pull, aspect-aware layout, paper mode, the second-photograph
+finale, and the silhouette bake with the distance transform as a fallback.
 
 ## Testing it
+
+**Software GL converges slowly.** Under SwiftShader a 200k-particle field
+runs at a few frames a second and `dt` is clamped, so simulated time crawls:
+a movement that settles in two seconds on a GPU still looks torn after
+seven seconds of wall clock. Before calling a frame broken, wait 20 s or
+jump the mode, and compare again.
+
 
 Screenshots of a particle system are the only way to see it. Snap each
 movement from a bench page with a `__jump(i)` hook that sets the mode without
