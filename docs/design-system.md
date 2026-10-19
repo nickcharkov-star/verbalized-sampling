@@ -74,3 +74,49 @@ type fully inked and photographs developed.
 - **The page** — `assets/issue.js`. One clock for everything that follows
   the scroll; inked type; developing plates; chapter wipes and paper tints;
   the night; magnetic buttons; the cursor; page turns; sound.
+
+## Customization — the Studio (Issue Nº 01, v10)
+
+Learned from [Brik](https://brik.space/) (an AI creative-tools platform that
+grew out of the Wix Design Guild), where every visual is a *tool*: a live
+canvas, a panel of controls (sliders, toggles, inputs, swatches), presets
+to remix, and an export. brik.space itself could not be opened from the
+build environment; its model was read from its own pages' descriptions and
+write-ups about it.
+
+What the issue took from it, and how:
+
+| Brik | Domain Black |
+|---|---|
+| Every visual is a tool with its own controls | The glass (mist, rain, breath, breathe on it, wipe it clean), the print (dot, swirl), Your Line (text, world, face, motion, size, echoes, format) |
+| Remix a tool from presets, or shuffle | Six Remixes in the Studio; Shuffle; Reset |
+| Prompt plus controls | "Describe your evening": a sentence read against the worlds' own vocabulary sets the controls |
+| Export images, video, transparent video | Keep this frame (PNG); Your Line keeps a PNG or a five-second WebM/MP4, on a clear ground if asked |
+| Kinetic typography collections (e.g. Trailing Text) | Your Line's Echo and Trail |
+
+What it did not take: generating anything. The product is never drawn or
+regraded; the Studio changes paper, ink, type and motion around the
+photographs, never the photographs.
+
+**How it is built.** A boot script in the head reads `?studio=` or this
+browser's last visit and writes `data-paper` (the world), `data-light`, `data-motion`,
+`data-contrast`, `data-grain` and `--type`, `--opsz`, `--grain` on `<html>`
+before the first paint. The tokens do the rest:
+
+| Attribute | Tokens it turns |
+|---|---|
+| `data-paper` | `--paper`, `--paper-2`, `--sheet` (that world's tint), `--accent` (its lacquer) |
+| `data-light="night"` | every colour token, and `color-scheme: dark`; per world, the dark is warmed by its lacquer |
+| `data-contrast` | `font-variation-settings: "opsz"` on display type (6 soft … 96 sharp) |
+| `data-grain` | a fractal-noise layer over the page, `soft-light`, under the Studio |
+| `--type` | the root font size, so every rem scales |
+
+Motion is read live by every moving part (`M()` in `issue.js`): parallax,
+magnetic lean, the masthead's slip, the cover pan, page turns and the sheen
+all scale with it, and stop at zero. A device that asks for reduced motion
+is held at zero whatever the slider says.
+
+Exports go through the viewer's own save dialog where the page is framed
+by one (the `downloads` capability on claude.ai) and are an ordinary
+download everywhere else.
+

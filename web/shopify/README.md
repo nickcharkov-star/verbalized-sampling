@@ -17,6 +17,7 @@ the published site. `scripts/shopify/sync-from-site.py` copies them in.
 | p. 08 | `domain-worlds` | Five chapters. The catalogue photograph holds still and wipes to each world as its chapter arrives; the paper takes on that world's tint. Under each, **In the glass**: the notes, as close crops of that world's own photograph (never the bottle), pouring in one after another. One block per world, each with an optional **product** — the button, price and (optionally) the photograph then come from the store. |
 | p. 18 | `domain-night` | **After Hours.** The page goes dark. Empire stands behind cold glass: the mist gathers around the ingredients, drops run and gather, and a pass of the hand (or a drag on a phone) wipes it, after which it mists back over like breath. The bottle itself is always left clear. Choose the **product behind the glass** and the button goes to it. Below, three night plates: two bottles set small in a field of black, and the monogram. |
 | p. 22 | `domain-print` | The lineup drawn live as ~200,000 halftone dots (WebGL 2). Scroll moves it through five movements; the last regroups every dot into the Celestial photograph. Drag to push, press to pull. |
+| p. 26 | `domain-line` | **Your Line.** A visitor sets a line of their own in Bodoni (italic or roman) or Jost capitals, on one of the five lacquers, beside that bottle's catalogue photograph, with Echo or Trail motion, and keeps it as a story (9:16), post (4:5) or square: a PNG, or a five-second clip where the browser can record one. The photograph is drawn whole and the type has a box of its own, so it never crosses the bottle. |
 | p. 28 | `domain-contact` | A contact sheet of sixteen frames from the shoot, with china-marker rings on the picks, a loupe, and a lightbox. |
 | p. 34 | `domain-covers` | Five magazine covers in a stack you can deal from (drag, arrows, keys). |
 | p. 38 | `domain-register` | Every composition in one table. Rows can be linked to products. |
@@ -40,6 +41,31 @@ Nothing in the theme draws a bottle.
 
 Collection and product pages read `domain.accord` (text) and
 `domain.vintage` (text) when they exist, and fall back gracefully when not.
+
+## The Studio: the issue, made yours
+
+*Header → Offer the Studio* puts a **Studio** button in the bar. It opens a
+panel where a visitor sets the whole issue for themselves:
+
+- **World**: the paper takes one of the five worlds' tints, and the accent
+  its lacquer. **Light**: day, or night, where every token turns.
+- **Type** size, **contrast** (Bodoni's optical-size axis, from soft to
+  sharp hairlines), **motion** (down to still) and paper **grain**.
+- **Remixes** (six set pairings), **Shuffle**, **Reset**, and **Copy link**,
+  which writes the settings into the address (`?studio=…`) so whoever opens
+  it sees the same issue.
+- **Describe your evening**: a sentence ("a leather chair, whisky, late") is
+  read against the five worlds' notes and rooms and sets the issue. A plain
+  word list, no model and no network, so what it picks can be explained.
+
+The settings live in that visitor's browser only. A small script in the
+head (`snippets/domain-studio-boot.liquid`) applies them before the first
+paint, so a night issue never flashes paper. Nothing in the Studio touches
+a photograph.
+
+The glass on p. 18 and the print on p. 22 are tools too: **Adjust** opens
+their dials (mist, rain, breath; dot size, swirl) and **Keep this frame**
+saves what is on screen as a PNG.
 
 ## Moving between pages
 
@@ -67,8 +93,10 @@ downloaded: every sound is synthesised in the browser.
 - **Without WebGL** the cover shows its photograph, p. 18 shows Empire
   without glass, and p. 22 shows the lineup as a plain plate with one line
   of explanation.
-- The three heavy modules (press, print, glass) are loaded with `import()`,
-  so a failed request costs the page its animation and never its content.
+- The heavy modules (press, print, glass, Your Line, the Studio) are loaded
+  with `import()`, so a failed request costs the page a feature and never
+  its content: without the Studio the button hides; without Your Line the
+  page shows the still plate and its line.
 
 ## What was checked before this was shared
 

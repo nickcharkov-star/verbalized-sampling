@@ -5,8 +5,9 @@
 The site is the source of truth for the issue's design. This copies its
 stylesheet, scripts and photographs into the theme, and regenerates the
 sections whose markup has little a merchant needs to edit (contents, after
-hours, the print, the contact sheet, the covers) and the notes snippet the
-five worlds render, rewriting every ./assets/ path to
+hours, the print, your line, the contact sheet, the covers), the notes
+snippet the five worlds render and the Studio's two snippets, rewriting
+every ./assets/ path to
 Shopify's asset_url. The sections a merchant edits — cover, belief, the
 five worlds, register, colophon, header, footer — are written by hand in
 Liquid and are left alone.
@@ -37,7 +38,8 @@ head = ('/* Generated from web/index.html by scripts/shopify/sync-from-site.py.\
 open(css_path, 'w', encoding='utf-8').write(head + issue_css + '\n\n' + MARK + store_css)
 
 # ── scripts and photographs ─────────────────────────────────────────────
-for f in ('issue.js', 'halftone.js', 'pixelfield.js', 'glass.js', 'catalogue.js'):
+SCRIPTS = ('issue.js', 'halftone.js', 'pixelfield.js', 'glass.js', 'studio.js', 'yourline.js', 'catalogue.js')
+for f in SCRIPTS:
     shutil.copyfile(os.path.join(site_dir, 'assets', f), os.path.join(theme, 'assets', f))
 photos = os.path.join(site_dir, 'assets', 'photo')
 n = 0
@@ -77,7 +79,8 @@ EXTRA = {
 SECTIONS = {
     'domain-contents': ('<section class="contents wrap" id="contents"', '<!-- ═══ the belief', 'Contents'),
     'domain-night': ('<section class="night" id="night"', '<!-- ═══ the print', 'After hours'),
-    'domain-print': ('<div class="print-intro wrap">', '<!-- ═══ contact sheet', 'The print'),
+    'domain-print': ('<div class="print-intro wrap">', '<!-- ═══ your line', 'The print'),
+    'domain-line': ('<section class="line wrap" id="line"', '<!-- ═══ contact sheet', 'Your line'),
     'domain-contact': ('<section class="contact wrap" id="contact"', '<!-- ═══ the covers', 'Contact sheet'),
     'domain-covers': ('<section class="covers wrap" id="covers"', '<!-- ═══ the register', 'The covers'),
 }
@@ -94,6 +97,26 @@ for name, (start, end, label) in SECTIONS.items():
            '  edit the site and sync rather than editing this file.\n{%- endcomment -%}\n'
            + body + '\n\n{% schema %}\n' + json.dumps(schema, ensure_ascii=False) + '\n{% endschema %}\n')
     open(os.path.join(theme, 'sections', name + '.liquid'), 'w', encoding='utf-8').write(out)
+
+# ── the Studio: its boot script (for the head, so a night issue never
+# flashes paper) and its panel (for the end of the body) ────────────────
+def whole(start, end):
+    i = html.index(start)
+    j = html.index(end, i) + len(end)
+    return html[i:j]
+
+
+SNIPPETS = {
+    'domain-studio-boot': (whole('<script data-studio-boot>', '</script>'),
+                           'The visitor\'s issue, applied before the first paint. Render in <head>.'),
+    'domain-studio': (whole('<aside class="studio"', '</aside>'),
+                      'The Studio panel. Render once, before </body>; the header opens it.'),
+}
+for name, (body, what) in SNIPPETS.items():
+    assert '{{' not in body and '{%' not in body, name
+    out = ('{%- comment -%}\n  Generated from web/index.html by scripts/shopify/sync-from-site.py.\n  '
+           + what + '\n{%- endcomment -%}\n' + liquidize(body) + '\n')
+    open(os.path.join(theme, 'snippets', name + '.liquid'), 'w', encoding='utf-8').write(out)
 
 # ── the notes in each world's glass, as a snippet the worlds section renders ──
 # Each note is a crop of that world's own catalogue photograph
@@ -126,5 +149,5 @@ lines += ["  {%- else -%}{%- assign notes = '' | split: ';' -%}",
 os.makedirs(os.path.join(theme, 'snippets'), exist_ok=True)
 open(os.path.join(theme, 'snippets', 'domain-notes.liquid'), 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
 
-print(f'synced: css {len(issue_css)} chars · 5 scripts · {n} photographs · {len(SECTIONS)} sections · '
-      f'notes for {len(worlds)} worlds')
+print(f'synced: css {len(issue_css)} chars · {len(SCRIPTS)} scripts · {n} photographs · {len(SECTIONS)} sections · '
+      f'notes for {len(worlds)} worlds · {len(SNIPPETS)} studio snippets')

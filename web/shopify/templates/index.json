@@ -296,6 +296,10 @@
     "night": {
       "type": "domain-night",
       "settings": {}
+    },
+    "line": {
+      "type": "domain-line",
+      "settings": {}
     }
   },
   "order": [
@@ -305,6 +309,7 @@
     "worlds",
     "night",
     "print",
+    "line",
     "contact",
     "covers",
     "register",

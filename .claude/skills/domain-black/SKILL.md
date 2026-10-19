@@ -33,4 +33,9 @@ description: House rules for any work on the Domain Black fragrance brand in thi
   size before calling a cut finished.
 - **Motion is a lean, not a chase:** magnetic pulls ease off toward a
   ceiling of about 14 px; nothing moves under reduced motion.
+- **The Studio (customization) changes the issue, never a photograph.**
+  New colours go in as tokens under `data-paper` / `data-light` on `<html>` (not `data-world`: the five chapters own that one) (check them
+  by day and by night); new moving parts read the live motion factor `M()`;
+  a tool's type gets a box of its own, clipped, and a test that the plate's
+  pixels are identical with any text in every format.
 - **After a session with corrections, run `/retro`.**

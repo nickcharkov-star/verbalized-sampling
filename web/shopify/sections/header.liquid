@@ -1,6 +1,7 @@
 {%- comment -%}
   The bar: the wordmark, the issue line once the cover has scrolled away,
-  the sound switch (off until pressed; the glass rings when a chapter's
+  the Studio (the visitor sets the issue: a world, day or night, type,
+  motion, grain), the sound switch (off until pressed; the glass rings when a chapter's
   notes pour in), the menu, the bag, and the folio — the page number of the
   spread in view.
   A thin rule along its foot fills as the issue is read.
@@ -9,6 +10,9 @@
   <a class="bar-mark" href="{{ routes.root_url }}">{{ section.settings.wordmark | default: shop.name | escape }}</a>
   <p class="bar-issue">{{ section.settings.issue | escape }}</p>
   <div class="bar-right">
+    {%- if section.settings.studio -%}
+      <button class="bar-studio" type="button" data-studio-open aria-controls="studio" aria-expanded="false"><span class="sq" aria-hidden="true"><i style="--c:var(--kingdom)"></i><i style="--c:var(--empire)"></i><i style="--c:var(--celestial)"></i><i style="--c:var(--sovereign)"></i></span><span class="lbl">Studio</span></button>
+    {%- endif -%}
     {%- if section.settings.sound -%}
       <button class="bar-sound" type="button" data-sound aria-pressed="false" aria-label="Sound"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="lbl">Sound</span></button>
     {%- endif -%}
@@ -31,6 +35,7 @@
     { "type": "text", "id": "issue", "label": "Issue line", "default": "Issue Nº 01 — The Five Worlds" },
     { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
     { "type": "text", "id": "cart_label", "label": "Bag label", "default": "Bag" },
+    { "type": "checkbox", "id": "studio", "label": "Offer the Studio", "default": true, "info": "Lets visitors set the issue to their taste. It changes how the page looks for them only, never a product photograph." },
     { "type": "checkbox", "id": "sound", "label": "Offer sound", "default": true, "info": "A switch in the bar. Sound is always off until the visitor presses it." }
   ]
 }

@@ -24,6 +24,13 @@ const easeOut = t => 1 - Math.pow(1 - t, 4);
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
+/* the visitor's issue (set by the boot script, changed by the Studio):
+   motion is read live, so the Studio's slider reaches every moving part */
+const prefs = window.__dbStudio?.prefs || { motion: 100 };
+const M = () => (still ? 0 : prefs.motion / 100);
+const hex = h => { h = String(h).trim(); return /^#[0-9a-f]{6}$/i.test(h) ? [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)) : null; };
+const token = name => hex(getComputedStyle(root).getPropertyValue(name)) || [0xec, 0xe6, 0xdc];
+
 /* ── smooth scroll, if the library arrived and motion is welcome ──── */
 let lenis = null;
 if (!still && typeof window.Lenis === 'function') {
@@ -43,10 +50,18 @@ function barOffset () { return parseFloat(getComputedStyle(root).fontSize) * 3.4
 function turnTo (el) {
   const top = Math.max(0, el.getBoundingClientRect().top + scrollY - barOffset());
   const far = Math.abs(top - scrollY) > innerHeight * 1.5;
-  if (!still && far && typeof document.startViewTransition === 'function') {
-    document.startViewTransition(() => {
+  if (M() > 0.2 && far && typeof document.startViewTransition === 'function') {
+    let done = false;
+    const jump = () => {
+      if (done) return;
+      done = true;
       if (lenis) lenis.scrollTo(top, { immediate: true, force: true }); else scrollTo(0, top);
-    });
+    };
+    const vt = document.startViewTransition(jump);
+    // a slow device may take seconds to photograph the old page: past a
+    // moment, drop the turn and simply arrive — a click is never left waiting
+    const late = setTimeout(() => { vt.skipTransition?.(); jump(); }, 450);
+    vt.updateCallbackDone?.finally(() => clearTimeout(late));
   } else scrollToEl(el);
 }
 document.addEventListener('click', e => {
@@ -103,7 +118,7 @@ if (mast) {
   let last = '';
   tickers.push(t => {
     const intro = still ? 1 : easeOut(clamp((t - t0 - 120) / 1500, 0, 1));
-    const v = still ? 0 : clamp(vel / 40, -1, 1);
+    const v = still ? 0 : clamp(vel / 40, -1, 1) * M();
     const k = (1 - intro) * 1.0 + Math.abs(v) * 0.32;
     const key = k.toFixed(3) + v.toFixed(2);
     if (key === last) return;
@@ -123,7 +138,7 @@ if (track && !still) {
     if (!nearby(track, 0.2)) return;
     const half = track.scrollWidth / 2;
     if (Math.abs(vel) > 0.4) dir = vel > 0 ? -1 : 1;
-    x += dir * (0.45 + Math.min(14, Math.abs(vel)) * 0.55);
+    x += dir * (0.45 + Math.min(14, Math.abs(vel)) * 0.55) * (0.2 + 0.8 * M());
     if (x <= -half) x += half;
     if (x > 0) x -= half;
     track.style.transform = `translate3d(${x.toFixed(2)}px, 0, 0)`;
@@ -199,7 +214,7 @@ if (phone) {
     const intro = still ? 1 : clamp((t - t0) / 2600, 0, 1);
     const settle = intro < 1 ? 0.15 + 0.35 * (intro * intro * (3 - 2 * intro)) : 0.5;
     const away = clamp(-r.top / Math.max(1, r.height * 0.8), 0, 1);
-    const pan = settle + away * 0.38;
+    const pan = settle + away * 0.38 * M();
     if (Math.abs(pan - last) < 0.0005) return;
     last = pan;
     shotImg.style.setProperty('--pan', (pan * 100).toFixed(2) + '%');
@@ -214,7 +229,7 @@ if (press) (async () => {
   if (!img.complete) await new Promise(r => { img.addEventListener('load', r, { once: true }); img.addEventListener('error', r, { once: true }); });
   if (!img.naturalWidth) return;
   const { createHalftone } = await import('./halftone.js');
-  const paper = [0xec / 255, 0xe6 / 255, 0xdc / 255];
+  const paper = token('--paper').map(c => c / 255);     // the press prints on the issue's own paper
   let ht = createHalftone(cv, img, { paper });
   if (!ht) {
     // the theme serves its images from a CDN: try a CORS copy before giving up
@@ -278,15 +293,24 @@ if (toc && preview && fine) {
 }
 
 /* ── five worlds: the photograph wipes to each world, the paper tints ─ */
-const ground = { rgb: [0xec, 0xe6, 0xdc] };
+const ground = { rgb: token('--paper') };
 const worlds = $('[data-worlds]');
 if (worlds) {
   const arts = $$('[data-world]', worlds);
   const stage = $$('[data-stage]', worlds);
   const num = $('[data-stage-num]', worlds), cap = $('[data-stage-cap]', worlds), no = $('[data-stage-frame-no]', worlds);
-  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
-  const paper = hex('#ece6dc');
-  const tints = arts.map(a => hex(a.dataset.tint || '#ece6dc'));
+  // by day each chapter tints the paper; by night it warms the dark with its lacquer
+  let paper, tints;
+  const relook = () => {
+    paper = token('--paper');
+    const night = root.dataset.light === 'night';
+    tints = arts.map(a => {
+      const lac = hex(getComputedStyle(a).getPropertyValue('--lac')) || paper;
+      return night ? paper.map((c, j) => lerp(c, lac[j], 0.14)) : (hex(a.dataset.tint) || paper);
+    });
+  };
+  relook();
+  document.addEventListener('db:studio', relook);
   let active = -1;
   const frameEl = $('[data-stage-frame]', worlds);
   tickers.push(() => {
@@ -310,7 +334,7 @@ if (worlds) {
         if (cap) cap.textContent = d.name + ', catalogue';
         if (no) no.textContent = d.frame;
         // a pass of light across the new photograph, as across a turned page
-        if (frameEl && !still && a > 0) { frameEl.classList.remove('is-lit'); void frameEl.offsetWidth; frameEl.classList.add('is-lit'); }
+        if (frameEl && M() > 0 && a > 0) { frameEl.classList.remove('is-lit'); void frameEl.offsetWidth; frameEl.classList.add('is-lit'); }
       }
     }
     // the paper takes the colour of the world it is in, and gives it back
@@ -321,7 +345,7 @@ if (worlds) {
     const tint = [0, 1, 2].map(j => lerp(tints[i0][j], tints[i1][j], k));
     ground.rgb = [0, 1, 2].map(j => lerp(paper[j], tint[j], w));
   });
-}
+} else document.addEventListener('db:studio', () => { ground.rgb = token('--paper'); });
 
 /* ── after hours: the lights go down as the chapter comes up ────────── */
 const nightSec = $('[data-night]');
@@ -566,8 +590,8 @@ if (stack) {
     }
     if (!fine || still) return;
     const r = stack.getBoundingClientRect();
-    tilt.ty = ((e.clientX - r.left) / r.width - 0.5) * 10;
-    tilt.tx = -((e.clientY - r.top) / r.height - 0.5) * 8;
+    tilt.ty = ((e.clientX - r.left) / r.width - 0.5) * 10 * M();
+    tilt.tx = -((e.clientY - r.top) / r.height - 0.5) * 8 * M();
   });
   const release = () => {
     if (!drag) return;
@@ -680,7 +704,7 @@ if (!still && deep.length) {
       const r = d.el.getBoundingClientRect();
       if (r.bottom < -100 || r.top > vh + 100) continue;
       const p = clamp((r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2), -1, 1);
-      const v = (-p * 3.5).toFixed(2) + '%';
+      const v = (-p * 3.5 * M()).toFixed(2) + '%';
       if (v !== d.last) { d.last = v; d.img.style.setProperty('--py', v); }
     }
   });
@@ -730,11 +754,11 @@ if (magnets.length) {
       const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
       const dx = e.clientX - cx, dy = e.clientY - cy;
       const reach = Math.max(r.width, r.height) / 2 + 36;
-      const hot = Math.hypot(dx, dy) < reach;
+      const hot = Math.hypot(dx, dy) < reach && M() > 0;
       if (hot && !m.hot) sound.tink(1.35, 0.025);
       m.hot = hot;
       // a lean, not a chase: the pull eases off toward a small ceiling
-      const lim = Math.min(14, Math.max(r.width, r.height) * 0.12);
+      const lim = Math.min(14, Math.max(r.width, r.height) * 0.12) * M() + 1e-6;
       m.tx = hot ? lim * Math.tanh(dx * m.k / lim) : 0;
       m.ty = hot ? lim * Math.tanh(dy * m.k / lim) : 0;
     }
@@ -803,5 +827,116 @@ document.addEventListener('click', e => {
 });
 addEventListener('pageshow', () => hand(null));   // back from the product page
 
+/* ── keeping a frame: through the viewer's own save dialog where the page
+      is framed by one (claude.ai), otherwise as an ordinary download ─── */
+let saver;
+function saveCap () {
+  if (saver === undefined) {
+    saver = (window.claude && typeof window.claude.use === 'function')
+      ? Promise.race([window.claude.use('downloads'), new Promise(r => setTimeout(() => r(null), 4000))]).catch(() => null)
+      : Promise.resolve(null);
+  }
+  return saver;
+}
+async function keep (filename, blob) {
+  if (!blob) throw new Error('nothing to keep');
+  const dl = await saveCap();
+  if (dl) { await dl.save({ filename, data: blob }); return; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = filename; a.rel = 'noopener';
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 8000);
+}
+async function keepFrom (make, filename, say, button) {
+  if (button) button.disabled = true;
+  try {
+    await keep(filename, await make());
+    say('Kept as ' + filename + '.');
+    sound.tink(1.2, 0.04);
+  } catch (e) {
+    say(e && e.code === 'declined' ? 'Not kept.' : 'This browser would not hand the frame over.');
+  } finally { if (button) button.disabled = false; }
+}
+const css = rgb => `rgb(${rgb.join(',')})`;
+
+/* ── the tools: dials beside a plate, and a frame you can keep ──────── */
+function tool (name, { dial, act }) {
+  const el = $(`[data-tool="${name}"]`);
+  if (!el) return;
+  const btn = $('[data-tool-toggle]', el), panel = $('[data-tool-panel]', el), note = $('[data-tool-note]', el);
+  const say = t => { if (note) note.textContent = t; };
+  btn?.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') !== 'true';
+    btn.setAttribute('aria-expanded', String(open));
+    if (panel) panel.hidden = !open;
+  });
+  $$('input[data-dial]', el).forEach(input => {
+    const out = $(`[data-dial-out="${input.dataset.dial}"]`, el);
+    const fill = () => input.style.setProperty('--fill', ((input.value - input.min) / (input.max - input.min) * 100).toFixed(1) + '%');
+    fill();
+    input.addEventListener('input', () => {
+      fill();
+      if (out) out.textContent = input.value + '%';
+      dial(input.dataset.dial, input.value / 100, say);
+    });
+  });
+  el.addEventListener('click', e => {
+    const b = e.target.closest('[data-tool-act]');
+    if (b) act(b.dataset.toolAct, say, b);
+  });
+}
+const noGlass = say => say('The glass needs WebGL, which this browser is not offering.');
+tool('glass', {
+  dial: (k, v, say) => (glass ? glass.set({ [k]: v }) : noGlass(say)),
+  act: (a, say, b) => {
+    if (!glass) return noGlass(say);
+    if (a === 'mist') { glass.mistOver(); sound.rub(0.04); say('Breathed on. Wipe it again.'); }
+    if (a === 'wipe') { glass.wipeClean(); sound.rub(0.05); say('Wiped clean. It mists back the way breath does.'); }
+    if (a === 'keep') keepFrom(() => glass.snapshot(), 'DomainBlack_AfterHours_Empire.png', say, b);
+  }
+});
+tool('print', {
+  dial: (k, v) => { if (k === 'dot') field?.setDot(v); if (k === 'swirl') field?.setSwirl(v); },
+  act: (a, say, b) => {
+    if (a !== 'keep') return;
+    const m = MOVEMENTS[field ? field.movement() : 0];
+    keepFrom(() => (field ? field.snapshot(css(token('--paper'))) : null),
+      `DomainBlack_ThePrint_${(m ? m.name : 'Plate').replace(/[^A-Za-z]+/g, '')}.png`, say, b);
+  }
+});
+
+/* ── your line: the house's type, your words, beside the bottle ────── */
+const lineSec = $('[data-line]');
+let line = null;
+if (lineSec) {
+  const go = () => import('./yourline.js').then(({ createLine }) => {
+    line = createLine(lineSec, {
+      still,
+      motion: M,
+      world: prefs.world,
+      tink: (p, l) => sound.tink(p, l),
+      save: (make, name, say, button) => keepFrom(make, name, say, button)
+    });
+  }).catch(() => { /* the still plate and its caption stay */ });
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { io.disconnect(); go(); } }, { rootMargin: '60% 0px' });
+    io.observe(lineSec);
+  } else go();
+}
+
+/* ── the studio: the issue, made yours ─────────────────────────────── */
+let studio = null;
+import('./studio.js').then(({ createStudio }) => {
+  studio = createStudio({
+    still,
+    onChange: (p, why) => {
+      lastBg = '';                                   // repaint the ground in the new paper
+      document.dispatchEvent(new CustomEvent('db:studio', { detail: { prefs: p, why } }));
+      sound.tink(why === 'light' && p.light === 'night' ? 0.75 : 1.1, 0.03);
+    }
+  });
+  if (!studio) throw new Error('no studio');
+}).catch(() => { const b = $('[data-studio-open]'); if (b) b.style.display = 'none'; });
+
 /* hooks for the test bench */
-window.__issue = { get field () { return field; }, get glass () { return glass; }, MOVEMENTS };
+window.__issue = { get field () { return field; }, get glass () { return glass; }, get studio () { return studio; }, get line () { return line; }, keep, MOVEMENTS };

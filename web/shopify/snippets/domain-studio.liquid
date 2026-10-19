@@ -1,0 +1,67 @@
+{%- comment -%}
+  Generated from web/index.html by scripts/shopify/sync-from-site.py.
+  The Studio panel. Render once, before </body>; the header opens it.
+{%- endcomment -%}
+<aside class="studio" id="studio" data-studio data-lenis-prevent role="dialog" aria-modal="false" aria-labelledby="studio-title">
+  <div class="studio-in">
+    <div class="studio-head">
+      <p class="kicker">The Studio</p>
+      <h2 class="studio-title" id="studio-title">Make it <em>yours</em>.</h2>
+      <button class="studio-x" type="button" data-studio-close aria-label="Close the Studio">&times;</button>
+    </div>
+    <p class="studio-dek">Set the issue to your evening. Everything here changes the page you are reading; nothing changes a bottle.</p>
+    <form class="mood" data-mood>
+      <label class="ctl-label" for="studio-mood">Describe your evening</label>
+      <div class="mood-row">
+        <input id="studio-mood" type="text" maxlength="80" autocomplete="off" spellcheck="false" placeholder="rain on the window, a late table">
+        <button class="btn btn-sm" type="submit">Set</button>
+      </div>
+      <p class="mood-read" data-mood-read aria-live="polite"></p>
+    </form>
+    <fieldset class="studio-group">
+      <legend class="ctl-label">World <output data-out="world">Paper</output></legend>
+      <div class="sw-row">
+        <button class="sw-btn" type="button" data-set="world" data-value="paper" style="--c:#ece6dc" aria-label="Paper" aria-pressed="true"></button>
+        <button class="sw-btn" type="button" data-set="world" data-value="kingdom" style="--c:var(--kingdom)" aria-label="Kingdom" aria-pressed="false"></button>
+        <button class="sw-btn" type="button" data-set="world" data-value="sovereign" style="--c:var(--sovereign)" aria-label="Sovereign" aria-pressed="false"></button>
+        <button class="sw-btn" type="button" data-set="world" data-value="celestial" style="--c:var(--celestial)" aria-label="Celestial" aria-pressed="false"></button>
+        <button class="sw-btn" type="button" data-set="world" data-value="crown" style="--c:var(--crown)" aria-label="Crown" aria-pressed="false"></button>
+        <button class="sw-btn" type="button" data-set="world" data-value="empire" style="--c:var(--empire)" aria-label="Empire" aria-pressed="false"></button>
+      </div>
+    </fieldset>
+    <fieldset class="studio-group">
+      <legend class="ctl-label">Light</legend>
+      <div class="seg">
+        <button type="button" data-set="light" data-value="day" aria-pressed="true"><span>Day</span></button>
+        <button type="button" data-set="light" data-value="night" aria-pressed="false"><span>Night</span></button>
+      </div>
+    </fieldset>
+    <div class="studio-ranges">
+      <div class="ctl"><label class="ctl-label" for="studio-type">Type <output data-out="type">100%</output></label>
+        <input id="studio-type" type="range" min="90" max="115" step="1" value="100" data-set="type"></div>
+      <div class="ctl"><label class="ctl-label" for="studio-contrast">Contrast <output data-out="contrast">As drawn</output></label>
+        <input id="studio-contrast" type="range" min="6" max="96" step="1" value="96" data-set="contrast"></div>
+      <div class="ctl"><label class="ctl-label" for="studio-motion">Motion <output data-out="motion">100%</output></label>
+        <input id="studio-motion" type="range" min="0" max="100" step="5" value="100" data-set="motion"></div>
+      <div class="ctl"><label class="ctl-label" for="studio-grain">Grain <output data-out="grain">None</output></label>
+        <input id="studio-grain" type="range" min="0" max="100" step="5" value="0" data-set="grain"></div>
+    </div>
+    <fieldset class="studio-group">
+      <legend class="ctl-label">Remixes</legend>
+      <div class="remixes">
+        <button class="remix" type="button" data-remix="crown.day.100.0.100.30"><i class="dot" style="--c:var(--crown)"></i><b>Morning, Crown</b><span>Day &middot; grain</span></button>
+        <button class="remix" type="button" data-remix="sovereign.day.100.40.80.55"><i class="dot" style="--c:var(--sovereign)"></i><b>The library</b><span>Day &middot; soft type</span></button>
+        <button class="remix" type="button" data-remix="celestial.night.100.96.100.20"><i class="dot is-night" style="--c:var(--celestial)"></i><b>Cobalt hour</b><span>Night &middot; sharp</span></button>
+        <button class="remix" type="button" data-remix="kingdom.night.100.0.60.40"><i class="dot is-night" style="--c:var(--kingdom)"></i><b>Midnight, Kingdom</b><span>Night &middot; slow</span></button>
+        <button class="remix" type="button" data-remix="empire.night.100.0.100.15"><i class="dot is-night" style="--c:var(--empire)"></i><b>Served cold</b><span>Night</span></button>
+        <button class="remix" type="button" data-remix="paper.day.108.0.0.0"><i class="dot" style="--c:#ece6dc"></i><b>The quiet issue</b><span>Larger &middot; still</span></button>
+      </div>
+    </fieldset>
+    <div class="studio-acts">
+      <button class="btn btn-sm" type="button" data-studio-act="shuffle">Shuffle</button>
+      <button class="btn btn-sm" type="button" data-studio-act="share">Copy link</button>
+      <button class="btn btn-sm" type="button" data-studio-act="reset">Reset</button>
+    </div>
+    <p class="studio-note" data-studio-note aria-live="polite"></p>
+  </div>
+</aside>

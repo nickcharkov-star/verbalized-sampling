@@ -376,7 +376,7 @@ export function createPixelField (canvas, opts = {}) {
   let raf = 0, visible = true, disposed = false;
 
   const state = {
-    mode: 0, modeTarget: 0, sillage: 0, swirl: 1,
+    mode: 0, modeTarget: 0, sillage: 0, swirl: 1, dot: 1,
     pointer: [0, 0, 0, 0], pointerR: 0.9,
     press: 0, ready: false, cols: 0, rows: 0, count: 0
   };
@@ -811,7 +811,11 @@ export function createPixelField (canvas, opts = {}) {
     camX += ((want ? Math.sin(simTime * 0.33) * 1.5 : 0) - camX) * Math.min(1, dt * 1.4);
     camY += ((want ? Math.sin(simTime * 0.21) * 0.5 : 0) - camY) * Math.min(1, dt * 1.4);
 
-    // draw
+    drawPoints();
+  }
+
+  function drawPoints () {
+    const morph = plane2 ? clamp(state.mode - 3, 0, 1) : 0;
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clearColor(0, 0, 0, 0);
@@ -826,11 +830,10 @@ export function createPixelField (canvas, opts = {}) {
     // without a second photograph, sample the first again: the mix is a no-op
     gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, photo2Tex || photoTex);
     gl.uniform1i(drawProg.u.uPhoto2, 2);
-    const morph = plane2 ? clamp(state.mode - 3, 0, 1) : 0;
     gl.uniform1f(drawProg.u.uMorph, morph * morph * (3 - 2 * morph));
     gl.uniformMatrix4fv(drawProg.u.uProj, false, perspective(32, Math.max(0.3, aspect), 0.1, 100));
     gl.uniformMatrix4fv(drawProg.u.uView, false, lookAt(camX, camY, camZ, 0, 0, 0));
-    gl.uniform1f(drawProg.u.uSize, opts.pointSize || 0.030);
+    gl.uniform1f(drawProg.u.uSize, (opts.pointSize || 0.030) * state.dot);
     gl.uniform1f(drawProg.u.uPixelRatio, DPR * clamp(canvas.clientWidth / 900, 0.7, 1.6));
     gl.uniform1f(drawProg.u.uSillage, state.sillage);
     gl.uniform1f(drawProg.u.uPaper, opts.paper ? 1 : 0);
@@ -874,6 +877,18 @@ export function createPixelField (canvas, opts = {}) {
     movement: () => Math.round(state.mode),
     scrub (v) { state.modeTarget = clamp(v, 0, MOVEMENTS.length - 1); },
     setSwirl (v) { state.swirl = v; },
+    setDot (v) { state.dot = clamp(+v || 1, 0.4, 2.2); },
+    /* the print as it stands, laid on paper of the given colour */
+    snapshot (paper = '#ece6dc') {
+      if (!state.ready) return Promise.resolve(null);
+      drawPoints();
+      const c = document.createElement('canvas');
+      c.width = canvas.width; c.height = canvas.height;
+      const g = c.getContext('2d');
+      g.fillStyle = paper; g.fillRect(0, 0, c.width, c.height);
+      g.drawImage(canvas, 0, 0);
+      return new Promise(res => c.toBlob(res, 'image/png'));
+    },
     debug: () => ({ aspect: +aspect.toFixed(3), z: +camZ.toFixed(2),
                     mode: +state.mode.toFixed(2), count: state.count }),
     resize,

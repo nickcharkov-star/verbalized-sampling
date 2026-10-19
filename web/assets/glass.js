@@ -15,6 +15,11 @@
    middle of the pane clear, where the bottle stands, and mists only the
    edges, where the ingredients are — wiping is how you reach them.
 
+   Three dials (set): mist, how far the fog reaches into the edges; rain,
+   how much water runs; breath, how fast a wiped pane mists back. None of
+   them can fog the middle: the resting map is scaled, and the middle of it
+   is all but zero.
+
    Returns null without WebGL; the photograph underneath stays as it is.
    ═══════════════════════════════════════════════════════════════════════ */
 
@@ -127,13 +132,21 @@ export function createGlass (canvas, img, opts = {}) {
     return t;
   }
 
-  // the frost: the photograph taken down to a sliver and back up is a blur
-  // that works in every browser, with no filter support needed
+  // the frost: a soft copy of the photograph. Where the canvas can blur,
+  // a real blur at a modest size; elsewhere the photograph taken down to a
+  // sliver and back up, which is a blur every browser can do
   const blur = document.createElement('canvas');
-  blur.width = 54; blur.height = Math.round(54 * img.naturalHeight / img.naturalWidth);
   const bg = blur.getContext('2d');
+  const soft = typeof bg.filter === 'string';
+  blur.width = soft ? 200 : 54;
+  blur.height = Math.round(blur.width * img.naturalHeight / img.naturalWidth);
   bg.imageSmoothingQuality = 'high';
-  bg.drawImage(img, 0, 0, blur.width, blur.height);
+  if (soft) {
+    bg.filter = 'blur(6px)';
+    // drawn a little oversized so the blur does not pull in the transparent edge
+    bg.drawImage(img, -12, -12, blur.width + 24, blur.height + 24);
+    bg.filter = 'none';
+  } else bg.drawImage(img, 0, 0, blur.width, blur.height);
 
   try {
     texture(0, img);
@@ -154,14 +167,17 @@ export function createGlass (canvas, img, opts = {}) {
   // where the glass rests: misted at the edges, clear over the bottle
   const clearX = opts.clear?.[0] ?? 0.5, clearY = opts.clear?.[1] ?? 0.47;
   const clearRX = opts.clear?.[2] ?? 0.24, clearRY = opts.clear?.[3] ?? 0.34;
-  const rest = new Float32Array(FW * FH);
+  const dial = { mist: 1, rain: 1, breath: 1 };
+  const rest0 = new Float32Array(FW * FH), rest = new Float32Array(FW * FH);
   for (let y = 0; y < FH; y++) {
     for (let x = 0; x < FW; x++) {
       const ex = (x / FW - clearX) / clearRX, ey = (y / FH - clearY) / clearRY;
       const e = Math.sqrt(ex * ex + ey * ey);
-      rest[y * FW + x] = clamp((e - 0.85) / 0.55, 0, 1) * 0.92 + 0.04;
+      rest0[y * FW + x] = clamp((e - 0.85) / 0.55, 0, 1) * 0.92 + 0.04;
     }
   }
+  const restate = () => { for (let i = 0; i < rest.length; i++) rest[i] = Math.min(1, rest0[i] * dial.mist); };
+  restate();
   const fog = Float32Array.from(rest);
   const fogImg = fg.createImageData(FW, FH);
   function uploadFog () {
@@ -239,8 +255,8 @@ export function createGlass (canvas, img, opts = {}) {
       }
       if (r.y - r.r > 1.02) runners.splice(i, 1);
     }
-    if (runners.length < 5 && Math.random() < dt * 0.6) spawnRunner();
-    if (beads.length < 240 && Math.random() < dt * 6) seed(1);
+    if (runners.length < Math.round(5 * dial.rain) && Math.random() < dt * 0.6 * dial.rain) spawnRunner();
+    if (beads.length < 240 * Math.min(1.4, dial.rain) && Math.random() < dt * 6 * dial.rain) seed(1);
   }
 
   /* the cloth: the pointer wipes, and water gathers at the end of a stroke */
@@ -290,8 +306,12 @@ export function createGlass (canvas, img, opts = {}) {
     const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;
     last = now;
     // the mist comes back, slowly, as breath does on cold glass
-    for (let i = 0; i < fog.length; i++) fog[i] += (rest[i] - fog[i]) * dt * 0.045;
+    for (let i = 0; i < fog.length; i++) fog[i] += (rest[i] - fog[i]) * dt * 0.045 * dial.breath;
     stepWater(dt);
+    draw(now);
+    if (visible) raf = requestAnimationFrame(frame);
+  }
+  function draw (now) {
     uploadFog();
     drawDrops();
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -300,7 +320,6 @@ export function createGlass (canvas, img, opts = {}) {
     gl.uniform1i(u.uImg, 0); gl.uniform1i(u.uBlur, 1); gl.uniform1i(u.uDrops, 2); gl.uniform1i(u.uFog, 3);
     gl.uniform1f(u.uTime, (now - t0) / 1000 % 100);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
-    if (visible) raf = requestAnimationFrame(frame);
   }
   const ro = 'ResizeObserver' in window ? new ResizeObserver(resize) : null;
   ro ? ro.observe(canvas) : addEventListener('resize', resize);
@@ -327,6 +346,29 @@ export function createGlass (canvas, img, opts = {}) {
       }, 30);
     },
     fogAt: (x, y) => fog[Math.min(FH - 1, Math.floor(y * FH)) * FW + Math.min(FW - 1, Math.floor(x * FW))],
+    get dials () { return { ...dial }; },
+    set (d = {}) {
+      if (d.mist != null) dial.mist = clamp(+d.mist, 0.3, 1.5);
+      if (d.rain != null) dial.rain = clamp(+d.rain, 0, 2);
+      if (d.breath != null) dial.breath = clamp(+d.breath, 0, 3);
+      restate();
+    },
+    /* breathe on the whole pane at once */
+    mistOver () {
+      for (let i = 0; i < fog.length; i++) fog[i] = Math.max(fog[i], rest[i]);
+      seed(still ? 80 : 160);
+    },
+    /* a cloth across all of it */
+    wipeClean () {
+      fog.fill(0);
+      beads.length = 0;
+      runners.length = 0;
+    },
+    /* the frame as it stands, drawn now and read before it is presented */
+    snapshot () {
+      draw(performance.now());
+      return new Promise(res => canvas.toBlob(res, 'image/png'));
+    },
     dispose () { disposed = true; cancelAnimationFrame(raf); ro?.disconnect(); }
   };
 }

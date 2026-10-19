@@ -115,6 +115,11 @@ for (const [key, node] of queue) {
   }
 }
 
+/* the layout's own snippets: the Studio's boot script and its panel */
+const snippet = async (name) => engine.parseAndRender(readFileSync(join(THEME, 'snippets', name + '.liquid'), 'utf8'), scope);
+const studioBoot = await snippet('domain-studio-boot');
+const studioPanel = await snippet('domain-studio');
+
 /* ── wrap it the way a theme's layout/theme.liquid would ─────────────── */
 const html = `<!doctype html>
 <html lang="en">
@@ -126,10 +131,12 @@ const html = `<!doctype html>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..600;1,6..96,400&family=Jost:wght@400;500&family=Pinyon+Script&display=swap">
 <link rel="stylesheet" href="./assets/domain-black.css">
+${studioBoot}
 </head>
 <body class="template-${TEMPLATE}">
 <a class="skip" href="#main">Skip to content</a>
 ${body}
+${studioPanel}
 <div class="cursor" aria-hidden="true"><i class="cursor-dot"></i><i class="cursor-ring"><span data-cursor-label></span></i></div>
 <script>window.DB_PHOTO_BASE = "./assets/";</script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script>

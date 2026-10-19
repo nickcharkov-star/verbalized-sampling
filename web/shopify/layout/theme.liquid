@@ -16,6 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..600;1,6..96,400&family=Jost:wght@400;500&family=Pinyon+Script&display=swap">
   {{ 'domain-black.css' | asset_url | stylesheet_tag }}
+  {% render 'domain-studio-boot' %}
   {%- if template.name == 'index' -%}
     <link rel="preload" as="image" href="{{ 'lineup-1280.webp' | asset_url }}"
           imagesrcset="{{ 'lineup-800.webp' | asset_url }} 800w, {{ 'lineup-1280.webp' | asset_url }} 1280w, {{ 'lineup-1920.webp' | asset_url }} 1920w"
@@ -36,6 +37,7 @@
 
   {% section 'footer' %}
 
+  {% render 'domain-studio' %}
   <div class="cursor" aria-hidden="true"><i class="cursor-dot"></i><i class="cursor-ring"><span data-cursor-label></span></i></div>
   {% render 'domain-scripts' %}
 </body>

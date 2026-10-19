@@ -21,6 +21,23 @@
         <p class="pane-title">Peach, blood orange and rum, over ice.</p>
         <p class="pane-help"><span class="mouse">Pass the pointer over the glass to wipe it.</span><span class="touch">Drag across the glass to wipe it.</span></p>
         <a class="btn btn-light" href="{% if section.settings.product != blank %}{{ section.settings.product.url }}{% else %}{{ routes.all_products_collection_url }}{% endif %}" data-magnetic>Shop Empire <i aria-hidden="true">&rarr;</i></a>
+        <div class="tool" data-tool="glass">
+          <button class="tool-toggle" type="button" aria-expanded="false" aria-controls="glass-dials" data-tool-toggle>Adjust the glass</button>
+          <div class="tool-panel" id="glass-dials" data-tool-panel hidden>
+            <div class="ctl"><label class="ctl-label" for="dial-mist">Mist <output data-dial-out="mist">100%</output></label>
+              <input id="dial-mist" type="range" min="30" max="150" step="5" value="100" data-dial="mist"></div>
+            <div class="ctl"><label class="ctl-label" for="dial-rain">Rain <output data-dial-out="rain">100%</output></label>
+              <input id="dial-rain" type="range" min="0" max="200" step="10" value="100" data-dial="rain"></div>
+            <div class="ctl"><label class="ctl-label" for="dial-breath">Breath <output data-dial-out="breath">100%</output></label>
+              <input id="dial-breath" type="range" min="0" max="300" step="10" value="100" data-dial="breath"></div>
+            <div class="tool-btns">
+              <button class="btn btn-sm btn-light" type="button" data-tool-act="mist">Breathe on it</button>
+              <button class="btn btn-sm btn-light" type="button" data-tool-act="wipe">Wipe it clean</button>
+              <button class="btn btn-sm btn-light" type="button" data-tool-act="keep">Keep this frame</button>
+            </div>
+            <p class="tool-note" data-tool-note aria-live="polite"></p>
+          </div>
+        </div>
       </div>
     </div>
     <div class="night-edit">

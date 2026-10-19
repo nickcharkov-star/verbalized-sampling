@@ -376,7 +376,7 @@ em .kw,.pull .kw,i .kw{letter-spacing:-.16em}
   transform:scale(var(--z, 1));transform-origin:50% 100%;
 }
 .stage-num{
-  position:absolute;left:1rem;bottom:.6rem;z-index:6;color:var(--sheet);text-shadow:0 2px 26px rgba(12, 10, 9, .5);
+  position:absolute;left:1rem;bottom:.6rem;z-index:6;color:#f5f1ea;text-shadow:0 2px 26px rgba(12, 10, 9, .5);
   font:italic 400 clamp(3rem, 6vw, 6.5rem)/1 var(--display);pointer-events:none;
 }
 .stage-cap{display:flex;justify-content:space-between;gap:1rem;font:var(--t-small);font-size:.78rem;color:var(--ink-2);
@@ -484,7 +484,7 @@ em .kw,.pull .kw,i .kw{letter-spacing:-.16em}
 .lightbox{
   border:0;padding:0;margin:auto;background:transparent;max-width:min(92vw, 70rem);max-height:94vh;overflow:visible;
 }
-.lightbox::backdrop{background:rgba(236,230,220,.94);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.lightbox::backdrop{background:color-mix(in srgb, var(--paper) 94%, transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .lightbox figure{display:grid;gap:.8rem;justify-items:center}
 .lightbox img{max-height:min(80vh, 60rem);width:auto;max-width:100%;box-shadow:0 30px 70px -30px rgba(23,21,19,.6)}
 .lightbox figcaption{font:var(--t-small);color:var(--ink-2);text-align:center}
@@ -662,6 +662,182 @@ em .kw,.pull .kw,i .kw{letter-spacing:-.16em}
 @keyframes turn-out{to{transform:scale(.965);filter:brightness(.82)}}
 @keyframes turn-in{from{clip-path:inset(100% 0 0 0);transform:translateY(6%)}to{clip-path:inset(0);transform:none}}
 
+/* ═══ make it yours: the Studio ═════════════════════════════════
+   Every visual on the page is also a tool. The Studio sets the issue as
+   a whole — a world, day or night, type, motion, grain — by writing a
+   few attributes on <html> before the first paint (see the boot script)
+   and the tokens below do the rest, so no component needs to know which
+   issue is set. Nothing here touches a photograph. */
+:root{--accent:var(--foil);--type:1;--opsz:96;--grain:0;--on-photo:#f5f1ea}
+html{font-size:calc(var(--type) * 100%)}
+:root[data-paper="kingdom"]{--paper:#e4e1db;--paper-2:#d8d4cc;--sheet:#efece7;--accent:#1d1d1d}
+:root[data-paper="sovereign"]{--paper:#ecdfd5;--paper-2:#e0cfc2;--sheet:#f5ece4;--accent:#7e3d23}
+:root[data-paper="celestial"]{--paper:#e0e1ea;--paper-2:#d2d4e0;--sheet:#eeeff5;--accent:#223076}
+:root[data-paper="crown"]{--paper:#f0eae0;--paper-2:#e6ddcf;--sheet:#f8f4ee;--accent:var(--foil)}
+:root[data-paper="empire"]{--paper:#f0ded1;--paper-2:#e6cfbf;--sheet:#f8ece3;--accent:#c23c0b}
+:root[data-light="night"]{
+  color-scheme:dark;
+  --paper:#0c0a09;--paper-2:#171412;--sheet:#1d1a17;
+  --ink:#ece6dc;--ink-2:#a39a8f;--ghost:#4a443e;--foil:#d9b77a;
+  --rule:rgba(236, 230, 220, .16);--accent:var(--foil-lit);
+}
+:root[data-light="night"][data-paper="kingdom"]{--paper:#0b0b0b;--paper-2:#161616;--sheet:#1c1c1c}
+:root[data-light="night"][data-paper="sovereign"]{--paper:#1e120d;--paper-2:#2a1a12;--sheet:#311f16;--accent:#d08a63}
+:root[data-light="night"][data-paper="celestial"]{--paper:#0e1020;--paper-2:#171a30;--sheet:#1d2139;--accent:#8c9cf0}
+:root[data-light="night"][data-paper="crown"]{--paper:#1c1a17;--paper-2:#262320;--sheet:#2d2a26;--accent:#ebe6db}
+:root[data-light="night"][data-paper="empire"]{--paper:#1f1109;--paper-2:#2b180d;--sheet:#332012;--accent:#f0753a}
+.bar-progress{background:var(--accent)}
+/* by night the lacquer swatches get a light rim, or Kingdom's black disappears */
+:root[data-light="night"] :is(.world-kicker .sw, .reg .name .sw){box-shadow:inset 0 0 0 1px rgba(236, 230, 220, .45)}
+/* on a dark ground the three plates add light rather than ink */
+:root[data-light="night"] .mast-word .ink{mix-blend-mode:screen}
+:root[data-contrast] :is(.h-sec, .world-name, .pull, .pane-title, .toc-t, .line-still p){font-variation-settings:"opsz" var(--opsz)}
+/* paper grain: a tile of fractal noise over everything, never over the Studio */
+:root[data-grain]::after{
+  content:"";position:fixed;inset:0;z-index:65;pointer-events:none;mix-blend-mode:soft-light;
+  opacity:calc(var(--grain) * .7);background-size:220px 220px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1.6 -.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* the bar's way in */
+.bar-studio{all:unset;cursor:pointer;display:none;align-items:center;gap:.55em;font:var(--t-label);letter-spacing:.22em;text-transform:uppercase}
+.js .bar-studio{display:inline-flex}
+.bar-studio:focus-visible{outline:2px solid var(--foil);outline-offset:3px}
+.bar-studio .sq{display:grid;grid-template-columns:repeat(2, .42em);gap:2px}
+.bar-studio .sq i{width:.42em;height:.42em;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 .5px rgba(127,127,127,.5)}
+.bar-studio[aria-expanded="true"] .sq{transform:rotate(45deg)}
+.bar-studio .sq{transition:transform .5s var(--ease-out)}
+@media (max-width:420px){ .bar-studio .lbl{display:none} }
+
+/* the panel: a drawer on a desk, a sheet on a phone */
+.studio{
+  position:fixed;z-index:80;right:0;bottom:0;top:calc(var(--bar-h) + env(safe-area-inset-top, 0px));
+  width:min(25rem, 100vw);background:var(--paper-2);color:var(--ink);
+  box-shadow:-1px 0 0 var(--rule), -40px 0 80px -40px rgba(0, 0, 0, .45);
+  overflow:auto;overscroll-behavior:contain;
+  transform:translateX(102%);visibility:hidden;
+  transition:transform .55s var(--ease-io), visibility 0s linear .55s;
+}
+.studio.is-open{transform:none;visibility:visible;transition:transform .55s var(--ease-io)}
+@media (max-width:700px){
+  .studio{top:auto;left:0;width:auto;max-height:84svh;border-radius:16px 16px 0 0;transform:translateY(102%);
+    box-shadow:0 -1px 0 var(--rule), 0 -40px 80px -30px rgba(0, 0, 0, .45);padding-bottom:env(safe-area-inset-bottom, 0px)}
+}
+.studio-in{display:grid;gap:var(--s-m);padding:var(--s-m) var(--s-m) var(--s-l)}
+.studio-head{display:grid;grid-template-columns:1fr auto;gap:.4rem 1rem;align-items:start}
+.studio-title{font:italic 400 var(--t-3)/1 var(--display);letter-spacing:-.02em;grid-column:1}
+.studio-x{all:unset;cursor:pointer;grid-row:1 / span 2;grid-column:2;width:2.4rem;height:2.4rem;display:grid;place-items:center;
+  border:1px solid var(--rule);border-radius:50%;font:300 1.3rem/1 var(--text)}
+.studio-x:focus-visible{outline:2px solid var(--foil);outline-offset:2px}
+.studio-dek{font:var(--t-small);color:var(--ink-2);max-width:32ch}
+.studio-group{border:0;margin:0;padding:0;min-width:0}
+.studio-group + .studio-group,.studio-ranges{box-shadow:0 -1px 0 var(--rule);padding-top:var(--s-s)}
+/* a floated legend behaves like a heading inside the padding, not a label on the border */
+.studio-group legend{float:left;width:100%;padding:0;margin-bottom:.7rem}
+.studio-group legend + *{clear:both}
+.studio-ranges{display:grid;gap:var(--s-s)}
+.remixes{display:grid;gap:0}
+.remix{all:unset;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;gap:.8rem;align-items:center;
+  padding:.65rem 0;border-bottom:1px solid var(--rule)}
+.remix:focus-visible{outline:2px solid var(--foil);outline-offset:2px}
+.remix .dot{width:.9rem;height:.9rem;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 1px rgba(127,127,127,.4)}
+.remix .dot.is-night{box-shadow:inset 0 0 0 1px rgba(127,127,127,.4), 0 0 0 3px var(--paper-2), 0 0 0 4px var(--ink)}
+.remix b{font:italic 400 var(--t-1)/1.1 var(--display)}
+.remix span{font:var(--t-label);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2)}
+@media (hover:hover) and (pointer:fine){ .remix:hover b{text-decoration:underline;text-underline-offset:.18em;text-decoration-thickness:1px} }
+.studio-acts{display:flex;flex-wrap:wrap;gap:.6rem}
+.studio-note{font:var(--t-small);color:var(--ink-2);min-height:1.5em;overflow-wrap:anywhere}
+.mood{display:grid;gap:.5rem}
+.mood-row{display:flex;gap:.5rem;align-items:end}
+.mood input{flex:1;min-width:0;background:transparent;color:inherit;border:0;border-bottom:1px solid var(--rule);
+  padding:.45rem 0;font:italic 400 var(--t-1)/1.2 var(--display);border-radius:0}
+.mood input:focus{outline:none;border-bottom-color:var(--ink)}
+.mood-read{font:var(--t-small);color:var(--ink-2);min-height:1.5em}
+
+/* controls, shared by the Studio, the tools and Your Line: they take
+   the colour of wherever they are set, day or night */
+.ctl{display:grid;gap:.35rem;min-width:0}
+.ctl-label{font:var(--t-label);letter-spacing:.2em;text-transform:uppercase;display:flex;justify-content:space-between;gap:1rem;
+  color:color-mix(in srgb, currentColor 66%, transparent)}
+.ctl-label output{font-variant-numeric:tabular-nums;letter-spacing:.08em;text-transform:none;font-weight:400}
+.ctl input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:24px;margin:0;background:transparent;cursor:pointer;color:inherit;touch-action:pan-y}
+.ctl input[type=range]::-webkit-slider-runnable-track{height:1px;
+  background:linear-gradient(to right, currentColor var(--fill, 50%), color-mix(in srgb, currentColor 22%, transparent) var(--fill, 50%))}
+.ctl input[type=range]::-moz-range-track{height:1px;background:color-mix(in srgb, currentColor 22%, transparent)}
+.ctl input[type=range]::-moz-range-progress{height:1px;background:currentColor}
+.ctl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;margin-top:-7px;border:0;border-radius:50%;
+  background:currentColor;transition:transform var(--d-press) var(--ease-out)}
+.ctl input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radius:50%;background:currentColor}
+.ctl input[type=range]:active::-webkit-slider-thumb{transform:scale(1.3)}
+.ctl input[type=range]:focus-visible{outline:2px solid var(--foil);outline-offset:3px}
+.ctl input[type=range]:disabled{opacity:.35;cursor:not-allowed}
+.seg{display:flex;color:inherit;border:1px solid color-mix(in srgb, currentColor 28%, transparent)}
+.seg button{all:unset;cursor:pointer;flex:1;text-align:center;padding:.6rem .7rem;font:var(--t-label);letter-spacing:.2em;text-transform:uppercase;
+  color:color-mix(in srgb, currentColor 70%, transparent);transition:background-color var(--d-ui) ease, color var(--d-ui) ease}
+.seg button + button{border-left:1px solid color-mix(in srgb, currentColor 28%, transparent)}
+.seg button[aria-pressed="true"]{color:inherit;background:currentColor}
+.seg button[aria-pressed="true"] span{color:var(--seg-on, var(--paper))}
+.seg button:focus-visible{outline:2px solid var(--foil);outline-offset:-2px}
+.sw-row{display:flex;flex-wrap:wrap;gap:.7rem}
+.sw-btn{all:unset;cursor:pointer;width:2rem;height:2rem;border-radius:50%;background:var(--c);position:relative;
+  box-shadow:inset 0 0 0 1px rgba(127, 127, 127, .45);transition:transform var(--d-press) var(--ease-out)}
+.sw-btn:active{transform:scale(.92)}
+.sw-btn::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1px solid currentColor;opacity:0;transform:scale(.85);
+  transition:opacity var(--d-ui) ease, transform var(--d-ui) var(--ease-out)}
+.sw-btn[aria-pressed="true"]::after{opacity:1;transform:none}
+.sw-btn:focus-visible{outline:2px solid var(--foil);outline-offset:6px}
+.check{display:flex;gap:.6rem;align-items:center;font:var(--t-small);cursor:pointer}
+.check input{width:1rem;height:1rem;margin:0;accent-color:currentColor}
+.btn-sm{padding:.7rem 1rem;font-size:.62rem}
+.btn-sm[disabled]{opacity:.4;pointer-events:none}
+
+/* a tool: a plate you can adjust, and keep */
+.tool{display:none;gap:var(--s-s);justify-items:start;width:100%}
+.js .tool{display:grid}
+.tool-toggle{all:unset;cursor:pointer;display:inline-flex;gap:.7em;align-items:center;font:var(--t-label);letter-spacing:.22em;text-transform:uppercase;
+  padding-bottom:.3rem;border-bottom:1px solid currentColor}
+.tool-toggle::after{content:"+";font:300 1.1em/1 var(--text);transition:transform var(--d-ui) var(--ease-out)}
+.tool-toggle[aria-expanded="true"]::after{transform:rotate(45deg)}
+.tool-toggle:focus-visible{outline:2px solid var(--foil);outline-offset:3px}
+.tool-panel{display:grid;gap:var(--s-s);width:min(100%, 24rem)}
+.tool-panel[hidden]{display:none}
+.tool-btns{display:flex;flex-wrap:wrap;gap:.6rem}
+.tool-note{font:var(--t-small);color:color-mix(in srgb, currentColor 66%, transparent);min-height:1.5em}
+.night .btn-sm,.night .seg{--seg-on:var(--night)}
+.pane-notes .tool{margin-top:var(--s-s)}
+.bar-mark{white-space:nowrap}
+@media (max-width:480px){ .bar-sound .lbl{display:none} .bar-right{gap:.95rem} }
+.print-tool{position:absolute;bottom:2.6rem;right:0;z-index:4;width:auto}
+.js .print-tool{display:flex;flex-direction:column-reverse;align-items:flex-end;gap:.7rem}
+.print-tool .tool-panel{background:color-mix(in srgb, var(--paper-2) 94%, transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  padding:var(--s-s);width:min(16rem, 78vw);box-shadow:0 20px 40px -24px rgba(0, 0, 0, .45)}
+[data-fallback] .print-tool{display:none}
+
+/* ═══ your line: the house's type, your words ════════════════════ */
+.line{padding-block:var(--s-2xl) var(--s-3xl)}
+.line-head{display:grid;grid-template-columns:minmax(0, 7fr) minmax(0, 5fr);gap:2rem;align-items:end;margin-block:var(--s-l) var(--s-2xl)}
+.line-body{display:grid;grid-template-columns:minmax(0, 7fr) minmax(0, 5fr);gap:var(--s-2xl);align-items:start}
+.line-stage{position:sticky;top:calc(var(--bar-h) + 1.5rem);margin:0;display:grid;place-items:center;
+  background:var(--paper-2);padding:var(--s-m);min-height:min(78svh, 900px)}
+.line-stage canvas{display:none;height:min(70svh, 820px);width:auto;max-width:100%;object-fit:contain;touch-action:pan-y;
+  box-shadow:0 1px 1px rgba(23,21,19,.08), 0 30px 60px -30px rgba(23,21,19,.5)}
+.line-stage.is-live canvas{display:block}
+.line-stage.is-live .line-still{display:none}
+.line-still{width:min(100%, 22rem);display:grid;gap:.8rem}
+.line-still p{font:italic 400 var(--t-3)/1.1 var(--display)}
+.line-form{display:none;gap:var(--s-m)}
+.js .line-form{display:grid}
+.line-form .ctl > input[type=text]{background:transparent;color:inherit;border:0;border-bottom:1px solid var(--rule);border-radius:0;
+  padding:.4rem 0;font:italic 400 var(--t-2)/1.2 var(--display);width:100%}
+.line-form .ctl > input[type=text]:focus{outline:none;border-bottom-color:var(--ink)}
+.line-pair{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-s)}
+.line-checks{display:flex;flex-wrap:wrap;gap:.6rem 1.6rem}
+@media (max-width:860px){
+  .line-head,.line-body{grid-template-columns:minmax(0, 1fr)}
+  .line-stage{position:relative;top:auto;min-height:0;padding:var(--s-s)}
+  .line-stage canvas{height:auto;width:100%;max-height:72svh}
+}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{transition-duration:.01ms !important;animation-duration:.01ms !important;animation-delay:0s !important}
   .js .plate[data-develop] img{-webkit-mask-image:none;mask-image:none}
@@ -673,12 +849,60 @@ em .kw,.pull .kw,i .kw{letter-spacing:-.16em}
 }
 </style>
 
+<script data-studio-boot>
+/* The visitor's issue, set before the first paint, so a night issue never
+   flashes paper. Read from ?studio= (a shared link) or this browser's last
+   visit; the Studio (assets/studio.js) changes it through window.__dbStudio. */
+(function () {
+  var D = { world: 'paper', light: 'day', type: 100, contrast: 0, motion: 100, grain: 0 };
+  var WORLDS = ['paper', 'kingdom', 'sovereign', 'celestial', 'crown', 'empire'];
+  function num (v, a, b, d) { v = parseFloat(v); return isFinite(v) ? Math.min(b, Math.max(a, Math.round(v))) : d; }
+  function clean (p) {
+    p = p || {};
+    return {
+      world: WORLDS.indexOf(p.world) >= 0 ? p.world : D.world,
+      light: p.light === 'night' ? 'night' : 'day',
+      type: num(p.type, 90, 115, D.type),
+      contrast: +p.contrast === 0 ? 0 : num(p.contrast, 6, 96, 0),
+      motion: num(p.motion, 0, 100, D.motion),
+      grain: num(p.grain, 0, 100, D.grain)
+    };
+  }
+  function encode (p) { return [p.world, p.light, p.type, p.contrast, p.motion, p.grain].join('.'); }
+  function decode (str) {
+    var a = String(str || '').split('.');
+    return clean({ world: a[0], light: a[1], type: a[2], contrast: a[3], motion: a[4], grain: a[5] });
+  }
+  function apply (p) {
+    var r = document.documentElement;
+    r.setAttribute('data-paper', p.world);       // the paper takes the world's tint
+    r.setAttribute('data-light', p.light);
+    r.setAttribute('data-motion', String(p.motion));
+    r.style.setProperty('--type', String(p.type / 100));
+    if (p.contrast) { r.setAttribute('data-contrast', ''); r.style.setProperty('--opsz', String(p.contrast)); }
+    else r.removeAttribute('data-contrast');
+    r.style.setProperty('--grain', String(p.grain / 100));
+    if (p.grain > 0) r.setAttribute('data-grain', ''); else r.removeAttribute('data-grain');
+  }
+  var P = clean(D);
+  try { var kept = localStorage.getItem('db-studio'); if (kept) P = decode(kept); } catch (e) { /* storage may be off */ }
+  try { var q = new URLSearchParams(location.search).get('studio'); if (q) P = decode(q); } catch (e) { /* no URL API */ }
+  apply(P);
+  window.__dbStudio = {
+    defaults: clean(D), prefs: P, worlds: WORLDS,
+    apply: apply, clean: clean, encode: encode, decode: decode,
+    save: function (p) { try { localStorage.setItem('db-studio', encode(p)); } catch (e) { /* nothing kept */ } }
+  };
+})();
+</script>
+
 <a class="skip" href="#contents">Skip to contents</a>
 
 <header class="bar" id="bar">
   <a class="bar-mark" href="#cover">Domain Black</a>
   <p class="bar-issue">Issue Nº 01 &mdash; The Five Worlds</p>
   <div class="bar-right">
+    <button class="bar-studio" type="button" data-studio-open aria-controls="studio" aria-expanded="false"><span class="sq" aria-hidden="true"><i style="--c:var(--kingdom)"></i><i style="--c:var(--empire)"></i><i style="--c:var(--celestial)"></i><i style="--c:var(--sovereign)"></i></span><span class="lbl">Studio</span></button>
     <button class="bar-sound" type="button" data-sound aria-pressed="false" aria-label="Sound"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="lbl">Sound</span></button>
     <a class="u" href="#contents" data-magnetic="0.3">Contents</a>
     <a class="u" href="https://domainblack.shop/" target="_blank" rel="noopener" data-magnetic="0.3">Shop</a>
@@ -745,6 +969,7 @@ em .kw,.pull .kw,i .kw{letter-spacing:-.16em}
       <li><a href="#worlds" data-preview="kingdom-720"><span class="toc-p">08</span><span class="toc-t">Five <span class="kw">W</span>orlds</span><span class="toc-d">Kingdom, Sovereign, Celestial, Crown, Empire</span></a></li>
       <li><a href="#night" data-preview="night-kingdom-540"><span class="toc-p">18</span><span class="toc-t">After Hours</span><span class="toc-d">Served cold, behind misted glass</span></a></li>
       <li><a href="#print" data-preview="amber-negative-480"><span class="toc-p">22</span><span class="toc-t">The Print</span><span class="toc-d">The lineup, taken apart to its dots</span></a></li>
+      <li><a href="#line" data-preview="empire-720"><span class="toc-p">26</span><span class="toc-t">Your Line</span><span class="toc-d">Your words beside the bottle, to keep</span></a></li>
       <li><a href="#contact" data-preview="logo-macro-480"><span class="toc-p">28</span><span class="toc-t">Contact Sheet</span><span class="toc-d">Sixteen frames from the shoot</span></a></li>
       <li><a href="#covers" data-preview="cover-empire-540"><span class="toc-p">34</span><span class="toc-t">The Covers</span><span class="toc-d">One for each world</span></a></li>
       <li><a href="#register" data-preview="tube-480"><span class="toc-p">38</span><span class="toc-t">The Register</span><span class="toc-d">Every composition, written down</span></a></li>
@@ -968,6 +1193,23 @@ em .kw,.pull .kw,i .kw{letter-spacing:-.16em}
         <p class="pane-title">Peach, blood orange and rum, over ice.</p>
         <p class="pane-help"><span class="mouse">Pass the pointer over the glass to wipe it.</span><span class="touch">Drag across the glass to wipe it.</span></p>
         <a class="btn btn-light" href="https://domainblack.shop/" target="_blank" rel="noopener" data-magnetic>Shop Empire <i aria-hidden="true">&rarr;</i></a>
+        <div class="tool" data-tool="glass">
+          <button class="tool-toggle" type="button" aria-expanded="false" aria-controls="glass-dials" data-tool-toggle>Adjust the glass</button>
+          <div class="tool-panel" id="glass-dials" data-tool-panel hidden>
+            <div class="ctl"><label class="ctl-label" for="dial-mist">Mist <output data-dial-out="mist">100%</output></label>
+              <input id="dial-mist" type="range" min="30" max="150" step="5" value="100" data-dial="mist"></div>
+            <div class="ctl"><label class="ctl-label" for="dial-rain">Rain <output data-dial-out="rain">100%</output></label>
+              <input id="dial-rain" type="range" min="0" max="200" step="10" value="100" data-dial="rain"></div>
+            <div class="ctl"><label class="ctl-label" for="dial-breath">Breath <output data-dial-out="breath">100%</output></label>
+              <input id="dial-breath" type="range" min="0" max="300" step="10" value="100" data-dial="breath"></div>
+            <div class="tool-btns">
+              <button class="btn btn-sm btn-light" type="button" data-tool-act="mist">Breathe on it</button>
+              <button class="btn btn-sm btn-light" type="button" data-tool-act="wipe">Wipe it clean</button>
+              <button class="btn btn-sm btn-light" type="button" data-tool-act="keep">Keep this frame</button>
+            </div>
+            <p class="tool-note" data-tool-note aria-live="polite"></p>
+          </div>
+        </div>
       </div>
     </div>
     <div class="night-edit">
@@ -1001,8 +1243,90 @@ em .kw,.pull .kw,i .kw{letter-spacing:-.16em}
         <p class="print-count"><span data-pf-count>&mdash;</span></p>
       </div>
       <p class="print-help">Drag to push the dots aside &middot; press to pull them home</p>
+      <div class="tool print-tool" data-tool="print">
+        <button class="tool-toggle" type="button" aria-expanded="false" aria-controls="print-dials" data-tool-toggle>Adjust</button>
+        <div class="tool-panel" id="print-dials" data-tool-panel hidden>
+          <div class="ctl"><label class="ctl-label" for="dial-dot">Dot <output data-dial-out="dot">100%</output></label>
+            <input id="dial-dot" type="range" min="40" max="220" step="10" value="100" data-dial="dot"></div>
+          <div class="ctl"><label class="ctl-label" for="dial-swirl">Swirl <output data-dial-out="swirl">100%</output></label>
+            <input id="dial-swirl" type="range" min="0" max="200" step="10" value="100" data-dial="swirl"></div>
+          <div class="tool-btns"><button class="btn btn-sm" type="button" data-tool-act="keep">Keep this frame</button></div>
+          <p class="tool-note" data-tool-note aria-live="polite"></p>
+        </div>
+      </div>
     </div>
     <ol class="moves" data-moves aria-label="Movements"></ol>
+  </div>
+</section>
+
+<!-- ═══ your line ════════════════════════════════════════════════════ -->
+<section class="line wrap" id="line" data-page="26" data-line>
+  <p class="runhead"><span>Domain Black</span><span>Your Line</span><span>p. 26</span></p>
+  <div class="line-head">
+    <h2 class="h-sec" data-ink>Your <em>Line</em></h2>
+    <p class="dek">Set a line of your own beside the bottle, in the house&rsquo;s type and its colours, and keep it: for a story, a post or a square.</p>
+  </div>
+  <div class="line-body">
+    <figure class="line-stage" data-line-stage data-cursor="Move">
+      <canvas data-line-canvas width="540" height="960" role="img" aria-label="Your line, set beside the bottle."></canvas>
+      <div class="line-still">
+        <span class="plate"><img src="./assets/photo/empire-720.webp" width="720" height="900" loading="lazy" decoding="async" alt="Empire: an orange flacon with an orange stone cap and gold monogram, between peaches, blood orange and ice."></span>
+        <p>It&rsquo;s Yours.</p>
+      </div>
+    </figure>
+    <form class="line-form" data-line-form>
+      <div class="ctl"><label class="ctl-label" for="line-text">Your line <output data-line-count>11 / 48</output></label>
+        <input id="line-text" type="text" name="text" maxlength="48" value="It&rsquo;s Yours." autocomplete="off" spellcheck="false"></div>
+      <fieldset class="studio-group">
+        <legend class="ctl-label">Beside <output data-line-out="world">Empire</output></legend>
+        <div class="sw-row">
+          <button class="sw-btn" type="button" data-line="world" data-value="kingdom" style="--c:var(--kingdom)" aria-label="Kingdom" aria-pressed="false"></button>
+          <button class="sw-btn" type="button" data-line="world" data-value="sovereign" style="--c:var(--sovereign)" aria-label="Sovereign" aria-pressed="false"></button>
+          <button class="sw-btn" type="button" data-line="world" data-value="celestial" style="--c:var(--celestial)" aria-label="Celestial" aria-pressed="false"></button>
+          <button class="sw-btn" type="button" data-line="world" data-value="crown" style="--c:var(--crown)" aria-label="Crown" aria-pressed="false"></button>
+          <button class="sw-btn" type="button" data-line="world" data-value="empire" style="--c:var(--empire)" aria-label="Empire" aria-pressed="true"></button>
+        </div>
+      </fieldset>
+      <fieldset class="studio-group">
+        <legend class="ctl-label">Face</legend>
+        <div class="seg">
+          <button type="button" data-line="face" data-value="italic" aria-pressed="true"><span>Italic</span></button>
+          <button type="button" data-line="face" data-value="roman" aria-pressed="false"><span>Roman</span></button>
+          <button type="button" data-line="face" data-value="caps" aria-pressed="false"><span>Capitals</span></button>
+        </div>
+      </fieldset>
+      <fieldset class="studio-group">
+        <legend class="ctl-label">Motion</legend>
+        <div class="seg">
+          <button type="button" data-line="motion" data-value="echo" aria-pressed="true"><span>Echo</span></button>
+          <button type="button" data-line="motion" data-value="trail" aria-pressed="false"><span>Trail</span></button>
+          <button type="button" data-line="motion" data-value="still" aria-pressed="false"><span>Still</span></button>
+        </div>
+      </fieldset>
+      <div class="line-pair">
+        <div class="ctl"><label class="ctl-label" for="line-size">Size <output data-line-out="size">100%</output></label>
+          <input id="line-size" type="range" min="60" max="150" step="5" value="100" data-line="size"></div>
+        <div class="ctl"><label class="ctl-label" for="line-echo">Echoes <output data-line-out="echo">6</output></label>
+          <input id="line-echo" type="range" min="2" max="14" step="1" value="6" data-line="echo"></div>
+      </div>
+      <fieldset class="studio-group">
+        <legend class="ctl-label">Format</legend>
+        <div class="seg">
+          <button type="button" data-line="format" data-value="story" aria-pressed="true"><span>Story</span></button>
+          <button type="button" data-line="format" data-value="post" aria-pressed="false"><span>Post</span></button>
+          <button type="button" data-line="format" data-value="square" aria-pressed="false"><span>Square</span></button>
+        </div>
+      </fieldset>
+      <div class="line-checks">
+        <label class="check"><input type="checkbox" data-line="bottle" checked> With the bottle</label>
+        <label class="check"><input type="checkbox" data-line="clear"> Clear ground</label>
+      </div>
+      <div class="tool-btns">
+        <button class="btn btn-sm btn-ink" type="button" data-line-act="image">Keep the image</button>
+        <button class="btn btn-sm" type="button" data-line-act="clip" hidden>Keep a clip</button>
+      </div>
+      <p class="tool-note" data-line-note aria-live="polite"></p>
+    </form>
   </div>
 </section>
 
@@ -1217,6 +1541,71 @@ em .kw,.pull .kw,i .kw{letter-spacing:-.16em}
     <a class="u" href="https://www.instagram.com/domain.black/" target="_blank" rel="noopener">Instagram</a>
   </nav>
 </footer>
+
+<!-- ═══ the studio ═══════════════════════════════════════════════════ -->
+<aside class="studio" id="studio" data-studio data-lenis-prevent role="dialog" aria-modal="false" aria-labelledby="studio-title">
+  <div class="studio-in">
+    <div class="studio-head">
+      <p class="kicker">The Studio</p>
+      <h2 class="studio-title" id="studio-title">Make it <em>yours</em>.</h2>
+      <button class="studio-x" type="button" data-studio-close aria-label="Close the Studio">&times;</button>
+    </div>
+    <p class="studio-dek">Set the issue to your evening. Everything here changes the page you are reading; nothing changes a bottle.</p>
+    <form class="mood" data-mood>
+      <label class="ctl-label" for="studio-mood">Describe your evening</label>
+      <div class="mood-row">
+        <input id="studio-mood" type="text" maxlength="80" autocomplete="off" spellcheck="false" placeholder="rain on the window, a late table">
+        <button class="btn btn-sm" type="submit">Set</button>
+      </div>
+      <p class="mood-read" data-mood-read aria-live="polite"></p>
+    </form>
+    <fieldset class="studio-group">
+      <legend class="ctl-label">World <output data-out="world">Paper</output></legend>
+      <div class="sw-row">
+        <button class="sw-btn" type="button" data-set="world" data-value="paper" style="--c:#ece6dc" aria-label="Paper" aria-pressed="true"></button>
+        <button class="sw-btn" type="button" data-set="world" data-value="kingdom" style="--c:var(--kingdom)" aria-label="Kingdom" aria-pressed="false"></button>
+        <button class="sw-btn" type="button" data-set="world" data-value="sovereign" style="--c:var(--sovereign)" aria-label="Sovereign" aria-pressed="false"></button>
+        <button class="sw-btn" type="button" data-set="world" data-value="celestial" style="--c:var(--celestial)" aria-label="Celestial" aria-pressed="false"></button>
+        <button class="sw-btn" type="button" data-set="world" data-value="crown" style="--c:var(--crown)" aria-label="Crown" aria-pressed="false"></button>
+        <button class="sw-btn" type="button" data-set="world" data-value="empire" style="--c:var(--empire)" aria-label="Empire" aria-pressed="false"></button>
+      </div>
+    </fieldset>
+    <fieldset class="studio-group">
+      <legend class="ctl-label">Light</legend>
+      <div class="seg">
+        <button type="button" data-set="light" data-value="day" aria-pressed="true"><span>Day</span></button>
+        <button type="button" data-set="light" data-value="night" aria-pressed="false"><span>Night</span></button>
+      </div>
+    </fieldset>
+    <div class="studio-ranges">
+      <div class="ctl"><label class="ctl-label" for="studio-type">Type <output data-out="type">100%</output></label>
+        <input id="studio-type" type="range" min="90" max="115" step="1" value="100" data-set="type"></div>
+      <div class="ctl"><label class="ctl-label" for="studio-contrast">Contrast <output data-out="contrast">As drawn</output></label>
+        <input id="studio-contrast" type="range" min="6" max="96" step="1" value="96" data-set="contrast"></div>
+      <div class="ctl"><label class="ctl-label" for="studio-motion">Motion <output data-out="motion">100%</output></label>
+        <input id="studio-motion" type="range" min="0" max="100" step="5" value="100" data-set="motion"></div>
+      <div class="ctl"><label class="ctl-label" for="studio-grain">Grain <output data-out="grain">None</output></label>
+        <input id="studio-grain" type="range" min="0" max="100" step="5" value="0" data-set="grain"></div>
+    </div>
+    <fieldset class="studio-group">
+      <legend class="ctl-label">Remixes</legend>
+      <div class="remixes">
+        <button class="remix" type="button" data-remix="crown.day.100.0.100.30"><i class="dot" style="--c:var(--crown)"></i><b>Morning, Crown</b><span>Day &middot; grain</span></button>
+        <button class="remix" type="button" data-remix="sovereign.day.100.40.80.55"><i class="dot" style="--c:var(--sovereign)"></i><b>The library</b><span>Day &middot; soft type</span></button>
+        <button class="remix" type="button" data-remix="celestial.night.100.96.100.20"><i class="dot is-night" style="--c:var(--celestial)"></i><b>Cobalt hour</b><span>Night &middot; sharp</span></button>
+        <button class="remix" type="button" data-remix="kingdom.night.100.0.60.40"><i class="dot is-night" style="--c:var(--kingdom)"></i><b>Midnight, Kingdom</b><span>Night &middot; slow</span></button>
+        <button class="remix" type="button" data-remix="empire.night.100.0.100.15"><i class="dot is-night" style="--c:var(--empire)"></i><b>Served cold</b><span>Night</span></button>
+        <button class="remix" type="button" data-remix="paper.day.108.0.0.0"><i class="dot" style="--c:#ece6dc"></i><b>The quiet issue</b><span>Larger &middot; still</span></button>
+      </div>
+    </fieldset>
+    <div class="studio-acts">
+      <button class="btn btn-sm" type="button" data-studio-act="shuffle">Shuffle</button>
+      <button class="btn btn-sm" type="button" data-studio-act="share">Copy link</button>
+      <button class="btn btn-sm" type="button" data-studio-act="reset">Reset</button>
+    </div>
+    <p class="studio-note" data-studio-note aria-live="polite"></p>
+  </div>
+</aside>
 
 <div class="cursor" aria-hidden="true"><i class="cursor-dot"></i><i class="cursor-ring"><span data-cursor-label></span></i></div>
 

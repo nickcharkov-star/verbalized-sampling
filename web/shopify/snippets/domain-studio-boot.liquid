@@ -1,0 +1,50 @@
+{%- comment -%}
+  Generated from web/index.html by scripts/shopify/sync-from-site.py.
+  The visitor's issue, applied before the first paint. Render in <head>.
+{%- endcomment -%}
+<script data-studio-boot>
+/* The visitor's issue, set before the first paint, so a night issue never
+   flashes paper. Read from ?studio= (a shared link) or this browser's last
+   visit; the Studio (assets/studio.js) changes it through window.__dbStudio. */
+(function () {
+  var D = { world: 'paper', light: 'day', type: 100, contrast: 0, motion: 100, grain: 0 };
+  var WORLDS = ['paper', 'kingdom', 'sovereign', 'celestial', 'crown', 'empire'];
+  function num (v, a, b, d) { v = parseFloat(v); return isFinite(v) ? Math.min(b, Math.max(a, Math.round(v))) : d; }
+  function clean (p) {
+    p = p || {};
+    return {
+      world: WORLDS.indexOf(p.world) >= 0 ? p.world : D.world,
+      light: p.light === 'night' ? 'night' : 'day',
+      type: num(p.type, 90, 115, D.type),
+      contrast: +p.contrast === 0 ? 0 : num(p.contrast, 6, 96, 0),
+      motion: num(p.motion, 0, 100, D.motion),
+      grain: num(p.grain, 0, 100, D.grain)
+    };
+  }
+  function encode (p) { return [p.world, p.light, p.type, p.contrast, p.motion, p.grain].join('.'); }
+  function decode (str) {
+    var a = String(str || '').split('.');
+    return clean({ world: a[0], light: a[1], type: a[2], contrast: a[3], motion: a[4], grain: a[5] });
+  }
+  function apply (p) {
+    var r = document.documentElement;
+    r.setAttribute('data-paper', p.world);       // the paper takes the world's tint
+    r.setAttribute('data-light', p.light);
+    r.setAttribute('data-motion', String(p.motion));
+    r.style.setProperty('--type', String(p.type / 100));
+    if (p.contrast) { r.setAttribute('data-contrast', ''); r.style.setProperty('--opsz', String(p.contrast)); }
+    else r.removeAttribute('data-contrast');
+    r.style.setProperty('--grain', String(p.grain / 100));
+    if (p.grain > 0) r.setAttribute('data-grain', ''); else r.removeAttribute('data-grain');
+  }
+  var P = clean(D);
+  try { var kept = localStorage.getItem('db-studio'); if (kept) P = decode(kept); } catch (e) { /* storage may be off */ }
+  try { var q = new URLSearchParams(location.search).get('studio'); if (q) P = decode(q); } catch (e) { /* no URL API */ }
+  apply(P);
+  window.__dbStudio = {
+    defaults: clean(D), prefs: P, worlds: WORLDS,
+    apply: apply, clean: clean, encode: encode, decode: decode,
+    save: function (p) { try { localStorage.setItem('db-studio', encode(p)); } catch (e) { /* nothing kept */ } }
+  };
+})();
+</script>

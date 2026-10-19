@@ -24,6 +24,17 @@
         <p class="print-count"><span data-pf-count>&mdash;</span></p>
       </div>
       <p class="print-help">Drag to push the dots aside &middot; press to pull them home</p>
+      <div class="tool print-tool" data-tool="print">
+        <button class="tool-toggle" type="button" aria-expanded="false" aria-controls="print-dials" data-tool-toggle>Adjust</button>
+        <div class="tool-panel" id="print-dials" data-tool-panel hidden>
+          <div class="ctl"><label class="ctl-label" for="dial-dot">Dot <output data-dial-out="dot">100%</output></label>
+            <input id="dial-dot" type="range" min="40" max="220" step="10" value="100" data-dial="dot"></div>
+          <div class="ctl"><label class="ctl-label" for="dial-swirl">Swirl <output data-dial-out="swirl">100%</output></label>
+            <input id="dial-swirl" type="range" min="0" max="200" step="10" value="100" data-dial="swirl"></div>
+          <div class="tool-btns"><button class="btn btn-sm" type="button" data-tool-act="keep">Keep this frame</button></div>
+          <p class="tool-note" data-tool-note aria-live="polite"></p>
+        </div>
+      </div>
     </div>
     <ol class="moves" data-moves aria-label="Movements"></ol>
   </div>

@@ -1,0 +1,77 @@
+{%- comment -%}
+  Generated from web/index.html by scripts/shopify/sync-from-site.py —
+  edit the site and sync rather than editing this file.
+{%- endcomment -%}
+<section class="line wrap" id="line" data-page="26" data-line>
+  <p class="runhead"><span>Domain Black</span><span>Your Line</span><span>p. 26</span></p>
+  <div class="line-head">
+    <h2 class="h-sec" data-ink>Your <em>Line</em></h2>
+    <p class="dek">Set a line of your own beside the bottle, in the house&rsquo;s type and its colours, and keep it: for a story, a post or a square.</p>
+  </div>
+  <div class="line-body">
+    <figure class="line-stage" data-line-stage data-cursor="Move">
+      <canvas data-line-canvas width="540" height="960" role="img" aria-label="Your line, set beside the bottle."></canvas>
+      <div class="line-still">
+        <span class="plate"><img src="{{ 'empire-720.webp' | asset_url }}" width="720" height="900" loading="lazy" decoding="async" alt="Empire: an orange flacon with an orange stone cap and gold monogram, between peaches, blood orange and ice."></span>
+        <p>It&rsquo;s Yours.</p>
+      </div>
+    </figure>
+    <form class="line-form" data-line-form>
+      <div class="ctl"><label class="ctl-label" for="line-text">Your line <output data-line-count>11 / 48</output></label>
+        <input id="line-text" type="text" name="text" maxlength="48" value="It&rsquo;s Yours." autocomplete="off" spellcheck="false"></div>
+      <fieldset class="studio-group">
+        <legend class="ctl-label">Beside <output data-line-out="world">Empire</output></legend>
+        <div class="sw-row">
+          <button class="sw-btn" type="button" data-line="world" data-value="kingdom" style="--c:var(--kingdom)" aria-label="Kingdom" aria-pressed="false"></button>
+          <button class="sw-btn" type="button" data-line="world" data-value="sovereign" style="--c:var(--sovereign)" aria-label="Sovereign" aria-pressed="false"></button>
+          <button class="sw-btn" type="button" data-line="world" data-value="celestial" style="--c:var(--celestial)" aria-label="Celestial" aria-pressed="false"></button>
+          <button class="sw-btn" type="button" data-line="world" data-value="crown" style="--c:var(--crown)" aria-label="Crown" aria-pressed="false"></button>
+          <button class="sw-btn" type="button" data-line="world" data-value="empire" style="--c:var(--empire)" aria-label="Empire" aria-pressed="true"></button>
+        </div>
+      </fieldset>
+      <fieldset class="studio-group">
+        <legend class="ctl-label">Face</legend>
+        <div class="seg">
+          <button type="button" data-line="face" data-value="italic" aria-pressed="true"><span>Italic</span></button>
+          <button type="button" data-line="face" data-value="roman" aria-pressed="false"><span>Roman</span></button>
+          <button type="button" data-line="face" data-value="caps" aria-pressed="false"><span>Capitals</span></button>
+        </div>
+      </fieldset>
+      <fieldset class="studio-group">
+        <legend class="ctl-label">Motion</legend>
+        <div class="seg">
+          <button type="button" data-line="motion" data-value="echo" aria-pressed="true"><span>Echo</span></button>
+          <button type="button" data-line="motion" data-value="trail" aria-pressed="false"><span>Trail</span></button>
+          <button type="button" data-line="motion" data-value="still" aria-pressed="false"><span>Still</span></button>
+        </div>
+      </fieldset>
+      <div class="line-pair">
+        <div class="ctl"><label class="ctl-label" for="line-size">Size <output data-line-out="size">100%</output></label>
+          <input id="line-size" type="range" min="60" max="150" step="5" value="100" data-line="size"></div>
+        <div class="ctl"><label class="ctl-label" for="line-echo">Echoes <output data-line-out="echo">6</output></label>
+          <input id="line-echo" type="range" min="2" max="14" step="1" value="6" data-line="echo"></div>
+      </div>
+      <fieldset class="studio-group">
+        <legend class="ctl-label">Format</legend>
+        <div class="seg">
+          <button type="button" data-line="format" data-value="story" aria-pressed="true"><span>Story</span></button>
+          <button type="button" data-line="format" data-value="post" aria-pressed="false"><span>Post</span></button>
+          <button type="button" data-line="format" data-value="square" aria-pressed="false"><span>Square</span></button>
+        </div>
+      </fieldset>
+      <div class="line-checks">
+        <label class="check"><input type="checkbox" data-line="bottle" checked> With the bottle</label>
+        <label class="check"><input type="checkbox" data-line="clear"> Clear ground</label>
+      </div>
+      <div class="tool-btns">
+        <button class="btn btn-sm btn-ink" type="button" data-line-act="image">Keep the image</button>
+        <button class="btn btn-sm" type="button" data-line-act="clip" hidden>Keep a clip</button>
+      </div>
+      <p class="tool-note" data-line-note aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+{% schema %}
+{"name": "Your line", "tag": "div", "class": "domain-section"}
+{% endschema %}
