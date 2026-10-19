@@ -1,0 +1,23 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Domain Black",
+    "theme_version": "2.0.0",
+    "theme_author": "Domain Black",
+    "theme_documentation_url": "https://domainblack.shop",
+    "theme_support_url": "https://domainblack.shop"
+  },
+  {
+    "name": "Mark",
+    "settings": [
+      { "type": "image_picker", "id": "favicon", "label": "Favicon" }
+    ]
+  },
+  {
+    "name": "Motion",
+    "settings": [
+      { "type": "checkbox", "id": "smooth_scroll", "label": "Smooth scrolling", "default": true,
+        "info": "Always off for visitors who ask for reduced motion." }
+    ]
+  }
+]

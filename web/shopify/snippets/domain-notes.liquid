@@ -1,0 +1,23 @@
+{%- comment -%}
+  Generated from web/index.html by scripts/shopify/sync-from-site.py.
+  The notes "in the glass" for one world: render 'domain-notes', key: 'kingdom'.
+  Each is a crop of that world's catalogue photograph, never a drawing.
+{%- endcomment -%}
+{%- case key -%}
+  {%- when 'kingdom' -%}{%- assign notes = 'cannabis|Cannabis|A cannabis leaf, glossy and dark green;salt|Salt|Coarse salt crystals on black glass;sandalwood|Sandalwood|Split sandalwood, warm and fibrous' | split: ';' -%}
+  {%- when 'sovereign' -%}{%- assign notes = 'pomegranate|Pomegranate|An opened pomegranate, its seeds like garnets;cocoa|Cocoa|Broken dark chocolate and cacao;rum|Rum|Rum over ice in a cut-glass tumbler' | split: ';' -%}
+  {%- when 'celestial' -%}{%- assign notes = 'orange|Orange|A halved blood orange;jasmine|Jasmine|A white jasmine flower beside amber;amber|Amber|Amber resin catching the light' | split: ';' -%}
+  {%- when 'crown' -%}{%- assign notes = 'vanilla|Vanilla|A vanilla flower over cured vanilla pods;tonka|Tonka bean|Tonka beans, dark and wrinkled;sugar|Sugar|Golden sugar crystals' | split: ';' -%}
+  {%- when 'empire' -%}{%- assign notes = 'peach|Peach|A ripe peach, halved;blood-orange|Blood orange|Blood orange slices, glistening' | split: ';' -%}
+  {%- else -%}{%- assign notes = '' | split: ';' -%}
+{%- endcase -%}
+{%- if notes.size > 0 -%}
+<div class="pour" data-pour>
+  <p class="kicker">{{ heading | default: 'In the glass' | escape }}</p>
+  <div class="pour-row">
+    {%- for n in notes -%}{%- assign f = n | split: '|' -%}
+    <figure class="note" style="--i:{{ forloop.index0 }}"><span class="plate sheen"><img src="{{ 'note-' | append: key | append: '-' | append: f[0] | append: '-324.webp' | asset_url }}" width="324" height="405" loading="lazy" decoding="async" alt="{{ f[2] | escape }}"></span><figcaption>{{ f[1] | escape }}</figcaption></figure>
+    {%- endfor -%}
+  </div>
+</div>
+{%- endif -%}

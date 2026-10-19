@@ -1,0 +1,18 @@
+<section class="band thesis">
+  <div class="band-in" style="max-width:60ch">
+    <h1 class="display" style="font-size:2rem">{{ 'customer.addresses.title' | t }}</h1>
+    <hr class="rule">
+    {%- for address in customer.addresses -%}
+      <div data-rise style="padding-block:1.2rem;border-bottom:1px solid var(--line-soft)">
+        <p class="lede" style="margin:0">{{ address | format_address }}</p>
+      </div>
+    {%- endfor -%}
+    {%- form 'customer_address', customer.new_address, class: 'notify' -%}
+      <input type="text" name="address[address1]" placeholder="Address" autocomplete="address-line1">
+      <input type="text" name="address[city]" placeholder="City" autocomplete="address-level2">
+      <input type="text" name="address[zip]" placeholder="Postcode" autocomplete="postal-code">
+      <input type="text" name="address[country]" placeholder="Country" autocomplete="country-name">
+      <button type="submit">{{ 'customer.addresses.add' | t }}</button>
+    {%- endform -%}
+  </div>
+</section>

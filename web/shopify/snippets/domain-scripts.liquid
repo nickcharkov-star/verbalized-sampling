@@ -1,0 +1,16 @@
+{%- comment -%}
+  The issue's moving parts. Include once, just before </body>.
+
+  issue.js is the same file the site runs. It imports the press (halftone.js)
+  and the print (pixelfield.js) dynamically, so either can fail to arrive
+  without taking any content with it. Shopify keeps every asset in one flat
+  folder; DB_PHOTO_BASE tells the script where the photographs live.
+
+  Lenis is optional: with a blocked CDN the page scrolls natively. To
+  self-host it, upload lenis.min.js to Assets and use {{ 'lenis.min.js' | asset_url }}.
+{%- endcomment -%}
+<script>window.DB_PHOTO_BASE = "{{ 'lineup-800.webp' | asset_url | split: 'lineup-800.webp' | first }}";</script>
+{%- if settings.smooth_scroll -%}
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script>
+{%- endif -%}
+<script type="module" src="{{ 'issue.js' | asset_url }}"></script>

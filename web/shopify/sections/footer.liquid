@@ -1,0 +1,22 @@
+<footer class="foot wrap">
+  <span>{{ section.settings.left | escape }}</span>
+  <nav aria-label="Footer">
+    {%- for link in section.settings.menu.links -%}
+      <a class="u" href="{{ link.url }}">{{ link.title | escape }}</a>
+    {%- endfor -%}
+    {%- if section.settings.instagram != blank -%}
+      <a class="u" href="{{ section.settings.instagram }}" target="_blank" rel="noopener">Instagram</a>
+    {%- endif -%}
+  </nav>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    { "type": "text", "id": "left", "label": "Left", "default": "Domain Black · Presence, not trend" },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "footer" },
+    { "type": "url", "id": "instagram", "label": "Instagram", "default": "https://www.instagram.com/domain.black/" }
+  ]
+}
+{% endschema %}

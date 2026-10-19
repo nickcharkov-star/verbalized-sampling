@@ -1,0 +1,13 @@
+<section class="band thesis">
+  <div class="band-in" style="max-width:40ch">
+    <h1 class="display" style="font-size:2rem">{{ 'customer.activate_account.title' | t }}</h1>
+    <hr class="rule">
+    {%- form 'activate_customer_password', class: 'notify' -%}
+      {%- if form.errors -%}<p class="said" role="alert">{{ form.errors | default_errors }}</p>{%- endif -%}
+      <input type="password" name="customer[password]" autocomplete="new-password" placeholder="{{ 'customer.login.password' | t }}" required>
+      <input type="password" name="customer[password_confirmation]" autocomplete="new-password" placeholder="Confirm" required>
+      <button type="submit">{{ 'customer.activate_account.submit' | t }}</button>
+      <button type="submit" name="decline">{{ 'customer.activate_account.decline' | t }}</button>
+    {%- endform -%}
+  </div>
+</section>

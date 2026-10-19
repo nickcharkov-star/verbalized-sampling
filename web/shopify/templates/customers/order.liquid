@@ -1,0 +1,24 @@
+<section class="band register">
+  <div class="band-in">
+    <h1 class="display" style="font-size:2rem">{{ order.name }}</h1>
+    <p class="eyebrow">{{ order.created_at | date: '%e %B %Y' }}</p>
+    <hr class="rule">
+    <div class="reg-wrap">
+      <table class="reg-table">
+        <thead><tr><th scope="col">Composition</th><th scope="col">Quantity</th><th scope="col">Total</th></tr></thead>
+        <tbody>
+          {%- for line in order.line_items -%}
+            <tr>
+              <td>{{ line.title | escape }}</td>
+              <td class="num">{{ line.quantity }}</td>
+              <td class="num">{{ line.final_line_price | money }}</td>
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
+    <dl class="bearer" style="margin-top:1.6rem">
+      <div><dt>{{ 'customer.orders.total' | t }}</dt><dd class="num">{{ order.total_price | money }}</dd></div>
+    </dl>
+  </div>
+</section>

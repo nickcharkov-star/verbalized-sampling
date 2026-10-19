@@ -1,0 +1,123 @@
+{%- comment -%}
+  Five worlds. One block per composition. On a wide screen the catalogue
+  photograph holds still at the left and wipes to the next world as its
+  chapter comes up, while the paper takes on that world's tint; on a phone
+  each chapter carries its own photograph.
+
+  Choose a product on a block and its button goes to that product, its price
+  comes from the store, and its featured image can replace the bundled
+  photograph. Leave it empty and the block shows what is written in it.
+{%- endcomment -%}
+<section class="worlds wrap" id="worlds" data-page="{{ section.settings.page | escape }}" data-worlds>
+  <p class="runhead"><span>{{ shop.name | escape }}</span><span>{{ section.settings.title | escape }}</span><span>p. {{ section.settings.page | escape }}</span></p>
+  <div class="worlds-intro">
+    <h2 class="h-sec" data-ink>{{ section.settings.heading_1 | escape }} <em>{{ section.settings.heading_2 | escape | replace: 'W', '<span class="kw">W</span>' }}</em></h2>
+    <p class="dek">{{ section.settings.dek | escape }}</p>
+  </div>
+
+  <div class="worlds-body">
+    <div class="worlds-stage" aria-hidden="true">
+      <div class="stage-frame sheen" data-stage-frame>
+        {%- for block in section.blocks -%}
+          {%- assign b = block.settings -%}
+          {%- if b.use_product_image and b.product != blank and b.product.featured_image -%}
+            {%- assign src720 = b.product.featured_image | image_url: width: 720 -%}
+            {%- assign src1080 = b.product.featured_image | image_url: width: 1080 -%}
+          {%- else -%}
+            {%- assign src720 = b.key | append: '-720.webp' | asset_url -%}
+            {%- assign src1080 = b.key | append: '-1080.webp' | asset_url -%}
+          {%- endif -%}
+          <img data-stage src="{{ src1080 }}" srcset="{{ src720 }} 720w, {{ src1080 }} 1080w" sizes="50vw" width="1080" height="1350" alt="" decoding="async" loading="lazy"{% unless forloop.first %} style="--wipe:100%"{% endunless %}>
+        {%- endfor -%}
+        <span class="stage-num" data-stage-num>{{ section.blocks.first.settings.num | remove: 'Nº ' | escape }}</span>
+      </div>
+      <p class="stage-cap"><span data-stage-cap>{{ section.blocks.first.settings.name | escape }}, catalogue</span><b data-stage-frame-no>{{ section.blocks.first.settings.frame | escape }}</b></p>
+    </div>
+
+    <div class="worlds-list">
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        {%- assign p = b.product -%}
+        {%- if b.use_product_image and b.product != blank and b.product.featured_image -%}
+          {%- assign src720 = b.product.featured_image | image_url: width: 720 -%}
+          {%- assign src1080 = b.product.featured_image | image_url: width: 1080 -%}
+        {%- else -%}
+          {%- assign src720 = b.key | append: '-720.webp' | asset_url -%}
+          {%- assign src1080 = b.key | append: '-1080.webp' | asset_url -%}
+        {%- endif -%}
+        <article class="world" id="w-{{ b.name | handle }}" data-world data-tint="{{ b.tint }}" style="--lac:{{ b.lacquer }}"
+                 data-name="{{ b.name | escape }}" data-frame="{{ b.frame | escape }}" data-num="{{ b.num | remove: 'Nº ' | escape }}" {{ block.shopify_attributes }}>
+          <figure class="plate world-photo" data-develop>
+            <img src="{{ src720 }}" srcset="{{ src720 }} 720w, {{ src1080 }} 1080w"
+                 sizes="92vw" width="1080" height="1350" loading="lazy" decoding="async" alt="{{ b.alt | escape }}">
+            <figcaption><span>{{ b.name | escape }}, catalogue</span><b>{{ b.frame | escape }}</b></figcaption>
+          </figure>
+          <p class="world-kicker"><span class="sw" aria-hidden="true"></span><span>{{ b.num | escape }}</span><span>{{ b.theme | escape }}</span></p>
+          <h3 class="world-name">{{ b.name | escape }}</h3>
+          <p class="world-line">{{ b.line | escape }}</p>
+          <dl class="world-facts">
+            <div><dt>Accord</dt><dd>{{ b.accord | escape }}</dd></div>
+            <div><dt>The room</dt><dd>{{ b.room | escape }}</dd></div>
+            <div><dt>{{ b.format | escape }}</dt><dd>{% if p != blank %}{{ p.selected_or_first_available_variant.title | replace: 'Default Title', b.size }} &mdash; {{ p.price | money }}{% else %}{{ b.size | escape }} &mdash; {{ b.price | escape }}{% endif %}</dd></div>
+          </dl>
+          <a class="btn" data-magnetic href="{% if p != blank %}{{ p.url }}{% else %}{{ section.settings.fallback_url }}{% endif %}">{{ section.settings.button | escape }} {{ b.name | escape }} <i aria-hidden="true">&rarr;</i></a>
+          {%- if b.notes -%}
+            {%- render 'domain-notes', key: b.key, heading: section.settings.notes_heading -%}
+          {%- endif -%}
+          {%- if b.detail != blank -%}
+            <figure class="plate world-detail" data-develop data-parallax>
+              <img src="{{ b.detail | append: '-480.webp' | asset_url }}" width="480" height="600" loading="lazy" decoding="async" alt="{{ b.detail_alt | escape }}">
+              <figcaption><span>{{ b.detail_caption | escape }}</span><b>{{ b.detail_frame | escape }}</b></figcaption>
+            </figure>
+          {%- endif -%}
+        </article>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Five worlds",
+  "tag": "div",
+  "class": "domain-section",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Running head", "default": "Five Worlds" },
+    { "type": "text", "id": "page", "label": "Page number", "default": "08" },
+    { "type": "text", "id": "heading_1", "label": "Heading, roman", "default": "Five" },
+    { "type": "text", "id": "heading_2", "label": "Heading, italic", "default": "Worlds" },
+    { "type": "text", "id": "dek", "label": "Standfirst", "default": "Each composition starts as a room you could stand in. Scroll through them in the order the house numbers them." },
+    { "type": "text", "id": "button", "label": "Button word", "default": "Shop" },
+    { "type": "url", "id": "fallback_url", "label": "Button link when no product is chosen", "default": "/collections/all" },
+    { "type": "text", "id": "notes_heading", "label": "Notes heading", "default": "In the glass" }
+  ],
+  "blocks": [
+    { "type": "world", "name": "World", "settings": [
+      { "type": "product", "id": "product", "label": "Product" },
+      { "type": "checkbox", "id": "use_product_image", "label": "Use the product's featured image", "default": false, "info": "The stage is 4:5. A 4:5 photograph fits without cropping." },
+      { "type": "select", "id": "key", "label": "Bundled photograph", "default": "kingdom",
+        "options": [ { "value": "kingdom", "label": "Kingdom" }, { "value": "sovereign", "label": "Sovereign" }, { "value": "celestial", "label": "Celestial" }, { "value": "crown", "label": "Crown" }, { "value": "empire", "label": "Empire" } ] },
+      { "type": "text", "id": "alt", "label": "Photograph description", "default": "Kingdom: a matte black flacon with a black stone cap, gold collar and gold monogram." },
+      { "type": "text", "id": "frame", "label": "Frame number", "default": "S231" },
+      { "type": "text", "id": "num", "label": "Number", "default": "Nº I" },
+      { "type": "text", "id": "name", "label": "Name", "default": "Kingdom" },
+      { "type": "text", "id": "theme", "label": "Disposition", "default": "Quiet Authority" },
+      { "type": "text", "id": "line", "label": "Line", "default": "For those whose presence speaks before they do." },
+      { "type": "text", "id": "accord", "label": "Accord", "default": "Vanilla, salt, cannabis, sandalwood" },
+      { "type": "text", "id": "room", "label": "The room", "default": "Dark walnut, black stone, and morning fog." },
+      { "type": "text", "id": "format", "label": "Format", "default": "Eau de Parfum" },
+      { "type": "text", "id": "size", "label": "Size", "default": "20 ml" },
+      { "type": "text", "id": "price", "label": "Price (when no product is chosen)", "default": "$40" },
+      { "type": "checkbox", "id": "notes", "label": "Show the notes in the glass", "default": true, "info": "Close crops of the bundled photograph: the ingredients beside the bottle, never the bottle itself." },
+      { "type": "color", "id": "lacquer", "label": "Lacquer", "default": "#1d1d1d" },
+      { "type": "color", "id": "tint", "label": "Paper tint for this chapter", "default": "#e4e1db" },
+      { "type": "select", "id": "detail", "label": "Detail photograph", "default": "logo-macro",
+        "options": [ { "value": "", "label": "None" }, { "value": "logo-macro", "label": "Monogram, macro" }, { "value": "trio", "label": "Three on plaster" }, { "value": "travel", "label": "The 10 ml" }, { "value": "crown-copper", "label": "Crown, copper" }, { "value": "empire-blocks", "label": "Empire on terracotta" }, { "value": "fog-stone", "label": "Kingdom on fog stone" }, { "value": "duo", "label": "Duo, monochrome" } ] },
+      { "type": "text", "id": "detail_alt", "label": "Detail description", "default": "The gold db monogram on Kingdom's matte black body, close up." },
+      { "type": "text", "id": "detail_caption", "label": "Detail caption", "default": "The monogram, close" },
+      { "type": "text", "id": "detail_frame", "label": "Detail frame number", "default": "S094" }
+    ] }
+  ],
+  "max_blocks": 5
+}
+{% endschema %}

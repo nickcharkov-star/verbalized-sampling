@@ -1,0 +1,13 @@
+<section class="band thesis">
+  <div class="band-in" style="max-width:40ch">
+    <h1 class="display" style="font-size:2rem">{{ 'customer.login.title' | t }}</h1>
+    <hr class="rule">
+    {%- form 'customer_login', class: 'notify' -%}
+      {%- if form.errors -%}<p class="said" role="alert">{{ form.errors | default_errors }}</p>{%- endif -%}
+      <input type="email" name="customer[email]" autocomplete="email" placeholder="{{ 'customer.login.email' | t }}" required>
+      <input type="password" name="customer[password]" autocomplete="current-password" placeholder="{{ 'customer.login.password' | t }}">
+      <button type="submit">{{ 'customer.login.submit' | t }}</button>
+    {%- endform -%}
+    <p><a class="eyebrow" href="{{ routes.account_register_url }}">{{ 'customer.login.create' | t }}</a></p>
+  </div>
+</section>

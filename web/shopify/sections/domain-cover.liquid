@@ -1,0 +1,80 @@
+{%- comment -%}
+  The cover. The masthead is three plates of the same word, overprinted;
+  the photograph under it is printed as halftone, pulled into register,
+  and then handed back as itself. The cover lines below it point at each
+  bottle where it stands in the frame (positions as a percentage across).
+{%- endcomment -%}
+<section class="cover wrap" id="cover" data-page="01">
+  <div class="cover-in">
+    <div class="cover-band"><span>{{ section.settings.band_left | escape }}</span><span>{{ section.settings.band_mid | escape }}</span><span>{{ section.settings.band_right | escape }}</span></div>
+
+    <h1 class="masthead">
+      <span class="sr">{{ shop.name | escape }}</span>
+      {%- assign word = section.settings.masthead | upcase | escape -%}
+      <span class="mast-word" data-mast aria-hidden="true"><span class="ink ink-c">{{ word }}</span><span class="ink ink-m">{{ word }}</span><span class="ink ink-k">{{ word }}</span></span>
+      <span class="mast-black" aria-hidden="true">{{ section.settings.masthead_sub | escape }}</span>
+    </h1>
+
+    <figure class="cover-plate" data-press>
+      <div class="shot">
+        {%- if section.settings.image != blank -%}
+          {{ section.settings.image | image_url: width: 1920 | image_tag:
+               widths: '800, 1280, 1920', sizes: '(min-width: 1600px) 1520px, 100vw',
+               fetchpriority: 'high', decoding: 'async', alt: section.settings.image.alt | escape }}
+        {%- else -%}
+          <img src="{{ 'lineup-1280.webp' | asset_url }}"
+               srcset="{{ 'lineup-800.webp' | asset_url }} 800w, {{ 'lineup-1280.webp' | asset_url }} 1280w, {{ 'lineup-1920.webp' | asset_url }} 1920w"
+               sizes="(min-width: 1600px) 1520px, 100vw" width="1920" height="1080" fetchpriority="high" decoding="async"
+               alt="The five Domain Black flacons on stone in late sun: Sovereign in chocolate lacquer, Crown in ivory, Kingdom in black, Celestial in cobalt and Empire in orange, each with a gold monogram and a stone-shaped cap.">
+        {%- endif -%}
+        <canvas data-press-canvas aria-hidden="true"></canvas>
+      </div>
+      <figcaption class="cover-lines">
+        {%- for block in section.blocks -%}
+          <a href="#w-{{ block.settings.name | handle }}" style="--x:{{ block.settings.x }}%" {{ block.shopify_attributes }}><b>{{ block.settings.num | escape }}</b><i>{{ block.settings.name | escape }}</i><small>{{ block.settings.theme | escape }}</small></a>
+        {%- endfor -%}
+      </figcaption>
+    </figure>
+
+    <div class="cover-foot">
+      <p class="dek">{{ section.settings.dek | escape }}</p>
+      <p class="script cover-sign">{{ section.settings.sign | escape }}</p>
+      <p class="cover-hint"><span class="mouse">Hold the pointer over the photograph to see the dots it is printed in.</span><span class="touch">Touch and hold the photograph to see the dots it is printed in.</span></p>
+    </div>
+  </div>
+</section>
+
+<div class="ribbon" aria-hidden="true">
+  <div class="ribbon-track" data-marquee>
+    {%- for i in (1..2) -%}
+      {%- for block in section.blocks -%}<span><small>{{ block.settings.num | remove: 'Nº ' | escape }}</small>{{ block.settings.name | escape }}</span>{%- endfor -%}
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Cover",
+  "tag": "div",
+  "class": "domain-section",
+  "settings": [
+    { "type": "text", "id": "band_left", "label": "Band, left", "default": "Issue Nº 01" },
+    { "type": "text", "id": "band_mid", "label": "Band, centre", "default": "Autumn 2026" },
+    { "type": "text", "id": "band_right", "label": "Band, right", "default": "The Five Worlds" },
+    { "type": "text", "id": "masthead", "label": "Masthead", "default": "Domain" },
+    { "type": "text", "id": "masthead_sub", "label": "Under the masthead", "default": "Black" },
+    { "type": "image_picker", "id": "image", "label": "Cover photograph", "info": "Leave empty to use the lineup photograph bundled with the theme. A 16:9 frame works best." },
+    { "type": "text", "id": "dek", "label": "Standfirst", "default": "Five fragrances from one house, and the photographs made of them. A mood first, a material second, a scent last." },
+    { "type": "text", "id": "sign", "label": "Signature", "default": "It’s Yours." }
+  ],
+  "blocks": [
+    { "type": "line", "name": "Cover line", "settings": [
+      { "type": "text", "id": "num", "label": "Number", "default": "Nº I" },
+      { "type": "text", "id": "name", "label": "Name", "default": "Kingdom" },
+      { "type": "text", "id": "theme", "label": "Disposition", "default": "Quiet Authority" },
+      { "type": "range", "id": "x", "label": "Position across the photograph", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 }
+    ] }
+  ],
+  "max_blocks": 6
+}
+{% endschema %}

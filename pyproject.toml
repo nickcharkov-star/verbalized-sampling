@@ -48,6 +48,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# autocut needs ffmpeg, not Python packages. Install a system ffmpeg (which
+# also brings ffprobe, libass and libfreetype) or use the static build in the
+# imageio-ffmpeg wheel below.
+video = [
+    "imageio-ffmpeg>=0.4.9",
+]
 gpu = [
     "vllm>=0.8.0",
 ]
@@ -65,9 +71,10 @@ dev = [
 
 [project.scripts]
 verbalize = "verbalized_sampling.cli:app"
+autocut = "autocut.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["verbalized_sampling"]
+packages = ["verbalized_sampling", "autocut"]
 exclude = [
   "ablation_data/**",
   "generated_data/**",

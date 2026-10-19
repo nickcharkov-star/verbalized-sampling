@@ -1,0 +1,59 @@
+{%- comment -%}
+  The last page: the seal — a ring of type around a photograph of the real
+  monogram — the signature, the newsletter, and the colophon.
+  Only the ring turns; the monogram stays upright.
+{%- endcomment -%}
+<section class="colophon wrap" id="colophon" data-page="{{ section.settings.page | escape }}">
+  <p class="runhead"><span>{{ shop.name | escape }}</span><span>Colophon</span><span>p. {{ section.settings.page | escape }}</span></p>
+  <div class="colophon-grid">
+    <svg class="seal" viewBox="0 0 200 200" role="img" aria-label="The house seal: a ring of type around a photograph of the gold monogram" data-seal>
+      <defs><path id="sealPath-{{ section.id }}" d="M100 100 m-74 0 a74 74 0 1 1 148 0 a74 74 0 1 1 -148 0"/></defs>
+      <g data-seal-ring>
+        <circle class="ln" cx="100" cy="100" r="92"/>
+        <circle class="ln" cx="100" cy="100" r="86" stroke-width=".5"/>
+        <circle class="ln" cx="100" cy="100" r="58"/>
+        <text><textPath href="#sealPath-{{ section.id }}" startOffset="0">{{ section.settings.ring | escape }}</textPath></text>
+      </g>
+      <clipPath id="sealLens-{{ section.id }}"><circle cx="100" cy="100" r="55"/></clipPath>
+      <image href="{{ 'logo-macro-480.webp' | asset_url }}" x="16.7" y="-57" width="170" height="212.5" clip-path="url(#sealLens-{{ section.id }})" preserveAspectRatio="none"/>
+    </svg>
+    <div class="colophon-main">
+      <p class="script">{{ section.settings.sign | escape }}</p>
+      {%- form 'customer', class: 'notify', id: 'Newsletter' -%}
+        <input type="hidden" name="contact[tags]" value="newsletter">
+        <label class="kicker" for="NewsletterEmail">{{ section.settings.form_label | escape }}</label>
+        <div class="notify-row">
+          <input id="NewsletterEmail" type="email" name="contact[email]" autocomplete="email" placeholder="you@example.com" required>
+          <button class="btn btn-ink" type="submit">{{ section.settings.form_button | escape }} <i aria-hidden="true">&rarr;</i></button>
+        </div>
+        {%- if form.posted_successfully? -%}
+          <p class="said" role="status">{{ section.settings.form_thanks | escape }}</p>
+        {%- elsif form.errors -%}
+          <p class="said" role="alert">{{ form.errors | default_errors }}</p>
+        {%- endif -%}
+      {%- endform -%}
+      <div class="colophon-text">
+        <b>Colophon</b>
+        {{ section.settings.colophon }}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Colophon",
+  "tag": "div",
+  "class": "domain-section",
+  "settings": [
+    { "type": "text", "id": "page", "label": "Page number", "default": "40" },
+    { "type": "text", "id": "ring", "label": "Seal ring", "default": "Domain Black · Issue Nº 01 · Five Worlds · One House ·" },
+    { "type": "text", "id": "sign", "label": "Signature", "default": "It’s Yours." },
+    { "type": "text", "id": "form_label", "label": "Newsletter label", "default": "Hear about the next issue first" },
+    { "type": "text", "id": "form_button", "label": "Newsletter button", "default": "Subscribe" },
+    { "type": "text", "id": "form_thanks", "label": "Newsletter thanks", "default": "Thank you. You will hear from us when the next issue is out." },
+    { "type": "richtext", "id": "colophon", "label": "Colophon",
+      "default": "<p>Issue Nº 01, Autumn 2026. Photography from the Domain Black campaign shoot, cropped and sized for the page and never recoloured. The covers are set over the catalogue frames. The print on p. 22 is drawn live, one dot per pixel. Set in Bodoni Moda and Jost.</p>" }
+  ]
+}
+{% endschema %}

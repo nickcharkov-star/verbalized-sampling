@@ -1,0 +1,45 @@
+{%- comment -%}
+  Generated from web/index.html by scripts/shopify/sync-from-site.py —
+  edit the site and sync rather than editing this file.
+{%- endcomment -%}
+<div class="print-intro wrap">
+  <p class="runhead"><span>Domain Black</span><span>The Print</span><span>p. 22</span></p>
+  <div class="print-intro-grid">
+    <h2 class="h-sec" data-ink>The <em>Print</em></h2>
+    <p class="dek">Every picture in a magazine is made of dots. This is the lineup on the cover, one dot for every pixel. Scroll to take it apart; drag to push the dots aside, press to pull them home.</p>
+  </div>
+</div>
+<section class="print wrap" id="print" data-page="22" data-pixels aria-label="The Print">
+  <div class="print-sticky">
+    <div class="print-stage">
+      <canvas data-pixelfield data-cursor="Push" aria-label="The lineup photograph drawn as halftone dots, one per pixel. Drag to push the dots aside; press to pull them back."></canvas>
+      <div class="print-fallback">
+        <figure class="plate">
+          <img src="{{ 'lineup-800.webp' | asset_url }}" width="800" height="450" loading="lazy" decoding="async" alt="The five Domain Black flacons on stone in late sun.">
+        </figure>
+        <p data-fallback-why>This page draws the print with WebGL 2. This browser does not offer it, so here is the photograph it is made from.</p>
+      </div>
+      <div class="print-cap">
+        <p><span data-mv-num>I</span> &middot; <span data-mv-name>The Plate</span><b data-mv-note>Every dot where the photograph put it</b></p>
+        <p class="print-count"><span data-pf-count>&mdash;</span></p>
+      </div>
+      <p class="print-help">Drag to push the dots aside &middot; press to pull them home</p>
+      <div class="tool print-tool" data-tool="print">
+        <button class="tool-toggle" type="button" aria-expanded="false" aria-controls="print-dials" data-tool-toggle>Adjust</button>
+        <div class="tool-panel" id="print-dials" data-tool-panel hidden>
+          <div class="ctl"><label class="ctl-label" for="dial-dot">Dot <output data-dial-out="dot">100%</output></label>
+            <input id="dial-dot" type="range" min="40" max="220" step="10" value="100" data-dial="dot"></div>
+          <div class="ctl"><label class="ctl-label" for="dial-swirl">Swirl <output data-dial-out="swirl">100%</output></label>
+            <input id="dial-swirl" type="range" min="0" max="200" step="10" value="100" data-dial="swirl"></div>
+          <div class="tool-btns"><button class="btn btn-sm" type="button" data-tool-act="keep">Keep this frame</button></div>
+          <p class="tool-note" data-tool-note aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+    <ol class="moves" data-moves aria-label="Movements"></ol>
+  </div>
+</section>
+
+{% schema %}
+{"name": "The print", "tag": "div", "class": "domain-section"}
+{% endschema %}

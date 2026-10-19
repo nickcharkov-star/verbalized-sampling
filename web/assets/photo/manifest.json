@@ -1,0 +1,476 @@
+{
+ "lineup": {
+  "source": "DB_FiveWorlds_Lineup_S003_16x9.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1920,
+    "h": 1080,
+    "file": "lineup-1920.webp",
+    "kb": 257
+   },
+   {
+    "w": 1280,
+    "h": 720,
+    "file": "lineup-1280.webp",
+    "kb": 143
+   },
+   {
+    "w": 800,
+    "h": 450,
+    "file": "lineup-800.webp",
+    "kb": 61
+   }
+  ]
+ },
+ "kingdom": {
+  "source": "DB_Kingdom_Catalogue_S231_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "kingdom-1080.webp",
+    "kb": 121
+   },
+   {
+    "w": 720,
+    "h": 900,
+    "file": "kingdom-720.webp",
+    "kb": 63
+   }
+  ]
+ },
+ "sovereign": {
+  "source": "DB_Sovereign_Catalogue_S228_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "sovereign-1080.webp",
+    "kb": 157
+   },
+   {
+    "w": 720,
+    "h": 900,
+    "file": "sovereign-720.webp",
+    "kb": 81
+   }
+  ]
+ },
+ "celestial": {
+  "source": "DB_Celestial_Catalogue_S227_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "celestial-1080.webp",
+    "kb": 103
+   },
+   {
+    "w": 720,
+    "h": 900,
+    "file": "celestial-720.webp",
+    "kb": 52
+   }
+  ]
+ },
+ "crown": {
+  "source": "DB_Crown_Catalogue_S229_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "crown-1080.webp",
+    "kb": 113
+   },
+   {
+    "w": 720,
+    "h": 900,
+    "file": "crown-720.webp",
+    "kb": 58
+   }
+  ]
+ },
+ "empire": {
+  "source": "DB_Empire_Catalogue_S230_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "empire-1080.webp",
+    "kb": 161
+   },
+   {
+    "w": 720,
+    "h": 900,
+    "file": "empire-720.webp",
+    "kb": 79
+   }
+  ]
+ },
+ "in-hand": {
+  "source": "DB_Kingdom_InHand_S026_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "in-hand-1080.webp",
+    "kb": 101
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "in-hand-480.webp",
+    "kb": 23
+   }
+  ]
+ },
+ "logo-macro": {
+  "source": "DB_Kingdom_LogoMacro_S094_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "logo-macro-1080.webp",
+    "kb": 65
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "logo-macro-480.webp",
+    "kb": 17
+   }
+  ]
+ },
+ "logo-macro-cool": {
+  "source": "DB_Kingdom_LogoMacroCool_S102_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "logo-macro-cool-1080.webp",
+    "kb": 58
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "logo-macro-cool-480.webp",
+    "kb": 17
+   }
+  ]
+ },
+ "fog-stone": {
+  "source": "DB_Kingdom_FogStone_S187_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "fog-stone-1080.webp",
+    "kb": 136
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "fog-stone-480.webp",
+    "kb": 21
+   }
+  ]
+ },
+ "silver-symmetry": {
+  "source": "DB_Kingdom_SilverSymmetry_S095_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "silver-symmetry-1080.webp",
+    "kb": 57
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "silver-symmetry-480.webp",
+    "kb": 16
+   }
+  ]
+ },
+ "silver-fog": {
+  "source": "DB_Kingdom_SilverFog_S092_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "silver-fog-1080.webp",
+    "kb": 57
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "silver-fog-480.webp",
+    "kb": 13
+   }
+  ]
+ },
+ "silver-negative": {
+  "source": "DB_Kingdom_SilverNegativeSpace_S118_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "silver-negative-1080.webp",
+    "kb": 57
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "silver-negative-480.webp",
+    "kb": 11
+   }
+  ]
+ },
+ "amber-negative": {
+  "source": "DB_Kingdom_AmberNegativeSpace_S110_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "amber-negative-1080.webp",
+    "kb": 117
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "amber-negative-480.webp",
+    "kb": 22
+   }
+  ]
+ },
+ "white-liquid": {
+  "source": "DB_Kingdom_WhiteLiquid_S126_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "white-liquid-1080.webp",
+    "kb": 31
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "white-liquid-480.webp",
+    "kb": 7
+   }
+  ]
+ },
+ "dutch-angle": {
+  "source": "DB_Kingdom_DutchAngle_S106_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "dutch-angle-1080.webp",
+    "kb": 39
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "dutch-angle-480.webp",
+    "kb": 12
+   }
+  ]
+ },
+ "glass-plinth": {
+  "source": "DB_Kingdom_GlassPlinth_S130_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "glass-plinth-1080.webp",
+    "kb": 41
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "glass-plinth-480.webp",
+    "kb": 8
+   }
+  ]
+ },
+ "droplets-ice": {
+  "source": "DB_Kingdom_DropletsIce_S036_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "droplets-ice-1080.webp",
+    "kb": 46
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "droplets-ice-480.webp",
+    "kb": 14
+   }
+  ]
+ },
+ "horizon": {
+  "source": "DB_Kingdom_Horizon_S213_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "horizon-1080.webp",
+    "kb": 91
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "horizon-480.webp",
+    "kb": 22
+   }
+  ]
+ },
+ "trio": {
+  "source": "DB_Trio_Natural_S182_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "trio-1080.webp",
+    "kb": 195
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "trio-480.webp",
+    "kb": 29
+   }
+  ]
+ },
+ "duo": {
+  "source": "DB_Duo_Monochrome_S015_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "duo-1080.webp",
+    "kb": 118
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "duo-480.webp",
+    "kb": 13
+   }
+  ]
+ },
+ "travel": {
+  "source": "DB_Celestial_10ML_S219_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "travel-1080.webp",
+    "kb": 125
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "travel-480.webp",
+    "kb": 24
+   }
+  ]
+ },
+ "tube": {
+  "source": "DB_Packaging_Tube_S221_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "tube-1080.webp",
+    "kb": 49
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "tube-480.webp",
+    "kb": 8
+   }
+  ]
+ },
+ "crown-copper": {
+  "source": "DB_Crown_Copper_S146_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "crown-copper-1080.webp",
+    "kb": 159
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "crown-copper-480.webp",
+    "kb": 24
+   }
+  ]
+ },
+ "empire-blocks": {
+  "source": "DB_Empire_TerracottaBlocks_S042_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "empire-blocks-1080.webp",
+    "kb": 143
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "empire-blocks-480.webp",
+    "kb": 33
+   }
+  ]
+ },
+ "empire-flare": {
+  "source": "DB_Empire_SunFlare_S043_4x5.jpg",
+  "crop": null,
+  "files": [
+   {
+    "w": 1080,
+    "h": 1350,
+    "file": "empire-flare-1080.webp",
+    "kb": 145
+   },
+   {
+    "w": 480,
+    "h": 600,
+    "file": "empire-flare-480.webp",
+    "kb": 30
+   }
+  ]
+ }
+}

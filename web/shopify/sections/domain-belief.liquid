@@ -1,0 +1,50 @@
+{%- comment -%}
+  The founder's letter. The pull quote is inked word by word as it is read;
+  the photograph waits as a halftone and develops when it is reached.
+  The first letter of the letter is set as a drop cap.
+{%- endcomment -%}
+<section class="belief wrap" id="belief" data-page="{{ section.settings.page | escape }}">
+  <p class="runhead"><span>{{ shop.name | escape }}</span><span>{{ section.settings.title | escape }}</span><span>p. {{ section.settings.page | escape }}</span></p>
+  <div class="spread">
+    <figure class="plate" data-develop>
+      {%- if section.settings.image != blank -%}
+        {{ section.settings.image | image_url: width: 1080 | image_tag: widths: '480, 1080', sizes: '(min-width: 860px) 40vw, 92vw', loading: 'lazy', decoding: 'async', alt: section.settings.image.alt | escape }}
+      {%- else -%}
+        <img src="{{ 'in-hand-1080.webp' | asset_url }}" srcset="{{ 'in-hand-480.webp' | asset_url }} 480w, {{ 'in-hand-1080.webp' | asset_url }} 1080w"
+             sizes="(min-width: 860px) 40vw, 92vw" width="1080" height="1350" loading="lazy" decoding="async"
+             alt="A hand holds the Kingdom flacon, matte black with a black stone cap and a gold monogram, in front of a white curtain; Celestial stands behind.">
+      {%- endif -%}
+      <figcaption><span>{{ section.settings.caption | escape }}</span><b>{{ section.settings.frame | escape }}</b></figcaption>
+    </figure>
+    <article class="letter">
+      <p class="kicker">{{ section.settings.kicker | escape }}</p>
+      <blockquote class="pull" data-ink>{{ section.settings.quote | escape | replace: 'W', '<span class="kw">W</span>' }}</blockquote>
+      <div class="letter-body">{{ section.settings.letter }}</div>
+      <div class="sig">
+        <p class="kicker">{{ section.settings.signature | escape }}</p>
+        <p class="script">{{ section.settings.sign | escape }}</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "The belief",
+  "tag": "div",
+  "class": "domain-section",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Running head", "default": "The Belief" },
+    { "type": "text", "id": "page", "label": "Page number", "default": "04" },
+    { "type": "image_picker", "id": "image", "label": "Photograph", "info": "Leave empty to use the in-hand frame bundled with the theme." },
+    { "type": "text", "id": "caption", "label": "Caption", "default": "Kingdom, in hand" },
+    { "type": "text", "id": "frame", "label": "Frame number", "default": "S026" },
+    { "type": "text", "id": "kicker", "label": "Kicker", "default": "From the founder" },
+    { "type": "text", "id": "quote", "label": "Pull quote", "default": "We create fragrance to reveal what is already known." },
+    { "type": "richtext", "id": "letter", "label": "Letter",
+      "default": "<p>Domain Black began with a simple belief: fragrance is worn to be remembered, not to be noticed.</p><p>Every composition in the House is built the same way: a mood first, a material second, a scent last. It is why the five do not smell like variations on one another. They are five rooms, not five shades.</p><p>We believe fragrance is more than scent. It is presence, memory, and identity made tangible. The confidence. The presence. The power to step into your Domain.</p>" },
+    { "type": "text", "id": "signature", "label": "Signed", "default": "Kamaala Emmanuel — Founder" },
+    { "type": "text", "id": "sign", "label": "Signature line", "default": "It’s Yours." }
+  ]
+}
+{% endschema %}

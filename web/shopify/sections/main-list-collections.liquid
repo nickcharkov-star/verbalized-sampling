@@ -1,0 +1,29 @@
+<section class="band five" id="section-{{ section.id }}">
+  <div class="band-in">
+    <h1 class="display" style="font-size:clamp(1.5rem,1rem + 2.2vw,2.8rem)" data-rise>{{ section.settings.heading | escape }}</h1>
+    <hr class="rule">
+    <div class="reg-wrap">
+      <table class="reg-table">
+        <tbody>
+          {%- for c in collections -%}
+            <tr>
+              <td><a href="{{ c.url }}">{{ c.title | escape }}</a></td>
+              <td class="num">{{ c.products_count }}</td>
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collections list",
+  "tag": "section",
+  "class": "domain-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Collections" }
+  ]
+}
+{% endschema %}

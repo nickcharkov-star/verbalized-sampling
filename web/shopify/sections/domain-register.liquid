@@ -1,0 +1,72 @@
+{%- comment -%}
+  The register: every composition in one table, in the house's order.
+  A row with a product chosen takes its name link and price from the store.
+{%- endcomment -%}
+<section class="register wrap" id="register" data-page="{{ section.settings.page | escape }}">
+  <p class="runhead"><span>{{ shop.name | escape }}</span><span>{{ section.settings.title | escape }}</span><span>p. {{ section.settings.page | escape }}</span></p>
+  <div class="register-head">
+    <h2 class="h-sec" data-ink>{{ section.settings.heading_1 | escape }} <em>{{ section.settings.heading_2 | escape }}</em></h2>
+    <p class="dek">{{ section.settings.dek | escape }}</p>
+  </div>
+  <div class="reg-scroll">
+    <table class="reg">
+      <thead><tr><th scope="col">Nº</th><th scope="col">Composition</th><th scope="col">Disposition</th><th scope="col">Accord</th><th scope="col" class="num">{{ section.settings.col_small | escape }}</th><th scope="col" class="num">{{ section.settings.col_large | escape }}</th></tr></thead>
+      <tbody>
+        {%- for block in section.blocks -%}
+          {%- assign b = block.settings -%}
+          <tr style="--lac:{{ b.lacquer }}" {{ block.shopify_attributes }}>
+            <td class="n">{{ b.num | escape }}</td>
+            <td class="name"><span class="sw" aria-hidden="true"></span>{% if b.product != blank %}<a class="u" href="{{ b.product.url }}">{{ b.name | escape }}</a>{% else %}{{ b.name | escape }}{% endif %}</td>
+            <td>{{ b.theme | escape }}</td>
+            <td class="muted">{{ b.accord | escape }}</td>
+            <td class="num">{% if b.product != blank %}{{ b.product.price | money }}{% else %}{{ b.price_small | escape }}{% endif %}</td>
+            <td class="num muted">{{ b.price_large | escape }}</td>
+          </tr>
+        {%- endfor -%}
+      </tbody>
+    </table>
+  </div>
+  {%- if section.settings.travel_text != blank -%}
+    <aside class="travel">
+      <figure class="plate" data-develop>
+        <img src="{{ 'tube-480.webp' | asset_url }}" width="480" height="600" loading="lazy" decoding="async" alt="A matte black Domain Black travel tube marked db, Domain Black, Eau de Parfum, 10 ml.">
+      </figure>
+      <div>
+        <p class="kicker">{{ section.settings.travel_kicker | escape }}</p>
+        <p class="t">{{ section.settings.travel_text | escape }}</p>
+      </div>
+    </aside>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "The register",
+  "tag": "div",
+  "class": "domain-section",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Running head", "default": "The Register" },
+    { "type": "text", "id": "page", "label": "Page number", "default": "38" },
+    { "type": "text", "id": "heading_1", "label": "Heading, roman", "default": "The" },
+    { "type": "text", "id": "heading_2", "label": "Heading, italic", "default": "Register" },
+    { "type": "text", "id": "dek", "label": "Standfirst", "default": "Every composition, written down in the order the house numbers them." },
+    { "type": "text", "id": "col_small", "label": "First size column", "default": "20 ml" },
+    { "type": "text", "id": "col_large", "label": "Second size column", "default": "100 ml" },
+    { "type": "text", "id": "travel_kicker", "label": "Travel kicker", "default": "Travel — 10 ml" },
+    { "type": "text", "id": "travel_text", "label": "Travel note", "default": "Eau de Parfum in a travel atomiser, sleeved in a black tube with the monogram on its face." }
+  ],
+  "blocks": [
+    { "type": "row", "name": "Composition", "settings": [
+      { "type": "product", "id": "product", "label": "Product" },
+      { "type": "text", "id": "num", "label": "Number", "default": "I" },
+      { "type": "text", "id": "name", "label": "Name", "default": "Kingdom" },
+      { "type": "text", "id": "theme", "label": "Disposition", "default": "Quiet Authority" },
+      { "type": "text", "id": "accord", "label": "Accord", "default": "Vanilla, salt, cannabis, sandalwood" },
+      { "type": "color", "id": "lacquer", "label": "Lacquer", "default": "#1d1d1d" },
+      { "type": "text", "id": "price_small", "label": "First size price (when no product is chosen)", "default": "$40" },
+      { "type": "text", "id": "price_large", "label": "Second size", "default": "Soon" }
+    ] }
+  ],
+  "max_blocks": 12
+}
+{% endschema %}

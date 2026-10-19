@@ -1,0 +1,31 @@
+{
+  "general": {
+    "accessibility": { "skip_to_content": "Skip to content" },
+    "search": { "placeholder": "Search", "submit": "Search", "results": "Results", "no_results": "Nothing found." },
+    "pagination": { "previous": "Previous", "next": "Next" },
+    "newsletter": { "label": "Hear about the next issue first", "submit": "Enter the register" },
+    "404": { "title": "No such page.", "body": "The page you asked for is not in the register.", "link": "Return to the register" }
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Take it",
+      "sold_out": "Closed",
+      "unavailable": "Unavailable",
+      "quantity": "Quantity",
+      "regular_price": "Price"
+    }
+  },
+  "cart": {
+    "general": { "title": "Your bag", "empty": "Nothing held yet.", "subtotal": "Subtotal", "checkout": "Check out", "remove": "Remove", "continue": "Continue" }
+  },
+  "customer": {
+    "account": { "title": "Account", "orders": "Orders", "logout": "Log out" },
+    "login": { "title": "Log in", "email": "Email", "password": "Password", "submit": "Log in", "forgot": "Forgot your password?", "create": "Create an account" },
+    "register": { "title": "Create an account", "first_name": "First name", "last_name": "Last name", "submit": "Create" },
+    "addresses": { "title": "Addresses", "add": "Add an address", "edit": "Edit", "delete": "Delete" },
+    "orders": { "title": "Orders", "order_number": "Order", "date": "Date", "total": "Total", "none": "No orders yet." },
+    "reset_password": { "title": "Reset your password", "submit": "Reset" },
+    "activate_account": { "title": "Activate your account", "submit": "Activate", "decline": "Decline" }
+  },
+  "blogs": { "article": { "read_more": "Read on" } }
+}
