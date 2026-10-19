@@ -70,6 +70,7 @@ class Title:
     duration: float
     kind: str = "tagline"   # tagline | product | endcard
     position: str = "lower"  # lower | center | upper
+    color: str = ""          # "" = the pack's; "#171513" sets ink type on a pale frame
 
     def to_dict(self) -> dict:
         return asdict(self)

@@ -12,7 +12,7 @@
 <section class="print wrap" id="print" data-page="22" data-pixels aria-label="The Print">
   <div class="print-sticky">
     <div class="print-stage">
-      <canvas data-pixelfield aria-label="The lineup photograph drawn as halftone dots, one per pixel. Drag to push the dots aside; press to pull them back."></canvas>
+      <canvas data-pixelfield data-cursor="Push" aria-label="The lineup photograph drawn as halftone dots, one per pixel. Drag to push the dots aside; press to pull them back."></canvas>
       <div class="print-fallback">
         <figure class="plate">
           <img src="{{ 'lineup-800.webp' | asset_url }}" width="800" height="450" loading="lazy" decoding="async" alt="The five Domain Black flacons on stone in late sun.">
@@ -30,5 +30,5 @@
 </section>
 
 {% schema %}
-{ "name": "The print", "tag": "div", "class": "domain-section" }
+{"name": "The print", "tag": "div", "class": "domain-section"}
 {% endschema %}

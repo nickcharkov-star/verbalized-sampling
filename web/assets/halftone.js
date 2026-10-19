@@ -195,6 +195,8 @@ export function createHalftone (canvas, img, opts = {}) {
     /* the press run: out of register, into register, into the photograph */
     print () { st.reg = 0; st.mix = 0; st.cell = 16; intro = true; introT0 = performance.now(); kick(); },
     loupe (x, y, on) { st.lx = x; st.ly = y; st.loupeT = on ? 1 : 0; kick(); },
+    /* follow the photograph's object-position when the page pans it */
+    focus (x, y = 0.5) { focus[0] = x; focus[1] = y; kick(); },
     get running () { return intro; },
     dispose () { disposed = true; cancelAnimationFrame(raf); ro?.disconnect(); }
   };

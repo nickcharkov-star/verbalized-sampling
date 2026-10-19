@@ -119,3 +119,23 @@ def test_family_name_falls_back_on_rubbish(tmp_path):
     bogus = tmp_path / "Fake-Regular.ttf"
     bogus.write_bytes(b"not a font")
     assert captions.family_name(str(bogus)) == "Fake-Regular"
+
+
+def test_a_super_can_be_set_in_ink_on_a_pale_frame(shots):
+    pack = StylePack.load("editorial_luxury")
+    edl = plan(shots, parse('20s film, tagline: "Crown", brand: "DOMAIN BLACK"'), pack)
+    assert edl.titles, "fixture should produce at least one super"
+    edl.titles[0].color = "#171513"
+    doc, _dirs = captions.ass_document(edl, pack)
+    dialogue = [ln for ln in doc.splitlines() if ln.startswith("Dialogue:")][0]
+    assert "\\1c&H131517&" in dialogue and "\\1a&H00&" in dialogue and "\\shad0" in dialogue
+    # the others keep the pack's colour
+    for ln in [ln for ln in doc.splitlines() if ln.startswith("Dialogue:")][1:]:
+        assert "\\1c" not in ln
+
+
+def test_a_super_colour_cannot_inject_into_the_filter_graph():
+    assert captions.title_colour("#171513") == "#171513"
+    assert captions.title_colour("171513@0.9") == "171513@0.9"
+    for bad in ("red", "#17151", "#171513:enable=0", "#171513}{\\fscx400", "0x1715gg"):
+        assert captions.title_colour(bad) == ""

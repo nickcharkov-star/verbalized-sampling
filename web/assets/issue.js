@@ -37,6 +37,18 @@ function scrollToEl (el) {
   const top = el.getBoundingClientRect().top + scrollY - (parseFloat(getComputedStyle(root).fontSize) * 3.4 + 8);
   scrollToY(Math.max(0, top));
 }
+function barOffset () { return parseFloat(getComputedStyle(root).fontSize) * 3.4 + 8; }
+/* a long jump is a page turned, not a scroll: the old page sinks back, the
+   new one rises over it (a same-document view transition, where supported) */
+function turnTo (el) {
+  const top = Math.max(0, el.getBoundingClientRect().top + scrollY - barOffset());
+  const far = Math.abs(top - scrollY) > innerHeight * 1.5;
+  if (!still && far && typeof document.startViewTransition === 'function') {
+    document.startViewTransition(() => {
+      if (lenis) lenis.scrollTo(top, { immediate: true, force: true }); else scrollTo(0, top);
+    });
+  } else scrollToEl(el);
+}
 document.addEventListener('click', e => {
   const a = e.target.closest('a[href^="#"]');
   if (!a) return;
@@ -44,7 +56,7 @@ document.addEventListener('click', e => {
   const el = id && document.getElementById(id);
   if (!el) return;
   e.preventDefault();
-  scrollToEl(el);
+  turnTo(el);
   try { history.replaceState(null, '', '#' + id); } catch (err) { /* a sandboxed frame may refuse */ }
 });
 
@@ -98,6 +110,8 @@ if (mast) {
     last = key;
     c.style.transform = `translate3d(${(-0.05 * k).toFixed(4)}em, ${(0.022 * k + v * 0.008).toFixed(4)}em, 0)`;
     m.style.transform = `translate3d(${(0.04 * k).toFixed(4)}em, ${(-0.03 * k - v * 0.01).toFixed(4)}em, 0)`;
+    // the ink spreads a little when the page is moving: the weight axis follows speed
+    mast.style.fontVariationSettings = `"wght" ${Math.round(400 + Math.min(1, Math.abs(v)) * 180)}`;
   });
 }
 
@@ -169,6 +183,30 @@ if (still || !('IntersectionObserver' in window) || !CSS.supports?.('mask-image'
   plates.forEach(p => io.observe(p));
 }
 
+/* ── the phone cover: a tall frame that pans across all five bottles —
+      Sovereign first, then the middle as the page settles, then Empire
+      as you scroll away ─────────────────────────────────────────────── */
+const phone = matchMedia('(max-width: 700px)').matches;
+const panner = { follow: null };
+if (phone) {
+  const coverEl = $('#cover'), shotImg = $('[data-press] .shot img');
+  const t0 = performance.now();
+  let last = -1;
+  tickers.push(t => {
+    if (!coverEl || !shotImg) return;
+    const r = coverEl.getBoundingClientRect();
+    if (r.bottom < 0) return;
+    const intro = still ? 1 : clamp((t - t0) / 2600, 0, 1);
+    const settle = intro < 1 ? 0.15 + 0.35 * (intro * intro * (3 - 2 * intro)) : 0.5;
+    const away = clamp(-r.top / Math.max(1, r.height * 0.8), 0, 1);
+    const pan = settle + away * 0.38;
+    if (Math.abs(pan - last) < 0.0005) return;
+    last = pan;
+    shotImg.style.setProperty('--pan', (pan * 100).toFixed(2) + '%');
+    panner.follow?.(pan);
+  });
+}
+
 /* ── the press: the cover photograph, printed and pulled into register ─ */
 const press = $('[data-press]');
 if (press) (async () => {
@@ -190,6 +228,7 @@ if (press) (async () => {
   if (!ht) return;
   press.classList.add('is-pressing');
   if (!still) ht.print();
+  if (phone) panner.follow = x => ht.focus(x);
 
   const at = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
   if (fine) {
@@ -239,6 +278,7 @@ if (toc && preview && fine) {
 }
 
 /* ── five worlds: the photograph wipes to each world, the paper tints ─ */
+const ground = { rgb: [0xec, 0xe6, 0xdc] };
 const worlds = $('[data-worlds]');
 if (worlds) {
   const arts = $$('[data-world]', worlds);
@@ -247,7 +287,8 @@ if (worlds) {
   const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
   const paper = hex('#ece6dc');
   const tints = arts.map(a => hex(a.dataset.tint || '#ece6dc'));
-  let active = -1, lastBg = '';
+  let active = -1;
+  const frameEl = $('[data-stage-frame]', worlds);
   tickers.push(() => {
     const r = worlds.getBoundingClientRect();
     const inside = r.top < vh && r.bottom > 0;
@@ -268,6 +309,8 @@ if (worlds) {
         if (num) num.textContent = d.num;
         if (cap) cap.textContent = d.name + ', catalogue';
         if (no) no.textContent = d.frame;
+        // a pass of light across the new photograph, as across a turned page
+        if (frameEl && !still && a > 0) { frameEl.classList.remove('is-lit'); void frameEl.offsetWidth; frameEl.classList.add('is-lit'); }
       }
     }
     // the paper takes the colour of the world it is in, and gives it back
@@ -276,14 +319,31 @@ if (worlds) {
     const w = Math.min(enter, leave);
     const i0 = Math.floor(f), i1 = Math.min(i0 + 1, tints.length - 1), k = f - i0;
     const tint = [0, 1, 2].map(j => lerp(tints[i0][j], tints[i1][j], k));
-    const bg = 'rgb(' + [0, 1, 2].map(j => Math.round(lerp(paper[j], tint[j], w))).join(',') + ')';
-    if (bg !== lastBg) {
-      lastBg = bg;
-      document.body.style.backgroundColor = bg;
-      bar?.style.setProperty('--bar-bg', bg);
-    }
+    ground.rgb = [0, 1, 2].map(j => lerp(paper[j], tint[j], w));
   });
 }
+
+/* ── after hours: the lights go down as the chapter comes up ────────── */
+const nightSec = $('[data-night]');
+const NIGHT = [12, 10, 9];
+let lastBg = '';
+tickers.push(() => {
+  let nw = 0;
+  if (nightSec) {
+    const r = nightSec.getBoundingClientRect();
+    const enter = clamp((vh * 0.95 - r.top) / (vh * 0.55), 0, 1);
+    const leave = clamp((r.bottom - vh * 0.15) / (vh * 0.5), 0, 1);
+    nw = Math.min(enter, leave);
+    nw = nw * nw * (3 - 2 * nw);
+  }
+  const rgb = ground.rgb.map((c, j) => Math.round(lerp(c, NIGHT[j], nw)));
+  const bg = `rgb(${rgb.join(',')})`;
+  if (bg === lastBg) return;
+  lastBg = bg;
+  document.body.style.backgroundColor = bg;
+  bar?.style.setProperty('--bar-bg', bg);
+  root.classList.toggle('is-night', nw > 0.5);
+});
 
 /* ── the print: the lineup, taken apart to its dots ─────────────── */
 const printSec = $('[data-pixels]');
@@ -484,7 +544,7 @@ if (stack) {
     });
     if (count) count.textContent = `${top + 1} / ${N}`;
   };
-  const step = d => { top = (top + d + N) % N; place(); };
+  const step = d => { top = (top + d + N) % N; place(); sound.tink(0.9 + top * 0.04, 0.03); };
   place();
   $$('[data-cv-step]').forEach(b => b.addEventListener('click', () => step(+b.dataset.cvStep)));
   stack.addEventListener('keydown', e => {
@@ -518,6 +578,7 @@ if (stack) {
     if (Math.abs(dx) > stack.clientWidth * 0.22 || (v > 0.5 && Math.abs(dx) > 20)) {
       // dealt: the card flies off its side, then goes to the back
       c.style.transform = `translate3d(${Math.sign(dx) * 130}%, -4%, 0) rotate(${Math.sign(dx) * 16}deg)`;
+      sound.tink(0.8, 0.04);
       setTimeout(() => step(dx < 0 ? 1 : -1), still ? 0 : 260);
     } else place();
   };
@@ -547,5 +608,200 @@ if (seal && ring && !still) {
   });
 }
 
+/* ── sound: glass and ice, synthesised, off until asked for ──────── */
+const sound = (() => {
+  const btn = $('[data-sound]');
+  let ctx = null, on = false, noise = null, noiseGain = null, lastTink = 0;
+  function start () {
+    if (ctx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    ctx = new AC();
+    // a bed of filtered noise that a wipe across the glass turns up
+    const len = ctx.sampleRate * 2, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    noise = ctx.createBufferSource(); noise.buffer = buf; noise.loop = true;
+    const band = ctx.createBiquadFilter(); band.type = 'bandpass'; band.frequency.value = 2600; band.Q.value = 0.8;
+    noiseGain = ctx.createGain(); noiseGain.gain.value = 0;
+    noise.connect(band).connect(noiseGain).connect(ctx.destination);
+    noise.start();
+  }
+  function set (v) {
+    on = v;
+    btn?.setAttribute('aria-pressed', String(on));
+    if (on) { start(); ctx?.resume?.(); tink(1.0); } else ctx?.suspend?.();
+  }
+  // a glass struck lightly: three inharmonic partials, each decaying
+  function tink (pitch = 1, level = 0.05) {
+    if (!on || !ctx) return;
+    const now = ctx.currentTime;
+    if (now - lastTink < 0.09) return;
+    lastTink = now;
+    for (const [f, a, d] of [[2093, 1, 0.9], [2797, 0.55, 0.6], [3951, 0.3, 0.4]]) {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = f * pitch;
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(level * a, now + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + d);
+      o.connect(g).connect(ctx.destination);
+      o.start(now); o.stop(now + d + 0.05);
+    }
+  }
+  function rub (amount) {
+    if (!on || !ctx || !noiseGain) return;
+    const now = ctx.currentTime;
+    noiseGain.gain.cancelScheduledValues(now);
+    noiseGain.gain.setTargetAtTime(Math.min(0.05, amount * 1.2), now, 0.02);
+    noiseGain.gain.setTargetAtTime(0, now + 0.08, 0.12);
+  }
+  // always off at load: a browser only lets sound start from a click anyway
+  btn?.addEventListener('click', () => set(!on));
+  return { tink, rub, get on () { return on; } };
+})();
+
+/* ── in the glass: the notes pour in when their chapter arrives ───── */
+const pours = $$('[data-pour]');
+if (still || !('IntersectionObserver' in window)) pours.forEach(p => p.classList.add('is-poured'));
+else {
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('is-poured');
+    io.unobserve(e.target);
+    $$('.note', e.target).forEach((n, i) => setTimeout(() => sound.tink(1 + i * 0.12, 0.03), 120 + i * 90));
+  }), { rootMargin: '0px 0px -12% 0px' });
+  pours.forEach(p => io.observe(p));
+}
+
+/* ── depth: each plate's photograph drifts against its frame ──────── */
+const deep = $$('[data-parallax]').map(el => ({ el, img: $('img', el), last: '' })).filter(d => d.img);
+if (!still && deep.length) {
+  tickers.push(() => {
+    for (const d of deep) {
+      const r = d.el.getBoundingClientRect();
+      if (r.bottom < -100 || r.top > vh + 100) continue;
+      const p = clamp((r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2), -1, 1);
+      const v = (-p * 3.5).toFixed(2) + '%';
+      if (v !== d.last) { d.last = v; d.img.style.setProperty('--py', v); }
+    }
+  });
+}
+
+/* ── after hours: cold glass over the Empire photograph ───────────── */
+const pane = $('[data-glass]');
+let glass = null;
+if (pane) {
+  const go = async () => {
+    try {
+      const img = $('img', pane), cv = $('[data-glass-canvas]', pane);
+      if (!img.complete) await new Promise(r => { img.addEventListener('load', r, { once: true }); img.addEventListener('error', r, { once: true }); });
+      if (!img.naturalWidth) return;
+      const { createGlass } = await import('./glass.js');
+      glass = createGlass(cv, img, {
+        still, aspect: 1.25, clear: [0.5, 0.47, 0.22, 0.33],
+        onWipe: d => sound.rub(d)
+      });
+      if (!glass) return;
+      pane.classList.add('is-cold');
+      // a phone has no pointer passing over the glass: wipe one stroke for it
+      if (!fine && 'IntersectionObserver' in window) {
+        const io = new IntersectionObserver(es => {
+          if (es[0].intersectionRatio > 0.55) { io.disconnect(); setTimeout(() => glass.demo(), 500); }
+        }, { threshold: [0, 0.55, 1] });
+        io.observe(pane);
+      }
+    } catch (e) { /* the photograph stays as it is */ }
+  };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { io.disconnect(); go(); } }, { rootMargin: '80% 0px' });
+    io.observe(pane);
+  } else go();
+}
+
+/* ── weight: buttons lean toward the pointer, on a spring ─────────── */
+const magnets = (fine && !still) ? $$('[data-magnetic]').map(el => ({
+  el, inner: el.querySelector(':scope > i, :scope > span'),
+  k: parseFloat(el.dataset.magnetic) || 0.35,
+  x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0, hot: false
+})) : [];
+if (magnets.length) {
+  addEventListener('pointermove', e => {
+    for (const m of magnets) {
+      const r = m.el.getBoundingClientRect();
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      const dx = e.clientX - cx, dy = e.clientY - cy;
+      const reach = Math.max(r.width, r.height) / 2 + 36;
+      const hot = Math.hypot(dx, dy) < reach;
+      if (hot && !m.hot) sound.tink(1.35, 0.025);
+      m.hot = hot;
+      // a lean, not a chase: the pull eases off toward a small ceiling
+      const lim = Math.min(14, Math.max(r.width, r.height) * 0.12);
+      m.tx = hot ? lim * Math.tanh(dx * m.k / lim) : 0;
+      m.ty = hot ? lim * Math.tanh(dy * m.k / lim) : 0;
+    }
+  }, { passive: true });
+  let lastT = 0;
+  tickers.push(t => {
+    const dt = lastT ? Math.min(0.05, (t - lastT) / 1000) : 1 / 60;
+    lastT = t;
+    for (const m of magnets) {
+      // a damped spring: it overshoots a little when let go, then settles
+      m.vx += ((m.tx - m.x) * 190 - m.vx * 17) * dt;
+      m.vy += ((m.ty - m.y) * 190 - m.vy * 17) * dt;
+      m.x += m.vx * dt; m.y += m.vy * dt;
+      if (Math.abs(m.x) + Math.abs(m.y) + Math.abs(m.vx) + Math.abs(m.vy) < 0.02 && !m.hot) {
+        if (m.el.style.transform) { m.el.style.transform = ''; if (m.inner) m.inner.style.transform = ''; }
+        continue;
+      }
+      m.el.style.transform = `translate3d(${m.x.toFixed(2)}px, ${m.y.toFixed(2)}px, 0)`;
+      if (m.inner) m.inner.style.transform = `translate3d(${(m.x * 0.45).toFixed(2)}px, ${(m.y * 0.45).toFixed(2)}px, 0)`;
+    }
+  });
+}
+
+/* ── the cursor: a point, and a ring with weight that names what it is over ─ */
+const cursor = $('.cursor');
+if (cursor && fine && !still) {
+  root.classList.add('has-cursor');
+  const ringEl = $('.cursor-ring', cursor), dot = $('.cursor-dot', cursor), label = $('[data-cursor-label]', cursor);
+  let px = -100, py = -100, rx = -100, ry = -100, rvx = 0, rvy = 0, shown = '';
+  addEventListener('pointermove', e => {
+    px = e.clientX; py = e.clientY;
+    const over = e.target.closest?.('[data-cursor]');
+    const text = over ? over.dataset.cursor : '';
+    if (text !== shown) { shown = text; label.textContent = text; cursor.classList.toggle('is-label', !!text); }
+  }, { passive: true });
+  addEventListener('pointerdown', () => cursor.classList.add('is-down'));
+  addEventListener('pointerup', () => cursor.classList.remove('is-down'));
+  document.addEventListener('pointerleave', () => { px = py = -100; });
+  let lastT = 0;
+  tickers.push(t => {
+    const dt = lastT ? Math.min(0.05, (t - lastT) / 1000) : 1 / 60;
+    lastT = t;
+    rvx += ((px - rx) * 260 - rvx * 24) * dt;
+    rvy += ((py - ry) * 260 - rvy * 24) * dt;
+    rx += rvx * dt; ry += rvy * dt;
+    dot.style.transform = `translate3d(${px}px, ${py}px, 0)`;
+    ringEl.style.translate = `${rx.toFixed(1)}px ${ry.toFixed(1)}px`;
+  });
+}
+
+/* ── between pages: the photograph you clicked becomes the product page's
+      (a cross-document view transition, on a store that opts in) ──────── */
+let handed = null;
+function hand (el) {
+  if (handed) handed.style.viewTransitionName = '';
+  handed = el;
+  if (el) el.style.viewTransitionName = 'db-plate';
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href*="/products/"]');
+  const world = a && a.closest('[data-world]');
+  if (!world) return;
+  const i = $$('[data-world]').indexOf(world);
+  const staged = $$('[data-stage]')[i];
+  hand(staged && staged.offsetParent ? staged : $('.world-photo img', world));
+});
+addEventListener('pageshow', () => hand(null));   // back from the product page
+
 /* hooks for the test bench */
-window.__issue = { get field () { return field; }, MOVEMENTS };
+window.__issue = { get field () { return field; }, get glass () { return glass; }, MOVEMENTS };

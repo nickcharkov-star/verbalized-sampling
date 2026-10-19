@@ -205,7 +205,17 @@ def font_file(preferred: Optional[Sequence[str]] = None) -> Optional[str]:
         "/usr/share/fonts/truetype/freefont/FreeSerif.ttf",
         "/System/Library/Fonts/Supplemental/Times New Roman.ttf",
     ]
+    # a bare file name is looked up in $AUTOCUT_FONT_DIR, then in the fonts
+    # shipped with the package, so a style pack can carry the house type
+    here = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")
+    dirs = [d for d in (os.environ.get("AUTOCUT_FONT_DIR"), here) if d]
     for path in candidates:
-        if path and os.path.exists(path):
+        if not path:
+            continue
+        if os.sep not in path:
+            for d in dirs:
+                if os.path.exists(os.path.join(d, path)):
+                    return os.path.join(d, path)
+        elif os.path.exists(path):
             return path
     return None

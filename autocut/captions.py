@@ -18,6 +18,7 @@ the supers, with a warning.
 from __future__ import annotations
 
 import os
+import re
 import struct
 from functools import lru_cache
 from typing import List, Optional, Tuple
@@ -121,6 +122,19 @@ def _ass_colour(spec: str) -> str:
     return f"&H{inv:02X}{b:02X}{g:02X}{r:02X}"
 
 
+_COLOUR = re.compile(r"^(#|0x)?[0-9a-fA-F]{6}(@(0(\.\d+)?|1(\.0+)?|\.\d+))?$")
+
+
+def title_colour(spec: str) -> str:
+    """A super's own colour, if it is one we can trust in a filter string.
+
+    The EDL is hand-editable, so a colour is accepted only as hex (with an
+    optional @alpha); anything else falls back to the pack's colour.
+    """
+    spec = (spec or "").strip()
+    return spec if _COLOUR.match(spec) else ""
+
+
 def ass_document(edl, pack: StylePack) -> Tuple[str, List[str]]:
     """Build the .ass script for an EDL. Returns (text, font directories)."""
     typo = pack.typography
@@ -176,9 +190,15 @@ def ass_document(edl, pack: StylePack) -> Tuple[str, List[str]]:
             margin = 0
         else:
             margin = margin_v
+        tags = f"\\an{align}\\fad({fade_ms},{fade_ms})"
+        own = title_colour(getattr(title, "color", ""))
+        if own:
+            # ink on a pale frame: its own colour, and no dark shadow under it
+            ass = _ass_colour(own if "#" in own or own.startswith("0x") else "#" + own)
+            tags += f"\\1c&H{ass[4:]}&\\1a&H{ass[2:4]}&\\shad0"
         events.append(
             f"Dialogue: 0,{_ass_time(title.start)},{_ass_time(title.start + title.duration)},"
-            f"{style},,0,0,{margin},,{{\\an{align}\\fad({fade_ms},{fade_ms})}}{text}"
+            f"{style},,0,0,{margin},,{{{tags}}}{text}"
         )
     return "\n".join(head + events) + "\n", fontdirs
 
@@ -236,12 +256,14 @@ def _drawtext_filters(edl, pack: StylePack, workdir: str) -> List[str]:
             f"if(lt(t,{end - fade:.3f}),1,"
             f"if(lt(t,{end:.3f}),({end:.3f}-t)/{fade:.4f},0))))"
         )
+        own = title_colour(getattr(title, "color", ""))
+        ink = ("0x" + own.lstrip("#").replace("0x", "")) if own else typo.get("color", "white@0.95")
         filters.append(
             "drawtext="
             f"fontfile='{_escape_path(font)}':textfile='{_escape_path(text_path)}':"
-            f"fontsize={size}:fontcolor={typo.get('color', 'white@0.95')}:"
+            f"fontsize={size}:fontcolor={ink}:"
             f"x=(w-text_w)/2:y={y}:"
-            f"shadowcolor={typo.get('shadow', 'black@0.3')}:shadowx=0:shadowy=2:"
+            f"shadowcolor={typo.get('shadow', 'black@0.3')}:shadowx=0:shadowy={0 if own else 2}:"
             f"alpha='{alpha}':enable='between(t,{start:.3f},{end:.3f})'"
         )
     return filters

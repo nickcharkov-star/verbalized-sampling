@@ -17,7 +17,7 @@
 
   <div class="worlds-body">
     <div class="worlds-stage" aria-hidden="true">
-      <div class="stage-frame" data-stage-frame>
+      <div class="stage-frame sheen" data-stage-frame>
         {%- for block in section.blocks -%}
           {%- assign b = block.settings -%}
           {%- if b.use_product_image and b.product != blank and b.product.featured_image -%}
@@ -60,9 +60,12 @@
             <div><dt>The room</dt><dd>{{ b.room | escape }}</dd></div>
             <div><dt>{{ b.format | escape }}</dt><dd>{% if p != blank %}{{ p.selected_or_first_available_variant.title | replace: 'Default Title', b.size }} &mdash; {{ p.price | money }}{% else %}{{ b.size | escape }} &mdash; {{ b.price | escape }}{% endif %}</dd></div>
           </dl>
-          <a class="btn" href="{% if p != blank %}{{ p.url }}{% else %}{{ section.settings.fallback_url }}{% endif %}">{{ section.settings.button | escape }} {{ b.name | escape }} <i aria-hidden="true">&rarr;</i></a>
+          <a class="btn" data-magnetic href="{% if p != blank %}{{ p.url }}{% else %}{{ section.settings.fallback_url }}{% endif %}">{{ section.settings.button | escape }} {{ b.name | escape }} <i aria-hidden="true">&rarr;</i></a>
+          {%- if b.notes -%}
+            {%- render 'domain-notes', key: b.key, heading: section.settings.notes_heading -%}
+          {%- endif -%}
           {%- if b.detail != blank -%}
-            <figure class="plate world-detail" data-develop>
+            <figure class="plate world-detail" data-develop data-parallax>
               <img src="{{ b.detail | append: '-480.webp' | asset_url }}" width="480" height="600" loading="lazy" decoding="async" alt="{{ b.detail_alt | escape }}">
               <figcaption><span>{{ b.detail_caption | escape }}</span><b>{{ b.detail_frame | escape }}</b></figcaption>
             </figure>
@@ -85,7 +88,8 @@
     { "type": "text", "id": "heading_2", "label": "Heading, italic", "default": "Worlds" },
     { "type": "text", "id": "dek", "label": "Standfirst", "default": "Each composition starts as a room you could stand in. Scroll through them in the order the house numbers them." },
     { "type": "text", "id": "button", "label": "Button word", "default": "Shop" },
-    { "type": "url", "id": "fallback_url", "label": "Button link when no product is chosen", "default": "/collections/all" }
+    { "type": "url", "id": "fallback_url", "label": "Button link when no product is chosen", "default": "/collections/all" },
+    { "type": "text", "id": "notes_heading", "label": "Notes heading", "default": "In the glass" }
   ],
   "blocks": [
     { "type": "world", "name": "World", "settings": [
@@ -104,6 +108,7 @@
       { "type": "text", "id": "format", "label": "Format", "default": "Eau de Parfum" },
       { "type": "text", "id": "size", "label": "Size", "default": "20 ml" },
       { "type": "text", "id": "price", "label": "Price (when no product is chosen)", "default": "$40" },
+      { "type": "checkbox", "id": "notes", "label": "Show the notes in the glass", "default": true, "info": "Close crops of the bundled photograph: the ingredients beside the bottle, never the bottle itself." },
       { "type": "color", "id": "lacquer", "label": "Lacquer", "default": "#1d1d1d" },
       { "type": "color", "id": "tint", "label": "Paper tint for this chapter", "default": "#e4e1db" },
       { "type": "select", "id": "detail", "label": "Detail photograph", "default": "logo-macro",

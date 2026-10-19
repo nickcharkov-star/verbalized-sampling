@@ -6,7 +6,7 @@ import { join, relative, extname } from 'node:path';
 import { makeEngine } from './lib/shopify-liquid-env.mjs';
 
 const THEME = process.argv[2];
-const engine = makeEngine('/assets/');
+const engine = makeEngine('/assets/', join(THEME, 'snippets'));
 const problems = [];
 const note = (f, m) => problems.push(`${f}: ${m}`);
 

@@ -3,8 +3,10 @@
    before they are shared rather than after. */
 import { Liquid, Tag, Hash, TokenKind } from 'liquidjs';
 
-export function makeEngine (assetBase = './assets/') {
-  const engine = new Liquid({ strictFilters: true, strictVariables: false, jsTruthy: true });
+export function makeEngine (assetBase = './assets/', snippets = null) {
+  // {% render 'x' %} finds snippets/x.liquid, as Shopify does
+  const engine = new Liquid({ strictFilters: true, strictVariables: false, jsTruthy: true,
+                              root: snippets ? [snippets] : [], extname: '.liquid' });
 
   /* ── tags Shopify adds ────────────────────────────────────────────── */
   // {% schema %} … {% endschema %}  — editor metadata, renders nothing.

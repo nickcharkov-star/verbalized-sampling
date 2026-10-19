@@ -1,16 +1,21 @@
 {%- comment -%}
   The bar: the wordmark, the issue line once the cover has scrolled away,
-  the menu, the bag, and the folio — the page number of the spread in view.
+  the sound switch (off until pressed; the glass rings when a chapter's
+  notes pour in), the menu, the bag, and the folio — the page number of the
+  spread in view.
   A thin rule along its foot fills as the issue is read.
 {%- endcomment -%}
 <header class="bar" id="bar">
   <a class="bar-mark" href="{{ routes.root_url }}">{{ section.settings.wordmark | default: shop.name | escape }}</a>
   <p class="bar-issue">{{ section.settings.issue | escape }}</p>
   <div class="bar-right">
+    {%- if section.settings.sound -%}
+      <button class="bar-sound" type="button" data-sound aria-pressed="false" aria-label="Sound"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="lbl">Sound</span></button>
+    {%- endif -%}
     {%- for link in section.settings.menu.links -%}
-      <a class="u" href="{{ link.url }}">{{ link.title | escape }}</a>
+      <a class="u" href="{{ link.url }}" data-magnetic="0.3">{{ link.title | escape }}</a>
     {%- endfor -%}
-    <a class="u" href="{{ routes.cart_url }}">{{ section.settings.cart_label | escape }}{% if cart.item_count > 0 %} ({{ cart.item_count }}){% endif %}</a>
+    <a class="u" data-magnetic="0.3" href="{{ routes.cart_url }}">{{ section.settings.cart_label | escape }}{% if cart.item_count > 0 %} ({{ cart.item_count }}){% endif %}</a>
     {%- if template.name == 'index' -%}
       <span class="bar-folio" aria-hidden="true">p.&nbsp;<span data-folio>01</span></span>
     {%- endif -%}
@@ -25,7 +30,8 @@
     { "type": "text", "id": "wordmark", "label": "Wordmark", "default": "Domain Black" },
     { "type": "text", "id": "issue", "label": "Issue line", "default": "Issue Nº 01 — The Five Worlds" },
     { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
-    { "type": "text", "id": "cart_label", "label": "Bag label", "default": "Bag" }
+    { "type": "text", "id": "cart_label", "label": "Bag label", "default": "Bag" },
+    { "type": "checkbox", "id": "sound", "label": "Offer sound", "default": true, "info": "A switch in the bar. Sound is always off until the visitor presses it." }
   ]
 }
 {% endschema %}

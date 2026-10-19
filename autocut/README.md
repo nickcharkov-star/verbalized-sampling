@@ -273,6 +273,10 @@ is opaque.
 }
 ```
 
+A super takes the pack's colour unless it carries its own `"color"` (hex,
+optionally `@alpha`, e.g. `"#171513"`): ink type for a pale frame, set
+without the dark shadow. Anything that is not hex is ignored.
+
 ---
 
 ## No rushes yet?

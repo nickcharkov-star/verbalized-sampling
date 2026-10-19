@@ -24,4 +24,13 @@ description: House rules for any work on the Domain Black fragrance brand in thi
   `documentElement.clientWidth` and `visualViewport.width` — on a phone
   `innerWidth` grows with the overflow and hides it. Run the degrade cases
   (no WebGL, each module blocked, CDN down, reduced motion, no JS).
+- **Video from stills** (`autocut`, style `still_motion`, or by hand with
+  `scripts/editorial/teasers.py`): the first frame is a bottle, never a
+  blank plate; one composition per film; supers sit only where the frame
+  is dark and empty (never across the product, salt, or a pale backdrop);
+  a 16:9 still is placed whole on the night ground rather than cropped
+  through a bottle. Pull a 2 fps contact strip and crop every super at full
+  size before calling a cut finished.
+- **Motion is a lean, not a chase:** magnetic pulls ease off toward a
+  ceiling of about 14 px; nothing moves under reduced motion.
 - **After a session with corrections, run `/retro`.**

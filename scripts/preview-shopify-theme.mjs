@@ -7,7 +7,7 @@ import { makeEngine } from './lib/shopify-liquid-env.mjs';
 
 const THEME = process.argv[2];
 const OUT = process.argv[3];
-const engine = makeEngine('./assets/');
+const engine = makeEngine('./assets/', join(THEME, 'snippets'));
 
 /* ── mock store ──────────────────────────────────────────────────────── */
 const LOTS = [
@@ -130,6 +130,7 @@ const html = `<!doctype html>
 <body class="template-${TEMPLATE}">
 <a class="skip" href="#main">Skip to content</a>
 ${body}
+<div class="cursor" aria-hidden="true"><i class="cursor-dot"></i><i class="cursor-ring"><span data-cursor-label></span></i></div>
 <script>window.DB_PHOTO_BASE = "./assets/";</script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script>
 <script type="module" src="./assets/issue.js"></script>
