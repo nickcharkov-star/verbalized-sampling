@@ -47,7 +47,7 @@ An agent is available when it appears in the list. It is verified only after one
 
 ### Which plugins are installed
 
-Plugins are not installed from this repository. Cloud sessions ignore `enabledPlugins` in a repository's `.claude/settings.json`. They arrive from the claude.ai account at session start:
+Plugins are not installed from this repository. Cloud sessions ignore `enabledPlugins` in a repository's `.claude/settings.json`. When they arrive at all, they come from the claude.ai account at session start. In the 2026-10-20 audit, the session started from the Claude app received 343 plugins; a fresh session created through the API received **none** (see `manifest.json` → `cold_start_probe`). Always check:
 
 ```bash
 ls ~/.claude/plugins/synced/*/*.meta.json | wc -l      # plugin count
@@ -61,7 +61,7 @@ python3 -c 'import json,glob; [print(json.load(open(f)).get("name")) for f in gl
 - **Binaries:** the script lists binaries that plugin hooks or MCP servers call but that aren't on `PATH`. In the last audit these were `adb-mcp`, `claude-tab-fix`, `cmd` (Windows-only), `toolbox` and `vulca-mcp`.
 - **Credentials:** `plugins.json` lists the environment-variable names each MCP server expects in `required_env_names` (names only, never values).
 - **Plugin settings:** `requires_user_config` lists settings with no default. Cloud sessions can't run `/plugin`, so these can't be filled in from a cloud session.
-- **Dangling references inside agents:** three Agency Agents call `./qa-playwright-capture.sh`, which exists neither in this repository nor upstream (see `SYSTEM-CAPABILITIES.md`).
+- **Dangling references inside agents:** 10 missing scripts (including `./qa-playwright-capture.sh` in three agents), 24 missing files and folders, 34 agent names that don't exist, and 19 unavailable tools. The full list is in `manifest.json` → `agency_agent_dependency_review`.
 
 ### Which external services are unavailable
 
@@ -83,15 +83,18 @@ A capability counts as degraded when it is still listed but its plugin's `depend
 
 ### Which capabilities restore automatically
 
-These come back in any new cloud session for the same account, with nothing to do:
+These come back in any new cloud session for the same account, with nothing to do. Each was verified by the fresh-session probe:
 
-- Claude Code built-in skills and agents
+- Claude Code built-in skills (15, plus `workflow-authoring` while Workflow/ultracode is on) and the 6 built-in agents
 - the cloud-image skill and the platform hook scripts in `~/.claude/` (git check, reply gate)
-- all account-synced plugins (343) and account skills (19), plus their SessionStart hooks
+- the 19 claude.ai account skills
 - claude.ai connectors that are already connected on the account
-- the environment's settings (network level, setup script, environment variables)
+- the environment's settings (network level, environment variables; there is no setup script)
 - everything committed to the branch the session clones: `.claude/agents/` (after PR #2 merges), `system/`, `.gitignore`
-- stdio MCP servers launched with `npx`/`uvx`, which download their package again from registries that **Trusted** allows
+
+**Not guaranteed:** the account-synced plugins (344) and everything they bring (2,459 skills, 226 agents, hooks, MCP servers). They were present in the app-started audit session and absent in the API-created probe. When they are present, their stdio MCP servers launched with `npx`/`uvx` re-download from registries that **Trusted** allows.
+
+**Never restored:** anything only on the VM, including `~/.claude/agents/`, the Cognee memory store and plugin data.
 
 ### Which capabilities need founder authorization
 
@@ -101,6 +104,7 @@ These need the account owner. Claude must not do them on its own:
 2. **Widen network access** for the 200 proxy-blocked MCP servers (Custom allowlist). This is a security decision, because it opens outbound traffic to third-party hosts.
 3. **Sign in** to OAuth servers (Datadog, BigQuery, GitLab in the last audit) and to any connector that shows as needing auth.
 4. **Add credentials** as network secrets or environment variables (for example `TWELVELABS_API_KEY`, `ADO_PAT`, `COCKROACHDB_*`). Never commit them, and never paste them into chat.
-5. **Edit the environment setup script** to install missing binaries (`toolbox`, `adb-mcp`, `vulca-mcp`, `claude-tab-fix`) or to back up memory.
+5. **Add an environment setup script** (none exists today) to install missing binaries (`toolbox`, `adb-mcp`, `vulca-mcp`, `claude-tab-fix`) or to back up memory.
 6. **Enable or disable plugins and skills** on claude.ai. That changes what every future session loads.
 7. **Decide about Cognee memory**: it currently lives only on the VM (see `SYSTEM-CAPABILITIES.md`).
+8. **Review the account's scheduled tasks**, especially "Install verbalized-sampling", which holds an API token and 11 connector grants and survives every VM.

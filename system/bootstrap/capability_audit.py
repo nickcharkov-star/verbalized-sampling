@@ -68,8 +68,25 @@ VERIFIED = {
             "injected by its SessionStart hook (2026-10-20)"
         ),
     },
-    "agents": {},
+    "agents": {
+        "Reality Checker": (
+            "launched and replied READY here and in a fresh probe session on the PR #2 tree"
+            " (2026-10-20)"
+        ),
+        "agent-protocols:code-reviewer": (
+            "launched here (2026-10-20); did not exist in the fresh probe session"
+        ),
+        "Explore": "launched here and in the fresh probe session (2026-10-20)",
+    },
 }
+
+# Observed 2026-10-20: this session, started from the Claude app, received 343 synced plugins at
+# boot; a fresh session created through the API on the same account and environment received
+# none. The docs describe plugin sync for terminal and Cowork sessions, not cloud sessions.
+PLUGIN_RESTORE = (
+    "conditional: synced from the claude.ai account into the app-started audit session, but"
+    " absent from an API-created fresh session; not documented for cloud sessions"
+)
 
 
 def _load_json(path):
@@ -437,7 +454,7 @@ def build(state, transcript_path):
         p["loaded_skills"] = skills_per_plugin.get(p["name"], 0)
         p["loaded_agents"] = agents_per_plugin.get(p["name"], 0)
         p["persistence"] = PERSISTENCE["account"]
-        p["restore"] = "automatic: re-synced from the claude.ai account at session start"
+        p["restore"] = PLUGIN_RESTORE
         p["available"] = True
         # Connected is not verified: no plugin MCP tool was called in the audited session.
         p["verified"] = False
@@ -480,7 +497,7 @@ def build(state, transcript_path):
                 rec["blocked"] = False
             else:
                 pl = by_name.get(plugin)
-                rec["restore"] = "automatic: plugin re-synced from the claude.ai account"
+                rec["restore"] = PLUGIN_RESTORE
                 dep = pl["dependency_status"] if pl else "unknown:plugin_not_found_on_disk"
                 rec["dependency_status"] = ("plugin:" + dep) if dep not in ("none",) else "none"
                 rec["blocked"] = (
@@ -538,7 +555,7 @@ def build(state, transcript_path):
                     "source": "plugin",
                     "plugin": plugin,
                     "persistence": PERSISTENCE["account"],
-                    "restore": "automatic: plugin re-synced from the claude.ai account",
+                    "restore": PLUGIN_RESTORE,
                     "dependency_status": ("plugin:" + dep) if dep != "none" else "none",
                     "blocked": None
                     if dep.startswith(("unavailable", "partially_unavailable"))

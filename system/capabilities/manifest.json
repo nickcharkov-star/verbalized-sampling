@@ -1,11 +1,11 @@
 {
  "schema_version": 1,
- "generated_at": "2026-10-20T08:10:31+00:00",
+ "generated_at": "2026-10-20T17:09:37+00:00",
  "generated_by": "system/bootstrap/capability_audit.py --write",
  "source": {
   "transcript_parsed": true,
   "transcript_file": "~/.claude/projects/<repo>/<session>.jsonl",
-  "mcp_status_snapshot_at": "2026-10-20T07:46:05.613Z",
+  "mcp_status_snapshot_at": "2026-10-20T16:57:44.768Z",
   "note": "Counts describe the session that generated this file. A different session may differ; run the check mode to compare."
  },
  "totals": {
@@ -22,17 +22,17 @@
    "claude-code-builtin": 6,
    "agency-agents": 282
   },
-  "plugins_synced": 343,
+  "plugins_synced": 344,
   "account_skills_synced": 19,
   "repo_agents_committed": 282,
-  "mcp_servers_failed": 217,
+  "mcp_servers_failed": 219,
   "mcp_servers_failed_by_error": {
-   "ERR_PROXY_TUNNEL": 200,
+   "ERR_PROXY_TUNNEL": 199,
    "INVALID_CONFIG": 2,
    "ENOENT": 6,
-   "CONNECTION_CLOSED": 5,
-   "ECONNREFUSED": 2,
-   "CONNECT_TIMEOUT": 2
+   "CONNECT_TIMEOUT": 6,
+   "CONNECTION_CLOSED": 4,
+   "ECONNREFUSED": 2
   },
   "mcp_servers_needing_auth": [
    "plugin:engineering:datadog",
@@ -58,16 +58,17 @@
   ]
  },
  "plugins": {
-  "count": 343,
+  "count": 344,
   "distinct_names": 339,
   "names_synced_twice": [
    "agentforce-adlc",
    "apollo",
-   "govtribe",
-   "viralhunt"
+   "carta-cap-table",
+   "carta-crm",
+   "govtribe"
   ],
   "by_marketplace": {
-   "anthropic-plugin-directory": 295,
+   "anthropic-plugin-directory": 296,
    "knowledge-work-plugins": 48
   },
   "names_with_loaded_skills": 301,
@@ -75,10 +76,10 @@
   "with_mcp_servers": 167,
   "by_dependency_status": {
    "unavailable": 148,
-   "none": 175,
-   "unknown": 9,
-   "satisfied": 7,
-   "partially_unavailable": 4
+   "none": 176,
+   "partially_unavailable": 4,
+   "unknown": 10,
+   "satisfied": 6
   }
  },
  "hook_errors": [
@@ -95,12 +96,12 @@
   {
    "hook": "PreToolUse:Bash",
    "message": "Failed with non-blocking status code: /bin/sh: 1: claude-tab-fix: not found",
-   "count": 73
+   "count": 89
   },
   {
    "hook": "PreToolUse:Write",
    "message": "Failed with non-blocking status code: /bin/sh: 1: claude-tab-fix: not found",
-   "count": 3
+   "count": 4
   }
  ],
  "blocked_hosts": [
@@ -439,37 +440,43 @@
   {
    "id": 4,
    "source": "account-synced plugins ~/.claude/plugins/synced/<account>/",
-   "count": 343,
+   "count": 344,
    "class": "ACCOUNT/PLUGIN-PERSISTENT",
-   "restore": "automatic at session start"
+   "restore": "conditional: present in the app-started audit session, absent in an API-created fresh session (2026-10-20 probe); cloud-session sync is not documented",
+   "restored_in_fresh_cloud_session": "conditional",
+   "drift": "plugin set and versions change without any repository change (343 -> 344 between 08:02 and 17:00 on 2026-10-20: carta-crm 1.16.20 and carta-cap-table 6.97.12 added, viralhunt 1.6.33 removed)"
   },
   {
    "id": 5,
    "source": "plugin skills",
    "count": 2459,
    "class": "ACCOUNT/PLUGIN-PERSISTENT",
-   "restore": "with plugins"
+   "restore": "conditional: present in the app-started audit session, absent in an API-created fresh session (2026-10-20 probe); cloud-session sync is not documented",
+   "restored_in_fresh_cloud_session": "conditional"
   },
   {
    "id": 6,
    "source": "plugin agents",
    "count": 226,
    "class": "ACCOUNT/PLUGIN-PERSISTENT",
-   "restore": "with plugins"
+   "restore": "conditional: present in the app-started audit session, absent in an API-created fresh session (2026-10-20 probe); cloud-session sync is not documented",
+   "restored_in_fresh_cloud_session": "conditional"
   },
   {
    "id": 7,
    "source": "plugin hooks",
-   "count": 93,
+   "count": 106,
    "class": "ACCOUNT/PLUGIN-PERSISTENT",
-   "restore": "with plugins"
+   "restore": "conditional: present in the app-started audit session, absent in an API-created fresh session (2026-10-20 probe); cloud-session sync is not documented",
+   "restored_in_fresh_cloud_session": "conditional"
   },
   {
    "id": 8,
    "source": "plugin MCP server definitions",
    "count": 359,
    "class": "ACCOUNT/PLUGIN-PERSISTENT",
-   "restore": "with plugins; connection result decided per session"
+   "restore": "conditional: present in the app-started audit session, absent in an API-created fresh session (2026-10-20 probe); cloud-session sync is not documented",
+   "restored_in_fresh_cloud_session": "conditional"
   },
   {
    "id": 9,
@@ -530,8 +537,9 @@
    "source": "cloud environment Default (network Trusted, setup script, env vars, network secrets)",
    "count": 1,
    "class": "ACCOUNT/PLUGIN-PERSISTENT",
-   "content_class": "UNKNOWN",
-   "restore": "automatic; setup-script contents not readable from inside a session"
+   "content_class": "known",
+   "restore": "automatic",
+   "setup_script": "none (env-manager log: has_init_script false)"
   },
   {
    "id": 17,
@@ -572,7 +580,7 @@
   },
   {
    "id": 23,
-   "source": "PR #2 subscription, scheduled check-in, Workflow runs",
+   "source": "PR #2 activity subscription and Workflow runs",
    "class": "SESSION-ONLY",
    "restore": "not carried to a new session"
   },
@@ -581,6 +589,56 @@
    "source": "~/.claude/settings.json statusLine",
    "class": "MACHINE-PERSISTENT ONLY",
    "restore": "rewritten automatically by the cognee plugin hook"
+  },
+  {
+   "id": 25,
+   "source": "account scheduled tasks",
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "restore": "server-side; survive VM deletion",
+   "items": [
+    {
+     "name": "Install verbalized-sampling",
+     "enabled": true,
+     "trigger": "API only",
+     "created": "2026-06-04",
+     "holds": "an API token and grants for 11 connectors including Meta-Ads",
+     "risk": "standing credential with broad connector grants; review or delete"
+    },
+    {
+     "name": "Re-check autocut PR #1 (daily)",
+     "enabled": true,
+     "bound_to": "another session"
+    },
+    {
+     "name": "Re-check PR #2 (agency agents)",
+     "enabled": false,
+     "ended": "run_once_fired"
+    }
+   ]
+  },
+  {
+   "id": 26,
+   "source": "Meta Ads claude.ai connector",
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "restore": "present but needs re-authorization on claude.ai"
+  },
+  {
+   "id": 27,
+   "source": "environment cache snapshot",
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "restore": "automatic; holds only the base image because there is no setup script"
+  },
+  {
+   "id": 28,
+   "source": "other remote branches (claude/auto-video-editing-luxury-w9l6jp, PR #1)",
+   "class": "REPOSITORY-PERSISTENT",
+   "restore": "in the repository but not on main"
+  },
+  {
+   "id": 29,
+   "source": "session transcript ~/.claude/projects/<repo>/<session>.jsonl",
+   "class": "MACHINE-PERSISTENT ONLY",
+   "restore": "conversation restored only when this same session is reopened"
   }
  ],
  "pr2_verification": {
@@ -597,6 +655,30 @@
      "testing-evidence-collector.md:44",
      "testing-reality-checker.md:63",
      "project-manager-senior.md:97"
+    ],
+    "exists_in_repo": false,
+    "exists_upstream": false
+   },
+   {
+    "reference": "generate-slides.sh, generate_image.py, publish-carousel.sh, check-analytics.sh, analyze-web.js, learn-from-analytics.js",
+    "files": [
+     "marketing-carousel-growth-engine.md"
+    ],
+    "exists_in_repo": false,
+    "exists_upstream": false
+   },
+   {
+    "reference": "ai/agents/*.md, ai/memory-bank/*, ai/system/*",
+    "files": [
+     "6 agents incl. project-manager-senior, testing-evidence-collector, engineering-senior-developer, design-ux-architect"
+    ],
+    "exists_in_repo": false,
+    "exists_upstream": false
+   },
+   {
+    "reference": "security/17-security-pattern.md",
+    "files": [
+     "security-senior-secops.md"
     ],
     "exists_in_repo": false,
     "exists_upstream": false
@@ -623,14 +705,13 @@
   }
  },
  "restores_automatically": [
-  "Claude Code built-in skills and agents",
+  "Claude Code built-in skills (15, plus workflow-authoring while Workflow/ultracode is on) and 6 built-in agents",
   "cloud-image skill and platform hook scripts",
-  "343 account-synced plugins with their skills, agents, hooks and MCP definitions",
   "19 claude.ai account skills",
   "connected claude.ai connectors and platform MCP servers",
-  "environment settings",
-  "everything committed on the cloned branch",
-  "npx/uvx stdio MCP servers (packages re-downloaded from allowed registries)"
+  "environment settings (no setup script exists)",
+  "everything committed on the cloned branch, including 282 Agency Agents once PR #2 is on main",
+  "NOT guaranteed: the 344 synced plugins and their 2,459 skills, 226 agents, hooks and MCP servers"
  ],
  "requires_founder_authorization": [
   {
@@ -639,7 +720,7 @@
   },
   {
    "action": "change network access from Trusted to Custom with allowed hosts",
-   "unlocks": "up to 200 proxy-blocked MCP servers in 132 plugins",
+   "unlocks": "up to 199 proxy-blocked MCP servers in 131 plugins (when plugins are present)",
    "see": "blocked_hosts"
   },
   {
@@ -651,7 +732,7 @@
    "unlocks": "servers listing required_env_names in plugins.json"
   },
   {
-   "action": "edit environment setup script",
+   "action": "add an environment setup script (none exists)",
    "unlocks": "missing binaries: adb-mcp, claude-tab-fix, toolbox, vulca-mcp (cmd is Windows-only)"
   },
   {
@@ -665,6 +746,616 @@
   {
    "action": "choose a persistence strategy for Cognee memory",
    "unlocks": "memory surviving VM reclamation"
+  },
+  {
+   "action": "review or delete the 'Install verbalized-sampling' scheduled task",
+   "unlocks": "removes a standing API token with 11 connector grants"
+  },
+  {
+   "action": "confirm plugin sync in a fresh app-started session",
+   "unlocks": "knowing whether 2,459 plugin skills and 226 plugin agents are part of the persistent set"
   }
- ]
+ ],
+ "cold_start_probe": {
+  "method": "fresh cloud session created via API on the same account and Default environment, cloning branch claude/add-agency-agents (identical tree to main after PR #2), read-only",
+  "date": "2026-10-20T16:57Z",
+  "results": {
+   "agents_total": 288,
+   "agency_agents": 282,
+   "plugin_agents": 0,
+   "builtin_agents": 6,
+   "skills_total": 35,
+   "builtin_and_image_skills": 16,
+   "account_skills": 19,
+   "plugin_skills": 0,
+   "plugins_synced": 0,
+   "account_skill_dirs": 19,
+   "cognee_memory": "absent (no database, no plugin)",
+   "launch_tests": {
+    "Reality Checker": "READY",
+    "Explore": "READY",
+    "agent-protocols:code-reviewer": "not found"
+   },
+   "mcp_failures_at_start": 0,
+   "connectors": "Gmail, Google Calendar, Google Drive, Zapier, Claude Docs, Shopify, Spotify, Canva, Vercel, Lovable, Splice, claude-code-remote, github; Meta Ads needs auth",
+   "capability_audit_check": "ran; reported 226 agents and 2,460 skills missing versus the manifest",
+   "missing_binaries": "claude-tab-fix, adb-mcp, toolbox, vulca-mcp"
+  },
+  "caveat": "the probe was API-created; a session the account owner opens from the Claude app may still receive synced plugins, as this audit session did at 07:04. Not verified for a fresh app-started session."
+ },
+ "verification": {
+  "launch_tests_this_session": {
+   "Reality Checker": "READY",
+   "agent-protocols:code-reviewer": "READY",
+   "Explore": "READY"
+  },
+  "classification_review": "independent skeptic: 8 of 12 claims confirmed; corrected: .gitignore rule (now committed), scheduled check-in is account-level not session-only, environment has no setup script, account scheduled tasks were missing"
+ },
+ "agency_agent_dependency_review": {
+  "method": "3 independent reviewers read all 282 definitions in full; existence checked against this repo, the upstream repo and the session",
+  "operational_references": 276,
+  "missing_by_kind": {
+   "other_agent": 34,
+   "tool_or_mcp": 19,
+   "local_file_or_dir": 24,
+   "cli_binary": 31,
+   "local_script": 10
+  },
+  "external_services_not_checkable": 44,
+  "missing": [
+   {
+    "file": "accounts-payable-agent.md",
+    "kind": "other_agent",
+    "reference": "Contracts Agent",
+    "evidence": "accounts-payable-agent.md:202 \"**Contracts Agent** — receives payment triggers on milestone completion\" (also :34, :122). No agent has this name."
+   },
+   {
+    "file": "accounts-payable-agent.md",
+    "kind": "other_agent",
+    "reference": "Project Manager Agent",
+    "evidence": "accounts-payable-agent.md:203 \"**Project Manager Agent** — processes contractor time-and-materials invoices\". Closest names are 'Senior Project Manager' and 'Product Manager'."
+   },
+   {
+    "file": "accounts-payable-agent.md",
+    "kind": "other_agent",
+    "reference": "HR Agent",
+    "evidence": "accounts-payable-agent.md:204 \"**HR Agent** — handles payroll disbursements\". Closest name is 'HR Onboarding'."
+   },
+   {
+    "file": "accounts-payable-agent.md",
+    "kind": "other_agent",
+    "reference": "Strategy Agent",
+    "evidence": "accounts-payable-agent.md:205 \"**Strategy Agent** — provides spend reports and runway analysis\"."
+   },
+   {
+    "file": "accounts-payable-agent.md",
+    "kind": "tool_or_mcp",
+    "reference": "payments tool/adapter (payments.send / payments.checkByReference / payments.getHistory)",
+    "evidence": "accounts-payable-agent.md:84 \"const payment = await payments.send({\"; :3 \"Integrates with AI agent workflows via tool calls\". Neither the repo nor the session defines a payments tool or MCP."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "local_file_or_dir",
+    "reference": "project-specs/*-setup.md",
+    "evidence": "agents-orchestrator.md:58 \"ls -la project-specs/*-setup.md\". Not found in the repo or the upstream clone."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "local_file_or_dir",
+    "reference": "project-tasks/*-tasklist.md",
+    "evidence": "agents-orchestrator.md:64 \"ls -la project-tasks/*-tasklist.md\" (also :82, :102)."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "local_file_or_dir",
+    "reference": "css/ and project-docs/*-architecture.md",
+    "evidence": "agents-orchestrator.md:76 \"ls -la css/ project-docs/*-architecture.md\"."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "other_agent",
+    "reference": "project-manager-senior",
+    "evidence": "agents-orchestrator.md:61 \"Please spawn a project-manager-senior agent\". Only the filename project-manager-senior.md exists. Its frontmatter name is 'Senior Project Manager'."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "other_agent",
+    "reference": "ArchitectUX",
+    "evidence": "agents-orchestrator.md:73 \"Please spawn an ArchitectUX agent\". The frontmatter name is 'UX Architect'."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "other_agent",
+    "reference": "EvidenceQA",
+    "evidence": "agents-orchestrator.md:90 \"Please spawn an EvidenceQA agent to test TASK 1\". The frontmatter name is 'Evidence Collector' (testing-evidence-collector.md)."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "other_agent",
+    "reference": "testing-reality-checker",
+    "evidence": "agents-orchestrator.md:105 \"Please spawn a testing-reality-checker agent\". Only the filename exists. The frontmatter name is 'Reality Checker'."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "other_agent",
+    "reference": "engineering-senior-developer",
+    "evidence": "agents-orchestrator.md:87 \"(Frontend Developer, Backend Architect, engineering-senior-developer, etc.)\". The frontmatter name is 'Senior Developer'."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "other_agent",
+    "reference": "RealityIntegration",
+    "evidence": "agents-orchestrator.md:251 \"spawning RealityIntegration for final check\". No file or name matches."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "other_agent",
+    "reference": "design-visual-storyteller",
+    "evidence": "agents-orchestrator.md:304 \"**design-visual-storyteller**\". The frontmatter name is 'Visual Storyteller'."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "other_agent",
+    "reference": "engineering-ai-engineer",
+    "evidence": "agents-orchestrator.md:312 \"**engineering-ai-engineer**\". The frontmatter name is 'AI Engineer'."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "other_agent",
+    "reference": "marketing-growth-hacker, marketing-content-creator, marketing-social-media-strategist, marketing-twitter-engager, marketing-instagram-curator, marketing-tiktok-",
+    "evidence": "agents-orchestrator.md:321-327 \"**marketing-growth-hacker** ... **marketing-reddit-community-builder**\". These are filenames only. The frontmatter names are 'Growth Hacker', 'Content Creator', and so on."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "other_agent",
+    "reference": "product-sprint-prioritizer, product-trend-researcher, product-feedback-synthesizer",
+    "evidence": "agents-orchestrator.md:336-338 \"**product-sprint-prioritizer** ... **product-feedback-synthesizer**\". The frontmatter names are 'Sprint Prioritizer', 'Trend Researcher', and 'Feedback Synthesizer'."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "other_agent",
+    "reference": "data-analytics-reporter",
+    "evidence": "agents-orchestrator.md:358 \"**data-analytics-reporter**: Raw data transformation\". No file or name matches. The closest is support-analytics-reporter.md, named 'Analytics Reporter'."
+   },
+   {
+    "file": "agents-orchestrator.md",
+    "kind": "other_agent",
+    "reference": "agents-orchestrator (self-launch command)",
+    "evidence": "agents-orchestrator.md:366 \"Please spawn an agents-orchestrator to execute complete development pipeline\". The frontmatter name is 'Agents Orchestrator'."
+   },
+   {
+    "file": "design-persona-walkthrough.md",
+    "kind": "other_agent",
+    "reference": "agency-router",
+    "evidence": "design-persona-walkthrough.md:159 \"From the `agency-router` (if available), load `academic/academic-psychologist.md`...\". Neither the repo nor upstream has an agency-router."
+   },
+   {
+    "file": "design-ux-architect.md",
+    "kind": "local_file_or_dir",
+    "reference": "ai/memory-bank/site-setup.md",
+    "evidence": "design-ux-architect.md:315 \"cat ai/memory-bank/site-setup.md\"."
+   },
+   {
+    "file": "design-ux-architect.md",
+    "kind": "local_file_or_dir",
+    "reference": "ai/memory-bank/tasks/*-tasklist.md",
+    "evidence": "design-ux-architect.md:316 \"cat ai/memory-bank/tasks/*-tasklist.md\"."
+   },
+   {
+    "file": "design-ux-architect.md",
+    "kind": "local_file_or_dir",
+    "reference": "ai/agents/architect.md",
+    "evidence": "design-ux-architect.md:482 \"Your detailed technical methodology is in `ai/agents/architect.md`\"."
+   },
+   {
+    "file": "design-ux-architect.md",
+    "kind": "other_agent",
+    "reference": "ProjectManager",
+    "evidence": "design-ux-architect.md:43 \"Take ProjectManager task lists and add technical foundation layer\"."
+   },
+   {
+    "file": "design-ux-architect.md",
+    "kind": "other_agent",
+    "reference": "LuxuryDeveloper",
+    "evidence": "design-ux-architect.md:44 \"Provide clear handoff specifications for LuxuryDeveloper\" (also :425)."
+   },
+   {
+    "file": "design-visual-storyteller.md",
+    "kind": "local_file_or_dir",
+    "reference": "ai/memory-bank/brand-guidelines.md, ai/memory-bank/audience-research.md (ai/memory-bank/*.md)",
+    "evidence": "design-visual-storyteller.md:82-83 \"cat ai/memory-bank/brand-guidelines.md / cat ai/memory-bank/audience-research.md\"; :87 grep ai/memory-bank/*.md."
+   },
+   {
+    "file": "design-visual-storyteller.md",
+    "kind": "local_file_or_dir",
+    "reference": "public/images/brand/",
+    "evidence": "design-visual-storyteller.md:86 \"ls public/images/brand/\"."
+   },
+   {
+    "file": "engineering-ai-data-remediation-engineer.md",
+    "kind": "tool_or_mcp",
+    "reference": "Python libs sentence-transformers + chromadb",
+    "evidence": "engineering-ai-data-remediation-engineer.md:31-32 \"Embed anomalous rows using local sentence-transformers ... Cluster ... using ChromaDB or FAISS\". Neither module can be imported."
+   },
+   {
+    "file": "engineering-ai-engineer.md",
+    "kind": "local_file_or_dir",
+    "reference": "ai/memory-bank/requirements.md, ai/memory-bank/data-sources.md (ai/memory-bank/*.md)",
+    "evidence": "engineering-ai-engineer.md:79-80 \"cat ai/memory-bank/requirements.md / cat ai/memory-bank/data-sources.md\"; :84 grep ai/memory-bank/*.md."
+   },
+   {
+    "file": "engineering-ats-validator-architect.md",
+    "kind": "other_agent",
+    "reference": "agency-resume-tailor",
+    "evidence": "engineering-ats-validator-architect.md:379 \"**`agency-resume-tailor`**: Passes candidate career background...\". The frontmatter name is 'Resume Tailor'."
+   },
+   {
+    "file": "engineering-ats-validator-architect.md",
+    "kind": "other_agent",
+    "reference": "agency-pdf-engine-architect",
+    "evidence": "engineering-ats-validator-architect.md:380. The frontmatter name is 'PDF Engine Architect'."
+   },
+   {
+    "file": "engineering-ats-validator-architect.md",
+    "kind": "other_agent",
+    "reference": "agency-search-relevance-engineer",
+    "evidence": "engineering-ats-validator-architect.md:381. The frontmatter name is 'Search Relevance Engineer'."
+   },
+   {
+    "file": "engineering-ats-validator-architect.md",
+    "kind": "other_agent",
+    "reference": "agency-master-plan-architect",
+    "evidence": "engineering-ats-validator-architect.md:382. The frontmatter name is 'Master Plan Architect'."
+   },
+   {
+    "file": "engineering-ats-validator-architect.md",
+    "kind": "other_agent",
+    "reference": "cv-maker-api",
+    "evidence": "engineering-ats-validator-architect.md:383 \"**`cv-maker-api`**: Aligns with the JSON Resume v1.0.0 schema\". No file or name matches."
+   },
+   {
+    "file": "engineering-ats-validator-architect.md",
+    "kind": "local_file_or_dir",
+    "reference": "Preloaded technical ontology (>170 canonical competencies)",
+    "evidence": "engineering-ats-validator-architect.md:322 \"If no Job Description is supplied, match against preloaded technical ontologies (>170 canonical industry competencies)\". Neither the repo nor upstream ships an ontology file."
+   },
+   {
+    "file": "engineering-cms-developer.md",
+    "kind": "other_agent",
+    "reference": "Security Engineer",
+    "evidence": "engineering-cms-developer.md:534 \"**Security Engineer** — for penetration testing\". No exact name. The closest is 'Application Security Engineer'."
+   },
+   {
+    "file": "engineering-knowledge-graph-engineer.md",
+    "kind": "local_file_or_dir",
+    "reference": "Graph schema/purpose config (entity types, tag taxonomy, thresholds)",
+    "evidence": "engineering-knowledge-graph-engineer.md:55 \"Read graph config before touching a document: schema ..., purpose ...\". No config file is shipped or named."
+   },
+   {
+    "file": "engineering-orgscript-engineer.md",
+    "kind": "local_file_or_dir",
+    "reference": "spec/language-spec.md and grammar.ebnf",
+    "evidence": "engineering-orgscript-engineer.md:79 \"Cross-reference with `spec/language-spec.md` and `grammar.ebnf`\"."
+   },
+   {
+    "file": "engineering-orgscript-engineer.md",
+    "kind": "local_file_or_dir",
+    "reference": "packages/parser, packages/cli",
+    "evidence": "engineering-orgscript-engineer.md:83 \"update the tokenizer/AST nodes in the `packages/parser` or CLI handlers in `packages/cli`\"."
+   },
+   {
+    "file": "engineering-orgscript-engineer.md",
+    "kind": "local_script",
+    "reference": "bin/orgscript.js",
+    "evidence": "engineering-orgscript-engineer.md:110 \"perfectly parseable by the OrgScript `bin/orgscript.js` tool\"."
+   },
+   {
+    "file": "engineering-pdf-engine-architect.md",
+    "kind": "other_agent",
+    "reference": "agency-ats-validator-architect",
+    "evidence": "engineering-pdf-engine-architect.md:693. The frontmatter name is 'ATS Validator Architect'."
+   },
+   {
+    "file": "engineering-pdf-engine-architect.md",
+    "kind": "other_agent",
+    "reference": "agency-frontend-developer",
+    "evidence": "engineering-pdf-engine-architect.md:694. The frontmatter name is 'Frontend Developer'."
+   },
+   {
+    "file": "engineering-pdf-engine-architect.md",
+    "kind": "other_agent",
+    "reference": "agency-accessibility-auditor",
+    "evidence": "engineering-pdf-engine-architect.md:695. The frontmatter name is 'Accessibility Auditor'."
+   },
+   {
+    "file": "engineering-pdf-engine-architect.md",
+    "kind": "other_agent",
+    "reference": "agency-sre-site-reliability-engineer",
+    "evidence": "engineering-pdf-engine-architect.md:696. The frontmatter name is 'SRE (Site Reliability Engineer)'."
+   },
+   {
+    "file": "engineering-pdf-engine-architect.md",
+    "kind": "tool_or_mcp",
+    "reference": "pikepdf (Python)",
+    "evidence": "engineering-pdf-engine-architect.md:673 \"Pass raw PDF through the validated PDF/A-2b save gate\"; :577 \"Requires `pikepdf[pdfa] >= 10.14`\". The module is not installed."
+   },
+   {
+    "file": "engineering-rag-pipeline-engineer.md",
+    "kind": "tool_or_mcp",
+    "reference": "RAGAS (Python)",
+    "evidence": "engineering-rag-pipeline-engineer.md:394 \"Run RAGAS eval suite on baseline pipeline\". The ragas module is not installed."
+   },
+   {
+    "file": "engineering-section-508-specialist.md",
+    "kind": "tool_or_mcp",
+    "reference": "Screen readers JAWS / NVDA / VoiceOver",
+    "evidence": "engineering-section-508-specialist.md:224 \"Drive it with screen readers — JAWS+Chrome, NVDA+Firefox, VoiceOver+Safari\". These run only on Windows or macOS and are unavailable in this Linux container."
+   },
+   {
+    "file": "engineering-senior-developer.md",
+    "kind": "local_file_or_dir",
+    "reference": "ai/system/component-library.md",
+    "evidence": "engineering-senior-developer.md:38 \"Reference `ai/system/component-library.md` for component index\"."
+   },
+   {
+    "file": "engineering-senior-developer.md",
+    "kind": "local_file_or_dir",
+    "reference": "ai/system/premium-style-guide.md",
+    "evidence": "engineering-senior-developer.md:57 \"Use `ai/system/premium-style-guide.md` for luxury patterns\"."
+   },
+   {
+    "file": "engineering-senior-developer.md",
+    "kind": "local_file_or_dir",
+    "reference": "ai/system/advanced-tech-patterns.md",
+    "evidence": "engineering-senior-developer.md:58 \"Reference `ai/system/advanced-tech-patterns.md`\"."
+   },
+   {
+    "file": "engineering-senior-developer.md",
+    "kind": "local_file_or_dir",
+    "reference": "ai/agents/dev.md",
+    "evidence": "engineering-senior-developer.md:176 \"Your detailed technical instructions are in `ai/agents/dev.md`\"."
+   },
+   {
+    "file": "engineering-senior-developer.md",
+    "kind": "other_agent",
+    "reference": "PM agent",
+    "evidence": "engineering-senior-developer.md:51 \"Read task list from PM agent\". No agent has this name."
+   },
+   {
+    "file": "engineering-voice-ai-integration-engineer.md",
+    "kind": "tool_or_mcp",
+    "reference": "faster-whisper (Python)",
+    "evidence": "engineering-voice-ai-integration-engineer.md:237 \"from faster_whisper import WhisperModel\" (Step 3 of workflow). The module is not installed."
+   },
+   {
+    "file": "gis-3d-scene-developer.md",
+    "kind": "other_agent",
+    "reference": "Drone/Reality Mapping (agent handoff)",
+    "evidence": "gis-3d-scene-developer.md:111 '(use Drone/Reality Mapping)' — no exact name: match; truncated form of existing 'Drone/Reality Mapping Specialist' (gis-drone-reality-mapping.md)"
+   },
+   {
+    "file": "gis-bim-specialist.md",
+    "kind": "other_agent",
+    "reference": "Drone/Reality Mapping (agent handoff)",
+    "evidence": "gis-bim-specialist.md:107 '(use Drone/Reality Mapping)' — no exact name: match; truncated form of 'Drone/Reality Mapping Specialist'"
+   },
+   {
+    "file": "gis-geoai-ml-engineer.md",
+    "kind": "other_agent",
+    "reference": "Drone/Reality Mapping (agent handoff)",
+    "evidence": "gis-geoai-ml-engineer.md:105 '(use Drone/Reality Mapping)' — no exact name: match; truncated form of 'Drone/Reality Mapping Specialist'"
+   },
+   {
+    "file": "healthcare-aging-parent-care-companion.md",
+    "kind": "tool_or_mcp",
+    "reference": "Persistent cross-conversation care-profile store (unnamed memory backend)",
+    "evidence": "healthcare-aging-parent-care-companion.md:17 'You maintain a persistent, minimal care profile across conversations' (+ :272, :305 'Update only the relevant fields in the persistent profile'); no file path, memory frontma"
+   },
+   {
+    "file": "identity-graph-operator.md",
+    "kind": "tool_or_mcp",
+    "reference": "Shared identity graph / matching engine (unnamed service with optimistic locking, events, proposals)",
+    "evidence": "identity-graph-operator.md:11 'You resolve through an identity engine and let the evidence decide' (+ :34 'goes through a single engine'); engine never named, no such MCP/tool configured"
+   },
+   {
+    "file": "identity-graph-operator.md",
+    "kind": "tool_or_mcp",
+    "reference": "Agent registry / discovery mechanism",
+    "evidence": "identity-graph-operator.md:185 'On first connection, announce yourself so other agents can discover you' (+ :276 'Register yourself in the agent registry'); no registry exists in Claude Code/repo"
+   },
+   {
+    "file": "macos-spatial-metal-engineer.md",
+    "kind": "local_file_or_dir",
+    "reference": "project.yml (XcodeGen spec)",
+    "evidence": "macos-spatial-metal-engineer.md:256 '--spec project.yml' — not found in repo or upstream agency-agents clone"
+   },
+   {
+    "file": "marketing-aeo-foundations.md",
+    "kind": "tool_or_mcp",
+    "reference": "tiktoken (cl100k_base) token estimation",
+    "evidence": "marketing-aeo-foundations.md:120 '- Tool: tiktoken (cl100k_base encoding) or LLM tokenizer' — python3 module tiktoken not installed (alternative 'LLM tokenizer' allowed)"
+   },
+   {
+    "file": "marketing-agentic-search-optimizer.md",
+    "kind": "tool_or_mcp",
+    "reference": "Claude in Chrome (live browser agent for task-flow testing)",
+    "evidence": "marketing-agentic-search-optimizer.md:193 'Test each task flow with a live browser agent (Claude in Chrome or equivalent)' — no Claude-in-Chrome MCP in session (browser-use plugin MCP present as possible equivalent)"
+   },
+   {
+    "file": "marketing-carousel-growth-engine.md",
+    "kind": "local_script",
+    "reference": "generate-slides.sh",
+    "evidence": "marketing-carousel-growth-engine.md:132 'Run `generate-slides.sh` which calls `generate_image.py` via `uv`' — not in repo or upstream clone"
+   },
+   {
+    "file": "marketing-carousel-growth-engine.md",
+    "kind": "local_script",
+    "reference": "generate_image.py",
+    "evidence": "marketing-carousel-growth-engine.md:63 'calling `generate_image.py` (Python via `uv`) for each slide' — not in repo or upstream clone"
+   },
+   {
+    "file": "marketing-carousel-growth-engine.md",
+    "kind": "local_script",
+    "reference": "publish-carousel.sh",
+    "evidence": "marketing-carousel-growth-engine.md:138 'Run `publish-carousel.sh` to publish the 6 slides' — not in repo or upstream clone"
+   },
+   {
+    "file": "marketing-carousel-growth-engine.md",
+    "kind": "local_script",
+    "reference": "check-analytics.sh",
+    "evidence": "marketing-carousel-growth-engine.md:119 'Fetch profile metrics and per-post performance via `check-analytics.sh`' — not in repo or upstream clone"
+   },
+   {
+    "file": "marketing-carousel-growth-engine.md",
+    "kind": "local_script",
+    "reference": "analyze-web.js",
+    "evidence": "marketing-carousel-growth-engine.md:125 'Run `analyze-web.js` for full Playwright-based analysis' — not in repo or upstream clone"
+   },
+   {
+    "file": "marketing-carousel-growth-engine.md",
+    "kind": "local_script",
+    "reference": "learn-from-analytics.js",
+    "evidence": "marketing-carousel-growth-engine.md:120 'Run `learn-from-analytics.js` to identify best-performing hooks' — not in repo or upstream clone"
+   },
+   {
+    "file": "marketing-carousel-growth-engine.md",
+    "kind": "local_file_or_dir",
+    "reference": "/tmp/carousel/learnings.json (persistent knowledge base, read before each run)",
+    "evidence": "marketing-carousel-growth-engine.md:82 '**Storage**: `/tmp/carousel/learnings.json` — persistent knowledge base' — /tmp/carousel absent; /tmp is non-persistent"
+   },
+   {
+    "file": "marketing-multi-platform-publisher.md",
+    "kind": "tool_or_mcp",
+    "reference": "bilibili-api-python SDK (bilibili_api)",
+    "evidence": "marketing-multi-platform-publisher.md:121 'from bilibili_api import article, dynamic, Credential' — python3 module not installed"
+   },
+   {
+    "file": "paid-media-auditor.md",
+    "kind": "tool_or_mcp",
+    "reference": "Google Ads MCP tools / Google Ads API",
+    "evidence": "paid-media-auditor.md:41 'When Google Ads MCP tools or API integrations are available ... use them to: Automate the data extraction phase' — conditional; no Google Ads MCP in session"
+   },
+   {
+    "file": "paid-media-creative-strategist.md",
+    "kind": "tool_or_mcp",
+    "reference": "Google Ads MCP tools (list_ads, ad strength data)",
+    "evidence": "paid-media-creative-strategist.md:47 'If API access is available, pull list_ads and ad strength data as the starting point' — conditional; no Google Ads MCP in session"
+   },
+   {
+    "file": "paid-media-paid-social-strategist.md",
+    "kind": "tool_or_mcp",
+    "reference": "Google Ads MCP tools / cross-channel API",
+    "evidence": "paid-media-paid-social-strategist.md:41 'When Google Ads MCP tools or API integrations are available ... Cross-reference search and social data' — conditional; not configured"
+   },
+   {
+    "file": "paid-media-ppc-strategist.md",
+    "kind": "tool_or_mcp",
+    "reference": "Google Ads MCP tools (account_summary, list_campaigns, auction_insights)",
+    "evidence": "paid-media-ppc-strategist.md:47 'pull account_summary, list_campaigns, and auction_insights as the baseline before any strategic recommendation' — conditional; no Google Ads MCP in session"
+   },
+   {
+    "file": "paid-media-programmatic-buyer.md",
+    "kind": "tool_or_mcp",
+    "reference": "Google Ads MCP tools (placement_performance)",
+    "evidence": "paid-media-programmatic-buyer.md:47 'Always pull placement_performance data before recommending new placement strategies' — no Google Ads MCP in session"
+   },
+   {
+    "file": "paid-media-search-query-analyst.md",
+    "kind": "tool_or_mcp",
+    "reference": "Google Ads MCP tools (wasted_spend, list_search_terms)",
+    "evidence": "paid-media-search-query-analyst.md:47 'pull wasted_spend and list_search_terms as the first step in any query analysis' — conditional; no Google Ads MCP in session"
+   },
+   {
+    "file": "paid-media-tracking-specialist.md",
+    "kind": "tool_or_mcp",
+    "reference": "Google Ads MCP tools / Google Ads API (conversion action verification)",
+    "evidence": "paid-media-tracking-specialist.md:41 'When Google Ads MCP tools or API integrations are available ... Verify conversion action configurations' — conditional; not configured"
+   },
+   {
+    "file": "specialized-workflow-architect.md",
+    "kind": "other_agent",
+    "reference": "Security Engineer (sub-agent hand-off)",
+    "evidence": "L553: \"**Security Engineer** — when a workflow touches credentials, secrets, auth, or external API calls.\" — no agent with name 'Security Engineer' exists in frontmatter (closest are 'Security Architect', 'Application Se"
+   },
+   {
+    "file": "project-manager-senior.md",
+    "kind": "local_script",
+    "reference": "./qa-playwright-capture.sh",
+    "evidence": "L97: \"Include Playwright screenshot testing: `./qa-playwright-capture.sh http://localhost:8000 public/qa-screenshots`\" — script file not found in either repo (repo's own SYSTEM-CAPABILITIES.md flags it as a dangling depe"
+   },
+   {
+    "file": "project-manager-senior.md",
+    "kind": "local_file_or_dir",
+    "reference": "ai/memory-bank/site-setup.md",
+    "evidence": "L23: \"Read the **actual** site specification file (`ai/memory-bank/site-setup.md`)\" — path absent in both /home/user/verbalized-sampling and the agency-agents clone."
+   },
+   {
+    "file": "project-manager-senior.md",
+    "kind": "local_file_or_dir",
+    "reference": "ai/memory-bank/tasks/[project-slug]-tasklist.md",
+    "evidence": "L37: \"Save task lists to `ai/memory-bank/tasks/[project-slug]-tasklist.md`\" — the ai/memory-bank/tasks/ directory exists in neither repo."
+   },
+   {
+    "file": "project-manager-senior.md",
+    "kind": "local_file_or_dir",
+    "reference": "ai/agents/pm.md",
+    "evidence": "L135: \"Your detailed instructions are in `ai/agents/pm.md` - refer to this for complete methodology\" — file absent in both repos."
+   },
+   {
+    "file": "testing-evidence-collector.md",
+    "kind": "local_script",
+    "reference": "./qa-playwright-capture.sh",
+    "evidence": "L44: \"./qa-playwright-capture.sh http://localhost:8000 public/qa-screenshots\" under 'STEP 1: Reality Check Commands (ALWAYS RUN FIRST)' — script file not present in either repo."
+   },
+   {
+    "file": "testing-evidence-collector.md",
+    "kind": "local_file_or_dir",
+    "reference": "ai/agents/qa.md",
+    "evidence": "L210: \"Your detailed QA methodology is in `ai/agents/qa.md` - refer to this for complete testing protocols\" — file absent in both repos."
+   },
+   {
+    "file": "testing-reality-checker.md",
+    "kind": "local_script",
+    "reference": "./qa-playwright-capture.sh",
+    "evidence": "L63: \"./qa-playwright-capture.sh http://localhost:8000 public/qa-screenshots\" under 'STEP 1: Reality Check Commands (NEVER SKIP)' — script file not present in either repo."
+   },
+   {
+    "file": "security-senior-secops.md",
+    "kind": "local_file_or_dir",
+    "reference": "security/17-security-pattern.md",
+    "evidence": "L15: \"Your security bible is the internal `security/17-security-pattern.md`. Every finding you report maps to a section of that document.\" — file absent in both repos."
+   }
+  ],
+  "missing_cli_binaries": [
+   "PlatformIO (pio) / ESP-IDF (idf.py) toolchains",
+   "Xcode Instruments / Metal System Trace (macOS toolchain)",
+   "axe / WAVE / Lighthouse automated scanners",
+   "axe-core / Lighthouse CLI",
+   "biliup CLI",
+   "blender (bpy runtime)",
+   "cargo-semver-checks",
+   "crontab / cron scheduler (self-scheduling)",
+   "dbt",
+   "drupal (Drupal Console)",
+   "drush",
+   "fastlane",
+   "forge (Foundry)",
+   "gopls",
+   "intelephense",
+   "lighthouse",
+   "ollama (local SLM runtime with phi3/llama3/mistral)",
+   "orgscript CLI",
+   "packager (Shaka Packager)",
+   "phpcs",
+   "rust-analyzer",
+   "slither / myth (Mythril)",
+   "typescript-language-server",
+   "veraPDF",
+   "wasm-opt (Binaryen)",
+   "wechatsync CLI",
+   "wp (WP-CLI)",
+   "xcodegen",
+   "xiaohongshu-mcp daemon (localhost:18060)"
+  ]
+ }
 }

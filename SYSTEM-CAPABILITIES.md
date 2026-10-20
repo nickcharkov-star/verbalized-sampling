@@ -2,7 +2,7 @@
 
 What Claude Code can use when it works on this repository in a cloud session, where each capability comes from, and what survives when the cloud VM is destroyed.
 
-- Audited: 2026-10-20, Claude Code 2.1.304, Anthropic-hosted cloud environment "Default" (network access **Trusted**).
+- Audited: 2026-10-20, Claude Code 2.1.304, Anthropic-hosted cloud environment "Default" (network access **Trusted**, no setup script).
 - Machine-readable record: [`system/capabilities/`](system/capabilities/) (`manifest.json`, `plugins.json`, `skills.json`, `agents.json`).
 - How a new session re-checks all of this: [`system/bootstrap/README.md`](system/bootstrap/README.md).
 - Regenerate or compare: `python3 system/bootstrap/capability_audit.py [--write]`.
@@ -13,117 +13,127 @@ What Claude Code can use when it works on this repository in a cloud session, wh
 |---|---|
 | `available` | the harness listed it in the audited session |
 | `functional` | `true` only when verified working; `false` when a hard blocker was found; `null` when not determined |
-| `verified` | something actually ran it in the audited session and got a real result |
+| `verified` | something actually ran it and got a real result |
 | `blocked` | `true`/`false` when known; `null` when its plugin's services are down but it isn't known whether this item needs them |
 | `dependency_status` | `none`, `satisfied`, `unknown`, or `unavailable:`/`partially_unavailable:` plus the causes (`network_blocked`, `missing_binary`, `needs_auth`, `needs_credentials`, `needs_config`, `connection_failed`) |
 
-## If this VM were deleted now and the repository opened in a clean cloud session
+## Cold start: what a fresh session actually got
 
-The new session clones **`main`**, has the same claude.ai account, and uses the same "Default" environment.
+On 2026-10-20 at 16:57 UTC a brand-new cloud session was created on the same account and environment. It cloned `claude/add-agency-agents`, which has the same tree `main` will have after PR #2 merges, and reported read-only:
 
-**Kept (restored automatically, nothing to do):**
+| | Audit session (started from the Claude app) | Fresh session (created through the API) |
+|---|---|---|
+| Agents | 514 | **288**: 282 Agency + 6 built-in, 0 plugin |
+| Skills | 2,495 | **35**: 16 built-in/image + 19 account, 0 plugin |
+| Synced plugins on disk | 343–344 | **0** |
+| Cognee memory | local store, server not responding | **absent** |
+| MCP failures at start | 217–219 | 0 (no plugin servers to fail) |
+| `Reality Checker` launch | READY | READY |
+| `agent-protocols:code-reviewer` launch | READY | **not found** |
+| `Explore` launch | READY | READY |
+| `capability_audit.py` | matches manifest | ran; flagged 226 agents and 2,460 skills missing |
 
-- **All 2,495 skills:** 2,459 plugin skills, 19 account skills, 16 Claude Code built-ins and 1 cloud-image skill. None of them lives in this repository or on this VM alone; they're re-synced from the account or ship with the platform. `workflow-authoring` comes back only while the Workflow/ultracode setting is on.
-- **232 of the 514 agents:** 226 plugin agents (re-synced with their plugins) and 6 built-ins.
-- **All 343 synced plugins** (339 distinct names; 4 are synced twice from two marketplaces), with their hooks and MCP definitions.
-- **Connected claude.ai connectors:** Gmail, Google Calendar, Google Drive, Canva, Lovable, Shopify, Splice, Spotify, Vercel, Zapier, Claude Docs, Courtroom5, Granted. The platform's `github` and `claude-code-remote` servers also come back.
-- **The environment itself:** network level, setup script and environment variables.
-- **The conversation history of this session**, if this same session is reopened. A brand-new session starts empty.
-
-**Lost:**
-
-- **The 282 Agency Agents, while PR #2 is unmerged.** They live in `~/.claude/agents/` on this VM and in `.claude/agents/` on the `claude/add-agency-agents` branch only. A session that clones `main` loads none of them. After the merge, they come back automatically (REPOSITORY-PERSISTENT).
-- **All Cognee "long-term memory".** The memory plugin keeps its database on this VM (`~/.cognee`, `~/.cognee-plugin`, local server `http://localhost:8011`, currently not responding, with 60+ items awaiting replay). Nothing in it survives. The plugin reinstalls; the memories don't.
-- **Plugin runtime state:** `~/.claude/plugins/data/*` (59 plugin folders, and growing as plugins run), `~/.delimit` (122 MB), `~/.lbdb`, and plugin caches.
-- **Session-bound work:** the PR #2 activity subscription, the pending 08:42 UTC check-in, Workflow runs, and in-session installs.
-- **Local-only git state:** the earlier `.git/info/exclude` rule. It is replaced by a committed `.gitignore` entry in this change.
-
-**Restored but still not working (degraded the same way as now):**
-
-- **200 MCP servers in 132 plugins blocked by the Trusted network policy** (`ERR_PROXY_TUNNEL`). The 1,115 skills and many of the 53 agents in those plugins load but can't reach their service.
-- **6 servers whose command isn't installed** (`adb-mcp`, `toolbox`, `vulca-mcp`, and three that need Windows `cmd`), **9 that fail to connect**, **2 missing required settings**, and **3 waiting for OAuth sign-in** (Datadog, BigQuery, GitLab).
-- **`claude-tab-fix`'s hook fails on every Bash/Write call** (binary not installed), and **`aws-startup-advisor`'s SessionStart hook reads a file its plugin doesn't ship**.
+**Caveat:** this audit session was started from the Claude app and received the account's plugins when its VM booted at 07:04. The probe was created through the API and received none. The documentation describes syncing claude.ai plugins into terminal and Cowork sessions, not cloud sessions. So whether a session you open from the app gets the plugins is **not guaranteed and not verified for a fresh VM**. Plan as if it doesn't.
 
 ## Capability sources and classification
 
-| # | Source | Count (audited session) | Class | Evidence |
+| # | Source | Count | Class | Restored in a fresh cloud session? |
 |---|---|---|---|---|
-| 1 | Repository `.claude/agents/` (Agency Agents, PR #2) | 282 | REPOSITORY-PERSISTENT, on branch `claude/add-agency-agents` until merged | Docs: "Your repo's `.claude/skills/`, `.claude/agents/`, `.claude/commands/` — Yes — Part of the clone" |
-| 2 | Repository `system/`, `SYSTEM-CAPABILITIES.md`, `.gitignore` | this change | REPOSITORY-PERSISTENT after merge | part of the clone |
-| 3 | Repository `CLAUDE.md`, `.claude/settings.json`, `.mcp.json`, `.claude/skills/`, `.claude/rules/` | none exist | n/a | nothing committed; nothing to restore |
-| 4 | Account-synced plugins (`~/.claude/plugins/synced/<account>/`) | 343 (295 anthropic-plugin-directory, 48 knowledge-work-plugins) | ACCOUNT/PLUGIN-PERSISTENT | `*.meta.json` carries a directory plugin ID and `installation_preference`; synced at session start (07:04) before any action |
-| 5 | Plugin skills | 2,459 | ACCOUNT/PLUGIN-PERSISTENT | come with #4 |
-| 6 | Plugin agents | 226 (from 52 plugin names) | ACCOUNT/PLUGIN-PERSISTENT | come with #4 |
-| 7 | Plugin hooks (SessionStart, PreToolUse, Stop, …) | 93 hook events in plugin manifests | ACCOUNT/PLUGIN-PERSISTENT | come with #4 |
-| 8 | Plugin MCP server definitions | 359 (327 http, 27 stdio, 5 streamable-http) | ACCOUNT/PLUGIN-PERSISTENT (definitions); connection result SESSION-ONLY | come with #4; connection status is decided again each session |
-| 9 | claude.ai account skills (`anthropic-skills:*`) | 19 | ACCOUNT/PLUGIN-PERSISTENT | Docs: "Cloud sessions automatically load skills you enable on claude.ai" |
-| 10 | Claude Code built-in skills | 16 | ACCOUNT/PLUGIN-PERSISTENT (platform) | ship with Claude Code; the five-class scheme has no "platform" class, so they're filed here as restored by the service, not the repository |
-| 11 | Claude Code built-in agents | 6 | ACCOUNT/PLUGIN-PERSISTENT (platform) | same as #10 |
-| 12 | Cloud-image skill `session-start-hook` | 1 | ACCOUNT/PLUGIN-PERSISTENT (platform) | file dated 07:03:59, before the session started at 07:04:18 |
-| 13 | Platform hook scripts in `~/.claude/` (`stop-hook-git-check.sh`, `stop-hook-reply-gate.py`, `user-prompt-submit-reply-reminder.py`) | 3 | ACCOUNT/PLUGIN-PERSISTENT (platform) | provisioned by the cloud platform; not created by any action in this session |
-| 14 | claude.ai connectors | 13 connected | ACCOUNT/PLUGIN-PERSISTENT | Docs: connector traffic goes through Anthropic's servers; connectors are read when a session starts |
-| 15 | Platform MCP servers `github`, `claude-code-remote` | 2 | ACCOUNT/PLUGIN-PERSISTENT (platform) | both verified working this session |
-| 16 | Cloud environment (network level, setup script, env vars, network secrets) | 1 environment | ACCOUNT/PLUGIN-PERSISTENT; setup-script contents UNKNOWN | Docs: the environment is "the saved configuration"; its contents can't be read from inside a session |
-| 17 | User-scope agents `~/.claude/agents/` (Agency Agents copy) | 282 | MACHINE-PERSISTENT ONLY | Docs: "Your user `~/.claude/…/agents/` — No — Live on your machine" |
-| 18 | Cognee memory database and local server | 1 store | MACHINE-PERSISTENT ONLY | `~/.cognee-plugin/server-ready.json`: base URL `http://localhost:8011`, state `not_responding` |
-| 19 | Plugin runtime data (`~/.claude/plugins/data/*`, `~/.delimit`, `~/.lbdb`, caches) | 59 + 2 dirs | MACHINE-PERSISTENT ONLY | written after the session started |
-| 20 | Files plugins write into the working tree (`.claude/odoo-timesheet/config.json`) | 1 | MACHINE-PERSISTENT ONLY, recreated by the plugin each session | now ignored by the committed `.gitignore` |
-| 21 | Local git config (`.git/info/exclude`) | 1 rule (removed) | MACHINE-PERSISTENT ONLY | not part of a clone |
-| 22 | MCP connection results, loaded tool list | per session | SESSION-ONLY | decided at session start |
-| 23 | PR #2 subscription, scheduled check-in, Workflow runs | 3 | SESSION-ONLY | bound to this session's ID |
-| 24 | `~/.claude/settings.json` `statusLine` | 1 | MACHINE-PERSISTENT ONLY, rewritten automatically | written by the cognee plugin's SessionStart hook |
+| 1 | Repository `.claude/agents/` (Agency Agents) | 282 | REPOSITORY-PERSISTENT | **yes**, verified by the probe, once PR #2 is on `main` |
+| 2 | Repository `system/`, `SYSTEM-CAPABILITIES.md`, `.gitignore` entry | — | REPOSITORY-PERSISTENT | yes, after merge |
+| 3 | Repository `CLAUDE.md`, `.claude/settings.json`, `.mcp.json`, `.claude/skills/` | none exist | — | nothing to restore |
+| 4 | claude.ai account plugins (`~/.claude/plugins/synced/<account>/`) | 343, then 344 | ACCOUNT/PLUGIN-PERSISTENT (stored on the account) | **conditional:** yes in the app-started session, no in the API-created probe |
+| 5 | Plugin skills | 2,459 | as #4 | conditional |
+| 6 | Plugin agents | 226 | as #4 | conditional |
+| 7 | Plugin hooks | 106 events | as #4 | conditional |
+| 8 | Plugin MCP server definitions | 359 | as #4; connection result SESSION-ONLY | conditional |
+| 9 | claude.ai account skills (`anthropic-skills:*`) | 19 | ACCOUNT/PLUGIN-PERSISTENT | **yes**, verified by the probe |
+| 10 | Claude Code built-in skills | 15, plus `workflow-authoring` while Workflow/ultracode is on | ACCOUNT/PLUGIN-PERSISTENT (platform) | yes, verified by the probe |
+| 11 | Claude Code built-in agents | 6 | ACCOUNT/PLUGIN-PERSISTENT (platform) | yes, verified by the probe |
+| 12 | Cloud-image skill `session-start-hook` | 1 | ACCOUNT/PLUGIN-PERSISTENT (platform) | yes, verified by the probe |
+| 13 | Platform hook scripts in `~/.claude/` (git check, reply gate, prompt reminder) | 3 | ACCOUNT/PLUGIN-PERSISTENT (platform) | yes; rewritten at every worker start |
+| 14 | claude.ai connectors | 13 connected, plus Meta Ads needing re-auth | ACCOUNT/PLUGIN-PERSISTENT | yes, verified by the probe |
+| 15 | Platform MCP servers `github`, `claude-code-remote` | 2 | ACCOUNT/PLUGIN-PERSISTENT (platform) | yes, verified by the probe |
+| 16 | Cloud environment "Default" (Trusted network; **no setup script**; env vars and network secrets not readable) | 1 | ACCOUNT/PLUGIN-PERSISTENT | yes |
+| 17 | Account scheduled tasks | 3 (2 enabled) | ACCOUNT/PLUGIN-PERSISTENT | they survive VM deletion and keep firing |
+| 18 | User-scope agents `~/.claude/agents/` (Agency Agents copy) | 282 | MACHINE-PERSISTENT ONLY | no (probe: 0) |
+| 19 | Cognee memory store (`~/.cognee`, `~/.cognee-plugin`, `http://localhost:8011`) | 1 store | MACHINE-PERSISTENT ONLY | **no; permanently lost** (probe: absent) |
+| 20 | Plugin runtime data (`~/.claude/plugins/data/*`, `~/.delimit`, `~/.lbdb`, caches, a 1.2 GB Cognee venv) | 59+ dirs | MACHINE-PERSISTENT ONLY | no |
+| 21 | Plugin-written working-tree files (`.claude/odoo-timesheet/config.json`) | 1 | MACHINE-PERSISTENT ONLY | recreated by the plugin only if plugins sync; now ignored by `.gitignore` |
+| 22 | Session transcript `~/.claude/projects/<repo>/<session>.jsonl` | 1 | MACHINE-PERSISTENT ONLY | conversation restored only when *this* session is reopened |
+| 23 | MCP connection results, PR #2 subscription, Workflow runs | — | SESSION-ONLY | no |
+| 24 | Other remote branches (`claude/auto-video-editing-luxury-w9l6jp`, PR #1) | 1 | REPOSITORY-PERSISTENT | in the repository but not on `main` |
+
+The five-class scheme has no "platform" class, so built-ins and platform-provisioned files are filed under ACCOUNT/PLUGIN-PERSISTENT: something other than the repository restores them.
+
+**Observed survival of "machine-only" state.** The VM's worker restarted at 16:55 after a long idle period, and the disk survived: `~/.claude/agents`, the Cognee store and the scratch files were all intact. Idle-restore keeps the disk; reclamation doesn't. Treat machine-only state as lost, not as "probably fine".
+
+## Account state that outlives every VM, including risks
+
+- **Scheduled task "Install verbalized-sampling".** Enabled, API-triggered, created 2026-06-04. It holds a stored API token and grants for 11 connectors, including Meta Ads, Gmail, Google Drive and Shopify, and anyone holding its token can start a session with those grants. It has nothing to do with this audit. Review it, and delete it if it isn't used.
+- **Scheduled task "Re-check autocut PR #1 (daily)".** Enabled and bound to another session.
+- **Meta Ads connector.** Connected on the account but needs re-authorization.
+
+## Degraded capabilities (listed, but their services are unreachable)
+
+With the plugins present (audit session):
+
+- **219 MCP servers failed:** 199 `ERR_PROXY_TUNNEL` (blocked by the Trusted network policy), 6 `ENOENT` (command not installed), 6 `CONNECT_TIMEOUT`, 4 `CONNECTION_CLOSED`, 2 `ECONNREFUSED`, 2 `INVALID_CONFIG`.
+- **3 servers need OAuth:** Datadog, BigQuery, GitLab.
+- **1,111 skills** in 131 network-blocked plugins load but can't reach their service.
+- **`claude-tab-fix`'s hook fails on every Bash and Write call** (binary missing).
+- **`aws-startup-advisor`'s SessionStart hook reads a file its plugin doesn't ship.**
+- **Cognee recall has been "server unreachable" all session**, with 500+ items buffered and never saved.
+
+## PR #2 verification
+
+| Check | Result |
+|---|---|
+| Location | all 282 definitions and `LICENSE.agency-agents` directly under `.claude/agents/`. The PR's second commit adds the audit files listed below |
+| Parsing | 282/282 YAML frontmatter mappings with non-empty `name` and `description` (PyYAML 6.0.1) |
+| Unique names | 282 distinct, case-insensitive. No collision with built-in agents |
+| Secrets | none. Four scanner hits are teaching examples: a 20-character fake `sk-proj-…` key in a bad-practice sample, and private-key header lines with no key material in detection rules |
+| Discovery | the probe loaded all 282 automatically and launched `Reality Checker` with no install step |
+| Local dependencies | **dangling; see below** |
+
+**Dangling dependencies.** Three independent reviewers read all 282 definitions in full and checked every operational reference against this repository, the upstream repository and the session. Each item below was then re-checked by direct search:
+
+- **Missing scripts (10):**
+  - `./qa-playwright-capture.sh`: `testing-evidence-collector.md:44`, `testing-reality-checker.md:63`, `project-manager-senior.md:97`
+  - `generate-slides.sh`, `generate_image.py`, `publish-carousel.sh`, `check-analytics.sh`, `analyze-web.js`, `learn-from-analytics.js`: `marketing-carousel-growth-engine.md`
+  - `bin/orgscript.js`: `engineering-orgscript-engineer.md`
+- **Missing files and folders (24):** `ai/agents/*.md`, `ai/memory-bank/*`, `ai/system/*` (6 agents, including Senior Project Manager, Evidence Collector, Senior Developer and UX Architect), `security/17-security-pattern.md`, the orchestrator's `project-specs/` and `project-tasks/`, and others.
+- **Agent names that don't exist (34):** mostly the orchestrator handing off by file name (`testing-reality-checker`, `project-manager-senior`, `EvidenceQA`, `ArchitectUX`, `RealityIntegration`, …) instead of the real name (`Reality Checker`, `Senior Project Manager`, …), plus invented roles ("Contracts Agent", "HR Agent", "Security Engineer").
+- **Tools or MCP servers not available (19):** for example Google Ads MCP (7 paid-media agents), a payments adapter, and Python libraries that aren't installed.
+- **Command-line tools not installed (31):** for example `lighthouse`, `drush`, `forge`, `fastlane` and `wasm-opt`. Most are expected to live in the user's own project.
+- **External services (44):** these can't be checked from here.
+
+The full list is in `manifest.json` → `agency_agent_dependency_review`. The repository doesn't patch these files, because they're unmodified upstream content.
 
 ## What was committed, and why
 
 | Item | Why |
 |---|---|
-| `.claude/agents/` (PR #2) | the only way to make the Agency Agents survive: the docs say user-scope agents don't carry over |
-| `system/capabilities/*.json` | the audited state: what loaded, which plugin each skill and agent depends on, and dependency status. A new session compares itself against it |
-| `system/bootstrap/README.md`, `system/bootstrap/capability_audit.py` | how a new session answers the eight bootstrap questions, plus a read-only script that does it |
-| `.gitignore`: `.claude/odoo-timesheet/` | keeps a plugin's per-session config, which has credential fields, out of commits in every clone |
+| `.claude/agents/` (PR #2) | the only verified way to make the Agency Agents survive |
+| `system/capabilities/*.json` | the audited state, so a new session can compare itself and see drift |
+| `system/bootstrap/README.md`, `capability_audit.py` | how a new session answers the bootstrap questions; verified to run in the fresh probe session |
+| `.gitignore`: `.claude/odoo-timesheet/` | keeps a plugin's per-session config, which has credential fields, out of every clone |
 
 **Deliberately not committed:**
 
-- **Plugin implementation files.** Plugins are recorded by name, version, marketplace and homepage; the account restores them.
-- **Plugin directory IDs.** These might identify this account's installs rather than catalog entries.
-- **Credentials and auth state.** No values or tokens were written; this includes `~/.claude.json`, `.npmrc`, `.aws`, `.boto` and `.cognee/.env`.
-- **Account and organization IDs.** These are redacted to `<account>`.
+- **Plugin implementation files.** Only name, version, marketplace and homepage are recorded.
+- **Plugin directory IDs.** These might identify this account's installs.
+- **Credentials and auth state.** No values or tokens; this includes `~/.claude.json`, `.npmrc`, `.aws`, `.boto` and `.cognee/.env`.
+- **Account and organization IDs.** These are redacted.
 - **MCP URL paths and headers.** Only scheme and host are recorded.
 - **Cognee memory contents.**
 
-## PR #2 verification
-
-Checked against `origin/claude/add-agency-agents` at commit `9fedd81`:
-
-| Check | Result |
-|---|---|
-| Location | all 283 added paths are directly under `.claude/agents/` (282 `.md` and `LICENSE.agency-agents`). Nothing outside it, nothing nested |
-| Parsing | all 282 frontmatter blocks parse as YAML mappings (PyYAML 6.0.1), each with non-empty `name` and `description` and a non-trivial body |
-| Unique names | 282 distinct `name` values, case-insensitive. None collides with a built-in agent name; plugin agents are namespaced `plugin:agent` |
-| `tools:` fields | 17 agents restrict tools, all to real tool names (`Read`, `Write`, `Edit`, `Bash`, `WebFetch`, `WebSearch`) |
-| Secrets | no real credentials. Four scanner hits are teaching examples: a 20-character fake `sk-proj-…` key in a "what not to do" code sample (`security-ai-generated-code-auditor.md:72`), and three `-----BEGIN … PRIVATE KEY-----` header lines with no key material, used as detection-rule patterns (`security-senior-secops.md:46-48`) |
-| Local dependencies | **one dangling dependency:** `./qa-playwright-capture.sh` is called as an operational step by `testing-evidence-collector.md:44`, `testing-reality-checker.md:63` and `project-manager-senior.md:97`, but exists neither in this repository nor in the upstream repository. Other path-like references are illustrative code for the user's own project. Four agents declare external `services` in frontmatter (UIZZE, Gemini/TikTok/Instagram APIs, Wechatsync/xiaohongshu-mcp/biliup, Xquik); these are external accounts, not local files. See the semantic review below |
-
-<!-- DEPENDENCY-REVIEW -->
-
-## Verified, not just listed
-
-| Capability | Verified how |
-|---|---|
-| `github` MCP | created PR #2, read its state, checks and comments, listed Actions runs |
-| `claude-code-remote` MCP | read platform docs, read the session and environment, scheduled a check-in, subscribed to PR #2 |
-| `workflow-authoring` skill | loaded by command |
-| `aspiration-self-monitoring` skill | injected by its hook every turn |
-
-<!-- SMOKE-TESTS -->
-
-Every other skill, agent and connector is `available` but `verified: false`. None of the 13 connected claude.ai connectors was called in this session.
-
 ## Decisions for the account owner
 
-1. **Merge PR #2.** This is the single change that keeps the 282 Agency Agents.
-2. **Network policy:** keep **Trusted** and accept 132 degraded plugins, or switch to **Custom** and allow the specific hosts you want (`manifest.json` → `blocked_hosts` has all 180). Every host you allow is outbound access for every session in the environment.
-3. **Sign-ins and credentials:** Datadog, BigQuery and GitLab need OAuth. TwelveLabs, Azure DevOps, CockroachDB, AlloyDB and others need keys, which go in as network secrets, never in the repository.
-4. **Memory:** Cognee's store is lost with each VM. Options: point it at a hosted Cognee instance (needs its host allowed and a credential), back it up from a setup script, or treat it as per-session scratch.
-5. **Noise:** consider disabling `claude-tab-fix` on claude.ai (its hook fails on every Bash call here), and plugins you don't use.
-6. **Upstream issue:** `qa-playwright-capture.sh` is missing from the Agency Agents project. Report it upstream, or drop those steps when using the three agents.
+1. **Merge PR #2.** Until then, `main` has no Agency Agents.
+2. **Plugins:** confirm from a fresh session opened in the Claude app (run `python3 system/bootstrap/capability_audit.py`) whether the 344 plugins arrive. If they don't, the 2,459 plugin skills and 226 plugin agents aren't part of the persistent capability set.
+3. **The "Install verbalized-sampling" scheduled task:** review and probably delete it (standing token, 11 connector grants).
+4. **Memory:** Cognee is local-only and, in practice, never saved this session. Pick a durable memory: committed decision logs in the repository, a hosted store, or nothing. Don't treat it as authoritative.
+5. **Network policy:** keep **Trusted** and accept 131 degraded plugins, or allow specific hosts (`manifest.json` → `blocked_hosts`).
+6. **Credentials and sign-ins:** Datadog, BigQuery, GitLab and Meta Ads need OAuth. Keyed services need network secrets, never committed.
+7. **Plugin hygiene:** about 344 plugins add context cost to every turn and run hooks as you, and their versions change without review. Disable what you don't use, especially `claude-tab-fix`, whose hook fails on every call.
