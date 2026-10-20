@@ -91,6 +91,10 @@ def cmd_evidence(label, command):
     # The command is written to the public meta.json, so it must not carry identifiers either.
     if find_leaks(" ".join(command)):
         raise SystemExit(f"refusing: the command matches {find_leaks(' '.join(command))}")
+    # Record what was tested before running it; a long command can outlast a commit.
+    git_head = _git("rev-parse", "HEAD")
+    # Evidence written by earlier runs doesn't count as a change to what was tested.
+    git_dirty = bool(_git("status", "--porcelain", "--", ".", ":!system/governance/evidence"))
     started = _now()
     proc = subprocess.run(command, cwd=REPO, capture_output=True, check=False)
     finished = _now()
@@ -112,9 +116,8 @@ def cmd_evidence(label, command):
         "exit_code": proc.returncode,
         "started": started,
         "finished": finished,
-        "git_head": _git("rev-parse", "HEAD"),
-        # Evidence written by earlier runs doesn't count as a change to what was tested.
-        "git_dirty": bool(_git("status", "--porcelain", "--", ".", ":!system/governance/evidence")),
+        "git_head": git_head,
+        "git_dirty": git_dirty,
         "output_rewriting_plugin_disabled": os.environ.get("TOKEN_OPTIMIZER_DISABLED") == "1",
         "files": {
             name: {"sha256": _sha256(data), "bytes": len(data)} for name, data in outputs.items()

@@ -1,0 +1,27 @@
+{
+ "command": [
+  "bash",
+  "-c",
+  "V=system/governance/.restricted/pkg-venv; rm -rf $V; python3 --version; python3 -m venv $V && $V/bin/pip install -q -e . && $V/bin/python -c \"import importlib.metadata as m; print({p: m.version(p) for p in [\\\"numpy\\\", \\\"pyarrow\\\", \\\"datasets\\\", \\\"verbalized-sampling\\\"]})\" && $V/bin/python -c \"import verbalized_sampling; print(\\\"import ok\\\")\""
+ ],
+ "exit_code": 1,
+ "files": {
+  "stderr.txt": {
+   "bytes": 3296,
+   "sha256": "b0e90996adb035eaa75294d463f75abbdc07ef3355b15ca8b898350f308ce3ea"
+  },
+  "stdout.txt": {
+   "bytes": 109,
+   "sha256": "cc85bdab7975015066985a236c42a2f164650671f09f98f5fbcbc1f6e5ce17f4"
+  }
+ },
+ "finished": "2026-10-20T19:32:59+00:00",
+ "git_dirty": false,
+ "git_head": "f035933aa0d4fc5e7a9b4d413a0072544ce644c1",
+ "id": "20261020T192351Z-package-install-import",
+ "label": "package-install-import",
+ "output_rewriting_plugin_disabled": true,
+ "restricted": false,
+ "restricted_reason": [],
+ "started": "2026-10-20T19:23:51+00:00"
+}
