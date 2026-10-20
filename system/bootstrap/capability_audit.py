@@ -51,7 +51,7 @@ PERSISTENCE = {
 }
 
 # Capabilities this session actually exercised (verified = ran and returned a real result).
-# Update by hand after a smoke test; the check mode reports anything listed here that is missing.
+# Maintained by hand after a smoke test; nothing measures it automatically.
 VERIFIED = {
     "mcp": {
         "claude-code-remote": (
@@ -598,18 +598,30 @@ def build(state, transcript_path):
         }
     )
     platform_mcp = {"github", "claude-code-remote"}
-    connectors = []
-    for name in sorted(set(connector_servers) | platform_mcp):
-        connectors.append(
-            {
-                "name": name,
-                "kind": "platform" if name in platform_mcp else "claude.ai connector",
-                "persistence": PERSISTENCE["account"],
-                "status": "connected",
-                "verified": name in VERIFIED["mcp"],
-                "verification_note": VERIFIED["mcp"].get(name),
-            }
-        )
+    # This repository is public: record platform servers by name, but the account's own claude.ai
+    # connectors only as a count, because their names reveal which personal services are linked.
+    account_connectors = sorted(set(connector_servers) - platform_mcp)
+    connectors = [
+        {
+            "name": name,
+            "kind": "platform",
+            "persistence": PERSISTENCE["account"],
+            "status": "connected",
+            "verified": name in VERIFIED["mcp"],
+            "verification_note": VERIFIED["mcp"].get(name),
+        }
+        for name in sorted(platform_mcp)
+    ]
+    connectors.append(
+        {
+            "name": f"{len(account_connectors)} claude.ai connectors (names withheld)",
+            "kind": "claude.ai connector",
+            "persistence": PERSISTENCE["account"],
+            "status": "connected",
+            "verified": False,
+            "verification_note": "list them at https://claude.ai/customize/connectors",
+        }
+    )
 
     manifest = {
         "schema_version": 1,
@@ -637,7 +649,10 @@ def build(state, transcript_path):
             "mcp_servers_failed": len(state["failed_mcp"]),
             "mcp_servers_failed_by_error": dict(Counter(state["failed_mcp"].values())),
             "mcp_servers_needing_auth": sorted(state["needs_auth_mcp"]),
-            "connectors_connected": [c["name"] for c in connectors],
+            "connectors_connected": {
+                "platform": sorted(platform_mcp),
+                "claude_ai_connectors": len(account_connectors),
+            },
         },
         "plugins": plugin_summary,
         "hook_errors": [
@@ -664,17 +679,32 @@ def build(state, transcript_path):
 # email addresses, session/trigger IDs and common credential shapes.
 LEAK_PATTERNS = {
     "account_dir": r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_[0-9a-f-]{36}",
-    "uuid": r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b",
+    "uuid": r"(?i)\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b",
     "email": r"\b[\w.+-]+@[\w-]+\.[\w.]+\b",
     "session_or_trigger_id": r"\b(session|cse|trig|env)_01[A-Za-z0-9]{10,}",
     "anthropic_key": r"\bsk-ant-[A-Za-z0-9_-]{6,}",
     "openai_key": r"\bsk-(proj-)?[A-Za-z0-9_-]{20,}",
-    "github_token": r"\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}",
+    "github_token": r"\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}|\bgithub_pat_[A-Za-z0-9_]{20,}",
+    "slack_token": r"\bxox[abposr]-[A-Za-z0-9-]{10,}",
+    "google_api_key": r"\bAIza[0-9A-Za-z_-]{30,}",
+    "stripe_key": r"\b(sk|rk|pk)_(live|test)_[0-9A-Za-z]{16,}",
+    "private_key": r"-----BEGIN [A-Z ]*PRIVATE KEY-----",
+    "bearer_token": r"(?i)\bbearer\s+[A-Za-z0-9._~+/-]{20,}",
     "aws_key": r"\b(AKIA|ASIA)[0-9A-Z]{16}\b",
     "jwt": r"\beyJ[A-Za-z0-9_-]{10,}\.eyJ",
     "url_credentials": r"https?://[^/\s:@\"]+:[^/\s:@\"]+@",
     "url_secret_param": r"[?&](key|token|api_key|apikey|secret|sig|access_token)=",
 }
+
+
+DOCS_TO_SCAN = (
+    "SYSTEM-CAPABILITIES.md",
+    "system/bootstrap/README.md",
+    "system/capabilities/manifest.json",
+    "system/capabilities/plugins.json",
+    "system/capabilities/skills.json",
+    "system/capabilities/agents.json",
+)
 
 
 def find_leaks(text):
@@ -786,7 +816,22 @@ def check(manifest, plugins, skills, agents):
     repo_agents = scan_repo_agents()
     bad = [a for a in repo_agents if a["error"]]
     print(f"  repo .claude/agents: {len(repo_agents)} definitions, {len(bad)} unparseable")
-    return 0
+    leaks = {}
+    for rel in DOCS_TO_SCAN:
+        path = os.path.join(REPO, rel)
+        if os.path.exists(path):
+            with open(path, encoding="utf-8") as fh:
+                found = find_leaks(fh.read())
+            if found:
+                leaks[rel] = found
+    print(f"  identifier/credential patterns in committed docs: {leaks or 'none'}")
+    drifted = any(rec_totals.get(k) != cur.get(k) for k in ("skills_loaded", "agents_loaded"))
+    missing = (rec_agents - cur_agents) or (rec_skills - cur_skills)
+    # Non-zero when the session lacks recorded capabilities, a definition is broken or a doc leaks,
+    # so the check can gate a script or CI step.
+    status = 1 if (drifted or missing or bad or leaks) else 0
+    print(f"  result: {'DRIFT OR PROBLEM FOUND' if status else 'matches the manifest'}")
+    return status
 
 
 def main():

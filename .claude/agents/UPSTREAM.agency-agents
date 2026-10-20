@@ -1,0 +1,8 @@
+Source:   https://github.com/msitarzewski/agency-agents
+Commit:   4e3ac3ca6604c75113f52c695dbddcc7af928b46
+License:  MIT (see LICENSE.agency-agents)
+Files:    the 282 *.md agent definitions in this directory, unmodified
+
+Regenerate from a clone of the source at the commit you want:
+  ./scripts/install.sh --tool claude-code --path <this repo>/.claude/agents
+then review and commit the diff. This file has no .md extension, so Claude Code does not load it as an agent.

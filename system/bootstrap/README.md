@@ -16,6 +16,9 @@ This only reads. It compares the current session with `system/capabilities/manif
 - which binaries that plugins expect are missing from `PATH`
 - which plugin hooks failed in this session
 - whether every agent definition in `.claude/agents/` still parses
+- whether any committed capability file or doc matches an identifier or credential pattern
+
+It exits **0** when the session matches the manifest and **1** when skills or agents are missing, a definition is broken, or a doc leaks, so it can gate a script or CI step.
 
 To refresh the recorded state after a deliberate change, run it with `--write` and commit the regenerated files. Two guards protect the record:
 
@@ -80,7 +83,7 @@ MCP connection results are recorded per server. The script prints the current fa
 | `CONNECTION_CLOSED`, `CONNECT_TIMEOUT`, `ECONNREFUSED` | the server started but didn't complete the handshake, or expects a local service (`localhost`) that isn't running | case by case; see `plugins.json` |
 | needs auth | an OAuth sign-in is required | the account owner signs in. Claude can't start OAuth from a session |
 
-claude.ai connectors (Gmail, Google Calendar, Google Drive, Canva, Lovable, Shopify, Splice, Spotify, Vercel, Zapier, Claude Docs, Courtroom5, Granted) route through Anthropic's servers, so the network policy doesn't affect them.
+claude.ai connectors route through Anthropic's servers, so the network policy doesn't affect them. Their names are deliberately not recorded in this public repository; list them at https://claude.ai/customize/connectors.
 
 ### Which capabilities have degraded
 
@@ -91,9 +94,9 @@ A capability counts as degraded when it is still listed but its plugin's `depend
 These come back in any new cloud session for the same account, with nothing to do. Each was verified by the fresh-session probe:
 
 - Claude Code built-in skills (15, plus `workflow-authoring` while Workflow/ultracode is on) and the 6 built-in agents
-- the cloud-image skill and the platform hook scripts in `~/.claude/` (git check, reply gate)
+- the cloud-image skill and the platform's Stop git-check hook (two more platform hook scripts are written but not wired)
 - the 19 claude.ai account skills
-- claude.ai connectors that are already connected on the account
+- claude.ai connectors that are already connected on the account (11 observed in the fresh probe; others may need re-authorization)
 - the environment's settings (network level, environment variables; there is no setup script)
 - everything committed to the branch the session clones: `.claude/agents/` (after PR #2 merges), `system/`, `.gitignore`
 
@@ -112,4 +115,4 @@ These need the account owner. Claude must not do them on its own:
 5. **Add an environment setup script** (none exists today) to install missing binaries (`toolbox`, `adb-mcp`, `vulca-mcp`, `claude-tab-fix`) or to back up memory.
 6. **Enable or disable plugins and skills** on claude.ai. That changes what every future session loads.
 7. **Decide about Cognee memory**: it currently lives only on the VM (see `SYSTEM-CAPABILITIES.md`).
-8. **Review the account's scheduled tasks**, especially "Install verbalized-sampling", which holds an API token and 11 connector grants and survives every VM.
+8. **Review the account's scheduled tasks** at https://claude.ai/code/routines. One holds a standing API token with broad connector grants and survives every VM.

@@ -1,11 +1,11 @@
 {
  "schema_version": 1,
- "generated_at": "2026-10-20T17:21:12+00:00",
+ "generated_at": "2026-10-20T18:00:51+00:00",
  "generated_by": "system/bootstrap/capability_audit.py --write",
  "source": {
   "transcript_parsed": true,
   "transcript_file": "~/.claude/projects/<repo>/<session>.jsonl",
-  "mcp_status_snapshot_at": "2026-10-20T17:20:35.703Z",
+  "mcp_status_snapshot_at": "2026-10-20T17:59:05.506Z",
   "note": "Counts describe the session that generated this file. A different session may differ; run the check mode to compare."
  },
  "totals": {
@@ -39,24 +39,13 @@
    "plugin:finance:bigquery",
    "plugin:gitlab:gitlab"
   ],
-  "connectors_connected": [
-   "Canva",
-   "Claude_Docs",
-   "Courtroom5",
-   "Gmail",
-   "Google_Calendar",
-   "Google_Drive",
-   "Granted",
-   "Lovable",
-   "Shopify",
-   "Splice",
-   "Spotify",
-   "Vercel",
-   "Zapier",
-   "ccd_session",
-   "claude-code-remote",
-   "github"
-  ]
+  "connectors_connected": {
+   "platform": [
+    "claude-code-remote",
+    "github"
+   ],
+   "claude_ai_connectors": 14
+  }
  },
  "plugins": {
   "count": 342,
@@ -95,12 +84,17 @@
   {
    "hook": "PreToolUse:Bash",
    "message": "Failed with non-blocking status code: /bin/sh: 1: claude-tab-fix: not found",
-   "count": 95
+   "count": 112
   },
   {
    "hook": "PreToolUse:Write",
    "message": "Failed with non-blocking status code: /bin/sh: 1: claude-tab-fix: not found",
-   "count": 4
+   "count": 5
+  },
+  {
+   "hook": "PostToolUse:Read",
+   "message": "Failed with non-blocking status code: /bin/sh: 1: claude-tab-fix: not found",
+   "count": 1
   }
  ],
  "blocked_hosts": [
@@ -287,118 +281,6 @@
  ],
  "connectors": [
   {
-   "name": "Canva",
-   "kind": "claude.ai connector",
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "status": "connected",
-   "verified": false,
-   "verification_note": null
-  },
-  {
-   "name": "Claude_Docs",
-   "kind": "claude.ai connector",
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "status": "connected",
-   "verified": false,
-   "verification_note": null
-  },
-  {
-   "name": "Courtroom5",
-   "kind": "claude.ai connector",
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "status": "connected",
-   "verified": false,
-   "verification_note": null
-  },
-  {
-   "name": "Gmail",
-   "kind": "claude.ai connector",
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "status": "connected",
-   "verified": false,
-   "verification_note": null
-  },
-  {
-   "name": "Google_Calendar",
-   "kind": "claude.ai connector",
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "status": "connected",
-   "verified": false,
-   "verification_note": null
-  },
-  {
-   "name": "Google_Drive",
-   "kind": "claude.ai connector",
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "status": "connected",
-   "verified": false,
-   "verification_note": null
-  },
-  {
-   "name": "Granted",
-   "kind": "claude.ai connector",
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "status": "connected",
-   "verified": false,
-   "verification_note": null
-  },
-  {
-   "name": "Lovable",
-   "kind": "claude.ai connector",
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "status": "connected",
-   "verified": false,
-   "verification_note": null
-  },
-  {
-   "name": "Shopify",
-   "kind": "claude.ai connector",
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "status": "connected",
-   "verified": false,
-   "verification_note": null
-  },
-  {
-   "name": "Splice",
-   "kind": "claude.ai connector",
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "status": "connected",
-   "verified": false,
-   "verification_note": null
-  },
-  {
-   "name": "Spotify",
-   "kind": "claude.ai connector",
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "status": "connected",
-   "verified": false,
-   "verification_note": null
-  },
-  {
-   "name": "Vercel",
-   "kind": "claude.ai connector",
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "status": "connected",
-   "verified": false,
-   "verification_note": null
-  },
-  {
-   "name": "Zapier",
-   "kind": "claude.ai connector",
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "status": "connected",
-   "verified": false,
-   "verification_note": null
-  },
-  {
-   "name": "ccd_session",
-   "kind": "claude.ai connector",
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "status": "connected",
-   "verified": false,
-   "verification_note": null
-  },
-  {
    "name": "claude-code-remote",
    "kind": "platform",
    "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
@@ -413,6 +295,14 @@
    "status": "connected",
    "verified": true,
    "verification_note": "create_pull_request, pull_request_read and actions_list returned results (2026-10-20)"
+  },
+  {
+   "name": "14 claude.ai connectors (names withheld)",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": "list them at https://claude.ai/customize/connectors"
   }
  ],
  "classes": {
@@ -472,7 +362,7 @@
   {
    "id": 7,
    "source": "plugin hooks",
-   "count": 106,
+   "count": 97,
    "class": "ACCOUNT/PLUGIN-PERSISTENT",
    "restore": "conditional: present in the app-started audit session, absent in an API-created fresh session (2026-10-20 probe); cloud-session sync is not documented",
    "restored_in_fresh_cloud_session": "conditional"
@@ -522,14 +412,17 @@
    "count": 3,
    "class": "ACCOUNT/PLUGIN-PERSISTENT",
    "layer": "platform",
-   "restore": "automatic"
+   "restore": "automatic",
+   "active": 1,
+   "note": "all 3 scripts are written at every start, but only the Stop git-check hook is wired (launcher-settings.json)"
   },
   {
    "id": 14,
-   "source": "claude.ai connectors",
-   "count": 13,
+   "source": "claude.ai connectors (names withheld)",
+   "count": 14,
    "class": "ACCOUNT/PLUGIN-PERSISTENT",
-   "restore": "automatic while connected on the account"
+   "restore": "automatic while connected on the account",
+   "verified_in_probe": 11
   },
   {
    "id": 15,
@@ -559,13 +452,15 @@
    "id": 18,
    "source": "Cognee memory store (~/.cognee, ~/.cognee-plugin, http://localhost:8011)",
    "class": "MACHINE-PERSISTENT ONLY",
-   "restore": "lost; plugin reinstalls empty"
+   "restore": "lost; plugin reinstalls empty",
+   "note": "the store held essentially nothing beyond initialization; 600+ buffered prompt/answer items were never indexed. The underlying conversation survives server-side"
   },
   {
    "id": 19,
    "source": "plugin runtime data (~/.claude/plugins/data/*, ~/.delimit, ~/.lbdb, caches)",
    "class": "MACHINE-PERSISTENT ONLY",
-   "restore": "lost"
+   "restore": "lost",
+   "note": "actual plugin runtime state is 3 files / 348 bytes; ~/.delimit (122 MB) and ~/.lbdb are reinstallable code, not data"
   },
   {
    "id": 20,
@@ -601,33 +496,16 @@
    "id": 25,
    "source": "account scheduled tasks",
    "class": "ACCOUNT/PLUGIN-PERSISTENT",
-   "restore": "server-side; survive VM deletion",
-   "items": [
-    {
-     "name": "Install verbalized-sampling",
-     "enabled": true,
-     "trigger": "API only",
-     "created": "2026-06-04",
-     "holds": "an API token and grants for 11 connectors including Meta-Ads",
-     "risk": "standing credential with broad connector grants; review or delete"
-    },
-    {
-     "name": "Re-check autocut PR #1 (daily)",
-     "enabled": true,
-     "bound_to": "another session"
-    },
-    {
-     "name": "Re-check PR #2 (agency agents)",
-     "enabled": false,
-     "ended": "run_once_fired"
-    }
-   ]
+   "count": 3,
+   "enabled": 2,
+   "restore": "server-side; they survive VM deletion and keep firing",
+   "note": "one enabled task holds a standing API token with broad connector grants; details are withheld from this public repository. Review them at https://claude.ai/code/routines"
   },
   {
    "id": 26,
-   "source": "Meta Ads claude.ai connector",
+   "source": "one claude.ai connector needing re-authorization",
    "class": "ACCOUNT/PLUGIN-PERSISTENT",
-   "restore": "present but needs re-authorization on claude.ai"
+   "restore": "present on the account but unusable until re-authorized"
   },
   {
    "id": 27,
@@ -645,7 +523,8 @@
    "id": 29,
    "source": "session transcript ~/.claude/projects/<repo>/<session>.jsonl",
    "class": "MACHINE-PERSISTENT ONLY",
-   "restore": "conversation restored only when this same session is reopened"
+   "restore": "conversation restored only when this same session is reopened",
+   "note": "only the local copy is VM-bound; the conversation is stored server-side and can be reopened or teleported"
   }
  ],
  "pr2_verification": {
@@ -755,12 +634,24 @@
    "unlocks": "memory surviving VM reclamation"
   },
   {
-   "action": "review or delete the 'Install verbalized-sampling' scheduled task",
-   "unlocks": "removes a standing API token with 11 connector grants"
-  },
-  {
    "action": "confirm plugin sync in a fresh app-started session",
    "unlocks": "knowing whether 2,459 plugin skills and 226 plugin agents are part of the persistent set"
+  },
+  {
+   "action": "review account scheduled tasks",
+   "unlocks": "removes a standing API token with broad connector grants (details withheld here)"
+  },
+  {
+   "action": "scope tools for the vendored agents",
+   "unlocks": "265 of 282 Agency Agents have no tools: field and inherit every tool, including connector write tools"
+  },
+  {
+   "action": "disable agentone-token-compression or accept unverifiable evidence",
+   "unlocks": "its PostToolUse hook replaces tool output (updatedToolOutput), so recorded evidence may be compressed or cached"
+  },
+  {
+   "action": "mark PR #2 ready, resolve its .gitignore conflict with PR #1 if both merge, then merge",
+   "unlocks": "Agency Agents and this audit on main"
   }
  ],
  "cold_start_probe": {
@@ -784,11 +675,12 @@
     "agent-protocols:code-reviewer": "not found"
    },
    "mcp_failures_at_start": 0,
-   "connectors": "Gmail, Google Calendar, Google Drive, Zapier, Claude Docs, Shopify, Spotify, Canva, Vercel, Lovable, Splice, claude-code-remote, github; Meta Ads needs auth",
+   "connectors": "11 claude.ai connectors plus github and claude-code-remote connected; one connector needs auth (names withheld)",
    "capability_audit_check": "ran; reported 226 agents and 2,460 skills missing versus the manifest",
    "missing_binaries": "claude-tab-fix, adb-mcp, toolbox, vulca-mcp"
   },
-  "caveat": "the probe was API-created; a session the account owner opens from the Claude app may still receive synced plugins, as this audit session did at 07:04. Not verified for a fresh app-started session."
+  "caveat": "the probe was API-created; a session the account owner opens from the Claude app may still receive synced plugins, as this audit session did at 07:04. Not verified for a fresh app-started session.",
+  "note": "the probe ran an earlier version of capability_audit.py (commit ad2c6a6); the guarded version has only been run in the audit session. .claude/agents is unchanged since."
  },
  "verification": {
   "launch_tests_this_session": {
