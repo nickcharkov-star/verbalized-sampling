@@ -104,3 +104,6 @@ ablation_data/results/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Per-session config written by the odoo-timesheet Claude Code plugin; holds credential fields
+.claude/odoo-timesheet/

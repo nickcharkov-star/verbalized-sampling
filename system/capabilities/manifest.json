@@ -1,0 +1,670 @@
+{
+ "schema_version": 1,
+ "generated_at": "2026-10-20T08:10:31+00:00",
+ "generated_by": "system/bootstrap/capability_audit.py --write",
+ "source": {
+  "transcript_parsed": true,
+  "transcript_file": "~/.claude/projects/<repo>/<session>.jsonl",
+  "mcp_status_snapshot_at": "2026-10-20T07:46:05.613Z",
+  "note": "Counts describe the session that generated this file. A different session may differ; run the check mode to compare."
+ },
+ "totals": {
+  "skills_loaded": 2495,
+  "skills_by_source": {
+   "platform-image": 1,
+   "plugin": 2459,
+   "claude-code-builtin": 16,
+   "account-skill": 19
+  },
+  "agents_loaded": 514,
+  "agents_by_source": {
+   "plugin": 226,
+   "claude-code-builtin": 6,
+   "agency-agents": 282
+  },
+  "plugins_synced": 343,
+  "account_skills_synced": 19,
+  "repo_agents_committed": 282,
+  "mcp_servers_failed": 217,
+  "mcp_servers_failed_by_error": {
+   "ERR_PROXY_TUNNEL": 200,
+   "INVALID_CONFIG": 2,
+   "ENOENT": 6,
+   "CONNECTION_CLOSED": 5,
+   "ECONNREFUSED": 2,
+   "CONNECT_TIMEOUT": 2
+  },
+  "mcp_servers_needing_auth": [
+   "plugin:engineering:datadog",
+   "plugin:finance:bigquery",
+   "plugin:gitlab:gitlab"
+  ],
+  "connectors_connected": [
+   "Canva",
+   "Claude_Docs",
+   "Courtroom5",
+   "Gmail",
+   "Google_Calendar",
+   "Google_Drive",
+   "Granted",
+   "Lovable",
+   "Shopify",
+   "Splice",
+   "Spotify",
+   "Vercel",
+   "Zapier",
+   "claude-code-remote",
+   "github"
+  ]
+ },
+ "plugins": {
+  "count": 343,
+  "distinct_names": 339,
+  "names_synced_twice": [
+   "agentforce-adlc",
+   "apollo",
+   "govtribe",
+   "viralhunt"
+  ],
+  "by_marketplace": {
+   "anthropic-plugin-directory": 295,
+   "knowledge-work-plugins": 48
+  },
+  "names_with_loaded_skills": 301,
+  "names_with_loaded_agents": 52,
+  "with_mcp_servers": 167,
+  "by_dependency_status": {
+   "unavailable": 148,
+   "none": 175,
+   "unknown": 9,
+   "satisfied": 7,
+   "partially_unavailable": 4
+  }
+ },
+ "hook_errors": [
+  {
+   "hook": "SessionStart:startup",
+   "message": "Failed with non-blocking status code: cat: <plugin aws-startup-advisor>/scripts/startup-context.txt: No such file or directory",
+   "count": 1
+  },
+  {
+   "hook": "SessionStart:startup",
+   "message": "Hook output looks like a JSON object but is not valid JSON — JSON Parse error: Unterminated string. Emit the payload with a JSON encoder (jq, ConvertTo-Json, json.dumps) rather than string concatenati",
+   "count": 1
+  },
+  {
+   "hook": "PreToolUse:Bash",
+   "message": "Failed with non-blocking status code: /bin/sh: 1: claude-tab-fix: not found",
+   "count": 73
+  },
+  {
+   "hook": "PreToolUse:Write",
+   "message": "Failed with non-blocking status code: /bin/sh: 1: claude-tab-fix: not found",
+   "count": 3
+  }
+ ],
+ "blocked_hosts": [
+  "https://${dd_mcp_domain:-not-setup}",
+  "https://abracadabrax.app",
+  "https://admakeai.com",
+  "https://adobe-creativity.adobe.io",
+  "https://adwhispr.com",
+  "https://ai-inc.mailchimp.com",
+  "https://ai-inc.quickbooks.intuit.com",
+  "https://aictrl.dev",
+  "https://aiplan.greca.co",
+  "https://analysis.mcp.cloudinary.com",
+  "https://api.ahrefs.com",
+  "https://api.analytics.lseg.com",
+  "https://api.ayrshare.com",
+  "https://api.clay.com",
+  "https://api.definite.app",
+  "https://api.devexpress.com",
+  "https://api.dunsocial.com",
+  "https://api.fireflies.ai",
+  "https://api.githubcopilot.com",
+  "https://api.outreach.io",
+  "https://api.salesforce.com",
+  "https://api.socialstats.com",
+  "https://api.solveintelligence.com",
+  "https://api.techgc.co",
+  "https://api.tryatria.com",
+  "https://api.tuteliq.ai",
+  "https://api.val.town",
+  "https://api.yourbeckett.com",
+  "https://apiai.me",
+  "https://app.ampup.ai",
+  "https://app.companyos.cc",
+  "https://app.creativeclaw.co",
+  "https://app.dreambase.com",
+  "https://app.freelaw.ai",
+  "https://app.hex.tech",
+  "https://app.nowgetitdone.com",
+  "https://app.pendo.io",
+  "https://app.sync-socials.com",
+  "https://asset-management.mcp.cloudinary.com",
+  "https://boldstudios.io",
+  "https://business-api.tiktok.com",
+  "https://canalsegredosdodigital.com",
+  "https://claude-zohobooks.zohomcp.com",
+  "https://claude-zohocrm.zohomcp.com",
+  "https://claude-zohodesk.zohomcp.com",
+  "https://claude-zohoprojects.zohomcp.com",
+  "https://claude.concronex.com",
+  "https://cloudimanage.com",
+  "https://cockroachlabs.cloud",
+  "https://connector.scholargateway.ai",
+  "https://dabble.me",
+  "https://dev.virlo.ai",
+  "https://docs.daloopa.com",
+  "https://dslop.app",
+  "https://environment-config.mcp.cloudinary.com",
+  "https://gcal.mcp.claude.com",
+  "https://getyourjob.pro",
+  "https://gmail.mcp.claude.com",
+  "https://govtribe.com",
+  "https://hcls.mcp.claude.com",
+  "https://kfinance.kensho.com",
+  "https://manymotions.com",
+  "https://mcp-server.egnyte.com",
+  "https://mcp-us.zoom.us",
+  "https://mcp.3doptix.com",
+  "https://mcp.achriom.com",
+  "https://mcp.adaptlypost.com",
+  "https://mcp.adologyai.com",
+  "https://mcp.adspirer.com",
+  "https://mcp.agilehero.io",
+  "https://mcp.airwallex.com",
+  "https://mcp.aitopia.ai",
+  "https://mcp.aiven.live",
+  "https://mcp.alcbar.com",
+  "https://mcp.amplitude.com",
+  "https://mcp.animatedwebs.com",
+  "https://mcp.api.getguru.com",
+  "https://mcp.api.gusto.com",
+  "https://mcp.apollo.io",
+  "https://mcp.apollographql.com",
+  "https://mcp.appllama.io",
+  "https://mcp.arcads.ai",
+  "https://mcp.asana.com",
+  "https://mcp.atlan.com",
+  "https://mcp.atlassian.com",
+  "https://mcp.audiopod.ai",
+  "https://mcp.bigdata.com",
+  "https://mcp.box.com",
+  "https://mcp.buzzfy.co",
+  "https://mcp.cadbuildr.com",
+  "https://mcp.calendly.com",
+  "https://mcp.canva.com",
+  "https://mcp.charmshots.com",
+  "https://mcp.clickup.com",
+  "https://mcp.clientgen.app",
+  "https://mcp.close.com",
+  "https://mcp.commonroom.io",
+  "https://mcp.consensus.app",
+  "https://mcp.crunchbase.com",
+  "https://mcp.daloopa.com",
+  "https://mcp.datalabs.store",
+  "https://mcp.demovela.com",
+  "https://mcp.docusign.com",
+  "https://mcp.elmah.io",
+  "https://mcp.emergent.sh",
+  "https://mcp.eu.amplitude.com",
+  "https://mcp.figma.com",
+  "https://mcp.freee.co.jp",
+  "https://mcp.gong.io",
+  "https://mcp.grafana.com",
+  "https://mcp.granola.ai",
+  "https://mcp.honeycomb.io",
+  "https://mcp.hubspot.com",
+  "https://mcp.intercom.com",
+  "https://mcp.jiyumarketing.com",
+  "https://mcp.k.owkin.com",
+  "https://mcp.klaviyo.com",
+  "https://mcp.labs.ringcentral.com",
+  "https://mcp.linear.app",
+  "https://mcp.lusha.com",
+  "https://mcp.miro.com",
+  "https://mcp.monday.com",
+  "https://mcp.myob.com",
+  "https://mcp.nimbleway.com",
+  "https://mcp.notion.com",
+  "https://mcp.otter.ai",
+  "https://mcp.pagerduty.com",
+  "https://mcp.paypal.com",
+  "https://mcp.platform.opentargets.org",
+  "https://mcp.prisma.io",
+  "https://mcp.pscale.dev",
+  "https://mcp.ramp.com",
+  "https://mcp.sanity.io",
+  "https://mcp.services.biorender.com",
+  "https://mcp.similarweb.com",
+  "https://mcp.slack.com",
+  "https://mcp.snap-closet.com",
+  "https://mcp.squareup.com",
+  "https://mcp.stripe.com",
+  "https://mcp.supermetrics.com",
+  "https://mcp.sustain-app.com",
+  "https://mcp.synapse.org",
+  "https://mcp.syndic8.io",
+  "https://mcp.trello.com",
+  "https://mcp.uk.definely.com",
+  "https://mcp.unifapi.com",
+  "https://mcp.upload-post.com",
+  "https://mcp.vaadin.com",
+  "https://mcp.videodb.io",
+  "https://mcp.vidiq.com",
+  "https://mcp.waldo.fyi",
+  "https://mcp.whimsical.com",
+  "https://mcp.windsor.ai",
+  "https://mcp.wix.com",
+  "https://mcp.xero.com",
+  "https://mcp.zapier.com",
+  "https://mcp.zoom.us",
+  "https://mcp.zoominfo.com",
+  "https://mediaflows.mcp.cloudinary.com",
+  "https://microsoft365.mcp.claude.com",
+  "https://planner.8digitcreative.com",
+  "https://present.aitho.app",
+  "https://pubmed.mcp.claude.com",
+  "https://qt-docs-mcp.qt.io",
+  "https://sellingpartner-ai.amazon.com",
+  "https://setup.shopify.com",
+  "https://structured-metadata.mcp.cloudinary.com",
+  "https://svg.new",
+  "https://telepath.lemma.company",
+  "https://temporal.mcp.kapa.ai",
+  "https://transcribe.so",
+  "https://trysonar.app",
+  "https://uxkin.com",
+  "https://versedb.com",
+  "https://viewprinter.tech",
+  "https://vocuno.com",
+  "https://www.a1.gallery",
+  "https://www.expensify.com",
+  "https://xdloom.com",
+  "https://xpost.to"
+ ],
+ "connectors": [
+  {
+   "name": "Canva",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": null
+  },
+  {
+   "name": "Claude_Docs",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": null
+  },
+  {
+   "name": "Courtroom5",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": null
+  },
+  {
+   "name": "Gmail",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": null
+  },
+  {
+   "name": "Google_Calendar",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": null
+  },
+  {
+   "name": "Google_Drive",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": null
+  },
+  {
+   "name": "Granted",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": null
+  },
+  {
+   "name": "Lovable",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": null
+  },
+  {
+   "name": "Shopify",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": null
+  },
+  {
+   "name": "Splice",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": null
+  },
+  {
+   "name": "Spotify",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": null
+  },
+  {
+   "name": "Vercel",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": null
+  },
+  {
+   "name": "Zapier",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": null
+  },
+  {
+   "name": "claude-code-remote",
+   "kind": "platform",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": true,
+   "verification_note": "read_documentation, get_session, list_environments, send_later and subscribe_pr_activity returned results (2026-10-20)"
+  },
+  {
+   "name": "github",
+   "kind": "platform",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": true,
+   "verification_note": "create_pull_request, pull_request_read and actions_list returned results (2026-10-20)"
+  }
+ ],
+ "classes": {
+  "REPOSITORY-PERSISTENT": "Committed to the git repository; present in any clone of the branch the session checks out.",
+  "ACCOUNT/PLUGIN-PERSISTENT": "Restored by the claude.ai account or the Claude Code platform at session start (account-synced plugins and skills, connectors, environment settings, built-ins).",
+  "MACHINE-PERSISTENT ONLY": "Exists only on this VM's disk; lost when the VM is reclaimed.",
+  "SESSION-ONLY": "Bound to this session ID or this session's processes; a new session does not have it.",
+  "UNKNOWN": "Could not be determined from inside the session."
+ },
+ "persistence_sources": [
+  {
+   "id": 1,
+   "source": "repo .claude/agents/ (Agency Agents)",
+   "count": 282,
+   "class": "REPOSITORY-PERSISTENT",
+   "restore": "automatic for sessions that clone a branch containing it; main has it only after PR #2 merges",
+   "pending": "PR #2 merge"
+  },
+  {
+   "id": 2,
+   "source": "repo system/, SYSTEM-CAPABILITIES.md, .gitignore entry",
+   "class": "REPOSITORY-PERSISTENT",
+   "restore": "automatic after merge"
+  },
+  {
+   "id": 3,
+   "source": "repo CLAUDE.md, .claude/settings.json, .mcp.json, .claude/skills, .claude/rules",
+   "count": 0,
+   "class": "REPOSITORY-PERSISTENT",
+   "restore": "none exist"
+  },
+  {
+   "id": 4,
+   "source": "account-synced plugins ~/.claude/plugins/synced/<account>/",
+   "count": 343,
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "restore": "automatic at session start"
+  },
+  {
+   "id": 5,
+   "source": "plugin skills",
+   "count": 2459,
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "restore": "with plugins"
+  },
+  {
+   "id": 6,
+   "source": "plugin agents",
+   "count": 226,
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "restore": "with plugins"
+  },
+  {
+   "id": 7,
+   "source": "plugin hooks",
+   "count": 93,
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "restore": "with plugins"
+  },
+  {
+   "id": 8,
+   "source": "plugin MCP server definitions",
+   "count": 359,
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "restore": "with plugins; connection result decided per session"
+  },
+  {
+   "id": 9,
+   "source": "claude.ai account skills (anthropic-skills:*)",
+   "count": 19,
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "restore": "automatic"
+  },
+  {
+   "id": 10,
+   "source": "Claude Code built-in skills",
+   "count": 16,
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "layer": "platform",
+   "restore": "automatic; workflow-authoring only while Workflow/ultracode is on"
+  },
+  {
+   "id": 11,
+   "source": "Claude Code built-in agents",
+   "count": 6,
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "layer": "platform",
+   "restore": "automatic"
+  },
+  {
+   "id": 12,
+   "source": "cloud-image skill session-start-hook",
+   "count": 1,
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "layer": "platform",
+   "restore": "automatic"
+  },
+  {
+   "id": 13,
+   "source": "platform hook scripts in ~/.claude (git check, reply gate, prompt reminder)",
+   "count": 3,
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "layer": "platform",
+   "restore": "automatic"
+  },
+  {
+   "id": 14,
+   "source": "claude.ai connectors",
+   "count": 13,
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "restore": "automatic while connected on the account"
+  },
+  {
+   "id": 15,
+   "source": "platform MCP servers github, claude-code-remote",
+   "count": 2,
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "layer": "platform",
+   "restore": "automatic"
+  },
+  {
+   "id": 16,
+   "source": "cloud environment Default (network Trusted, setup script, env vars, network secrets)",
+   "count": 1,
+   "class": "ACCOUNT/PLUGIN-PERSISTENT",
+   "content_class": "UNKNOWN",
+   "restore": "automatic; setup-script contents not readable from inside a session"
+  },
+  {
+   "id": 17,
+   "source": "user-scope agents ~/.claude/agents (Agency Agents copy)",
+   "count": 282,
+   "class": "MACHINE-PERSISTENT ONLY",
+   "restore": "lost"
+  },
+  {
+   "id": 18,
+   "source": "Cognee memory store (~/.cognee, ~/.cognee-plugin, http://localhost:8011)",
+   "class": "MACHINE-PERSISTENT ONLY",
+   "restore": "lost; plugin reinstalls empty"
+  },
+  {
+   "id": 19,
+   "source": "plugin runtime data (~/.claude/plugins/data/*, ~/.delimit, ~/.lbdb, caches)",
+   "class": "MACHINE-PERSISTENT ONLY",
+   "restore": "lost"
+  },
+  {
+   "id": 20,
+   "source": "plugin-written working-tree files (.claude/odoo-timesheet/config.json)",
+   "class": "MACHINE-PERSISTENT ONLY",
+   "restore": "recreated by the plugin; ignored by .gitignore"
+  },
+  {
+   "id": 21,
+   "source": ".git/info/exclude",
+   "class": "MACHINE-PERSISTENT ONLY",
+   "restore": "not part of a clone; replaced by .gitignore entry"
+  },
+  {
+   "id": 22,
+   "source": "MCP connection results and loaded tool list",
+   "class": "SESSION-ONLY",
+   "restore": "re-evaluated each session"
+  },
+  {
+   "id": 23,
+   "source": "PR #2 subscription, scheduled check-in, Workflow runs",
+   "class": "SESSION-ONLY",
+   "restore": "not carried to a new session"
+  },
+  {
+   "id": 24,
+   "source": "~/.claude/settings.json statusLine",
+   "class": "MACHINE-PERSISTENT ONLY",
+   "restore": "rewritten automatically by the cognee plugin hook"
+  }
+ ],
+ "pr2_verification": {
+  "branch": "claude/add-agency-agents",
+  "commit": "9fedd81",
+  "location": "all 283 added paths directly under .claude/agents/ (282 .md + LICENSE.agency-agents)",
+  "parse": "282/282 YAML frontmatter mappings with non-empty name and description (PyYAML 6.0.1)",
+  "unique_names": "282 distinct, case-insensitive; no collision with built-in agent names",
+  "secrets": "none; 4 scanner hits are teaching examples (20-char fake sk-proj key in a bad-practice sample; 3 private-key header lines without key material in detection rules)",
+  "dangling_local_dependencies": [
+   {
+    "reference": "./qa-playwright-capture.sh",
+    "files": [
+     "testing-evidence-collector.md:44",
+     "testing-reality-checker.md:63",
+     "project-manager-senior.md:97"
+    ],
+    "exists_in_repo": false,
+    "exists_upstream": false
+   }
+  ],
+  "external_services_declared": {
+   "design-ui-finish-gate-reviewer.md": [
+    "UIZZE"
+   ],
+   "marketing-carousel-growth-engine.md": [
+    "Gemini API",
+    "TikTok Content Posting API",
+    "Instagram content publishing",
+    "Upload-Post"
+   ],
+   "marketing-multi-platform-publisher.md": [
+    "Wechatsync",
+    "xiaohongshu-mcp",
+    "biliup"
+   ],
+   "marketing-x-twitter-intelligence-analyst.md": [
+    "Xquik"
+   ]
+  }
+ },
+ "restores_automatically": [
+  "Claude Code built-in skills and agents",
+  "cloud-image skill and platform hook scripts",
+  "343 account-synced plugins with their skills, agents, hooks and MCP definitions",
+  "19 claude.ai account skills",
+  "connected claude.ai connectors and platform MCP servers",
+  "environment settings",
+  "everything committed on the cloned branch",
+  "npx/uvx stdio MCP servers (packages re-downloaded from allowed registries)"
+ ],
+ "requires_founder_authorization": [
+  {
+   "action": "merge PR #2",
+   "unlocks": "282 Agency Agents on main"
+  },
+  {
+   "action": "change network access from Trusted to Custom with allowed hosts",
+   "unlocks": "up to 200 proxy-blocked MCP servers in 132 plugins",
+   "see": "blocked_hosts"
+  },
+  {
+   "action": "OAuth sign-in",
+   "unlocks": "plugin:engineering:datadog, plugin:finance:bigquery, plugin:gitlab:gitlab"
+  },
+  {
+   "action": "add credentials as network secrets / env vars",
+   "unlocks": "servers listing required_env_names in plugins.json"
+  },
+  {
+   "action": "edit environment setup script",
+   "unlocks": "missing binaries: adb-mcp, claude-tab-fix, toolbox, vulca-mcp (cmd is Windows-only)"
+  },
+  {
+   "action": "set plugin userConfig from a local Claude Code",
+   "unlocks": "accelbyte-ai-plugins, alloydb, alloydb-omni"
+  },
+  {
+   "action": "enable/disable plugins and skills on claude.ai",
+   "unlocks": "changes what every future session loads"
+  },
+  {
+   "action": "choose a persistence strategy for Cognee memory",
+   "unlocks": "memory surviving VM reclamation"
+  }
+ ]
+}
