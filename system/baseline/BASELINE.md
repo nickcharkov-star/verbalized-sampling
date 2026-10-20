@@ -10,7 +10,7 @@ Machine-readable record: [`baseline.json`](baseline.json). Check it:
 python3 system/bootstrap/capability_audit.py --baseline
 ```
 
-It exits 0 when the baseline is satisfied, **whether or not any plugins arrived in the session**, and 1 when something is broken: a changed or missing agent file, a missing deny rule, the output-rewriting switch off, a broken record chain, or a leak in the docs. It also reports **limitations**: dependencies that a later step or the founder must supply. These are the analysis environment not yet restored and research hosts the network policy blocks. Limitations don't fail the check unless you pass `--strict`. The full inventory check (without `--baseline`) still exits 1 in a session without plugins, because it compares against an inventory that included them.
+It exits 0 when the baseline is satisfied, **whether or not any plugins arrived in the session**, and 1 when something is broken: a changed or missing agent file, a missing deny rule, the output-rewriting plugin not switched off, a broken record chain, or a leak in the docs. It also reports **limitations**: dependencies that a later step or the founder must supply. These are the analysis environment not yet restored and research hosts the network policy blocks. Limitations don't fail the check unless you pass `--strict`. The full inventory check (without `--baseline`) still exits 1 in a session without plugins, because it compares against an inventory that included them.
 
 ## What is in it
 
