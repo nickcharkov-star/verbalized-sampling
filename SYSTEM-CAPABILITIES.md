@@ -25,7 +25,7 @@ On 2026-10-20 at 16:57 UTC a brand-new cloud session was created on the same acc
 |---|---|---|
 | Agents | 514 | **288**: 282 Agency + 6 built-in, 0 plugin |
 | Skills | 2,495 | **35**: 16 built-in/image + 19 account, 0 plugin |
-| Synced plugins on disk | 343–344 | **0** |
+| Synced plugins on disk | 342–344 (changed during the day) | **0** |
 | Cognee memory | local store, server not responding | **absent** |
 | MCP failures at start | 217–219 | 0 (no plugin servers to fail) |
 | `Reality Checker` launch | READY | READY |
@@ -42,7 +42,7 @@ On 2026-10-20 at 16:57 UTC a brand-new cloud session was created on the same acc
 | 1 | Repository `.claude/agents/` (Agency Agents) | 282 | REPOSITORY-PERSISTENT | **yes**, verified by the probe, once PR #2 is on `main` |
 | 2 | Repository `system/`, `SYSTEM-CAPABILITIES.md`, `.gitignore` entry | — | REPOSITORY-PERSISTENT | yes, after merge |
 | 3 | Repository `CLAUDE.md`, `.claude/settings.json`, `.mcp.json`, `.claude/skills/` | none exist | — | nothing to restore |
-| 4 | claude.ai account plugins (`~/.claude/plugins/synced/<account>/`) | 343, then 344 | ACCOUNT/PLUGIN-PERSISTENT (stored on the account) | **conditional:** yes in the app-started session, no in the API-created probe |
+| 4 | claude.ai account plugins (`~/.claude/plugins/synced/<account>/`) | 343 → 344 → 342 in one day | ACCOUNT/PLUGIN-PERSISTENT (stored on the account) | **conditional:** yes in the app-started session, no in the API-created probe |
 | 5 | Plugin skills | 2,459 | as #4 | conditional |
 | 6 | Plugin agents | 226 | as #4 | conditional |
 | 7 | Plugin hooks | 106 events | as #4 | conditional |
@@ -78,7 +78,7 @@ The five-class scheme has no "platform" class, so built-ins and platform-provisi
 
 With the plugins present (audit session):
 
-- **219 MCP servers failed:** 199 `ERR_PROXY_TUNNEL` (blocked by the Trusted network policy), 6 `ENOENT` (command not installed), 6 `CONNECT_TIMEOUT`, 4 `CONNECTION_CLOSED`, 2 `ECONNREFUSED`, 2 `INVALID_CONFIG`.
+- **215–219 MCP servers failed** (the count varies per start): 199 `ERR_PROXY_TUNNEL` (blocked by the Trusted network policy), 6 `ENOENT` (command not installed), and the rest timeouts, closed connections, refused connections or 2 `INVALID_CONFIG`.
 - **3 servers need OAuth:** Datadog, BigQuery, GitLab.
 - **1,111 skills** in 131 network-blocked plugins load but can't reach their service.
 - **`claude-tab-fix`'s hook fails on every Bash and Write call** (binary missing).
@@ -131,9 +131,9 @@ The full list is in `manifest.json` → `agency_agent_dependency_review`. The re
 ## Decisions for the account owner
 
 1. **Merge PR #2.** Until then, `main` has no Agency Agents.
-2. **Plugins:** confirm from a fresh session opened in the Claude app (run `python3 system/bootstrap/capability_audit.py`) whether the 344 plugins arrive. If they don't, the 2,459 plugin skills and 226 plugin agents aren't part of the persistent capability set.
+2. **Plugins:** confirm from a fresh session opened in the Claude app (run `python3 system/bootstrap/capability_audit.py`) whether the ~342 plugins arrive. If they don't, the 2,459 plugin skills and 226 plugin agents aren't part of the persistent capability set.
 3. **The "Install verbalized-sampling" scheduled task:** review and probably delete it (standing token, 11 connector grants).
 4. **Memory:** Cognee is local-only and, in practice, never saved this session. Pick a durable memory: committed decision logs in the repository, a hosted store, or nothing. Don't treat it as authoritative.
 5. **Network policy:** keep **Trusted** and accept 131 degraded plugins, or allow specific hosts (`manifest.json` → `blocked_hosts`).
 6. **Credentials and sign-ins:** Datadog, BigQuery, GitLab and Meta Ads need OAuth. Keyed services need network secrets, never committed.
-7. **Plugin hygiene:** about 344 plugins add context cost to every turn and run hooks as you, and their versions change without review. Disable what you don't use, especially `claude-tab-fix`, whose hook fails on every call.
+7. **Plugin hygiene:** about 342 plugins add context cost to every turn and run hooks as you, and their versions change without review: `carta-crm` and `carta-cap-table` upgraded themselves mid-audit. Disable what you don't use, especially `claude-tab-fix`, whose hook fails on every call.

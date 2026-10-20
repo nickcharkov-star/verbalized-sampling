@@ -17,7 +17,12 @@ This only reads. It compares the current session with `system/capabilities/manif
 - which plugin hooks failed in this session
 - whether every agent definition in `.claude/agents/` still parses
 
-To refresh the recorded state after a deliberate change, run it with `--write` and commit the regenerated files. The script never writes credential values, environment-variable values, account or organization IDs, MCP URL paths or headers, or plugin implementation files.
+To refresh the recorded state after a deliberate change, run it with `--write` and commit the regenerated files. Two guards protect the record:
+
+- **Shrink guard:** it refuses to write (exit 2) when skills, agents or plugins would drop by more than half. That's what happens in a session that didn't receive the synced plugins. Pass `--force` only when the loss is intended.
+- **Leak guard:** it refuses to write anything if the output would contain an account directory ID, a UUID, an email address, a session/trigger/environment ID, or a common credential shape.
+
+It never writes credential values, environment-variable values, MCP URL paths or headers, or plugin implementation files. The leak guard is pattern-based, so still read the diff before committing.
 
 The script reads the session transcript under `~/.claude/projects/`. That file format belongs to Claude Code and can change. If the script warns that it found no skill listing, use the manual checks below.
 
@@ -92,7 +97,7 @@ These come back in any new cloud session for the same account, with nothing to d
 - the environment's settings (network level, environment variables; there is no setup script)
 - everything committed to the branch the session clones: `.claude/agents/` (after PR #2 merges), `system/`, `.gitignore`
 
-**Not guaranteed:** the account-synced plugins (344) and everything they bring (2,459 skills, 226 agents, hooks, MCP servers). They were present in the app-started audit session and absent in the API-created probe. When they are present, their stdio MCP servers launched with `npx`/`uvx` re-download from registries that **Trusted** allows.
+**Not guaranteed:** the account-synced plugins (~342, and the set changes between sessions) and everything they bring (2,459 skills, 226 agents, hooks, MCP servers). They were present in the app-started audit session and absent in the API-created probe. When they are present, their stdio MCP servers launched with `npx`/`uvx` re-download from registries that **Trusted** allows.
 
 **Never restored:** anything only on the VM, including `~/.claude/agents/`, the Cognee memory store and plugin data.
 

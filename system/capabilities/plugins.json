@@ -1,6 +1,6 @@
 {
- "generated_at": "2026-10-20T17:09:37+00:00",
- "count": 344,
+ "generated_at": "2026-10-20T17:21:12+00:00",
+ "count": 342,
  "plugins": [
   {
    "name": "ugc-video-ads",
@@ -639,7 +639,7 @@
      "launcher_downloads_package": true,
      "required_env_names": [],
      "uses_user_config": false,
-     "status": "failed:CONNECT_TIMEOUT"
+     "status": "connected"
     },
     {
      "name": "awsknowledge",
@@ -670,7 +670,7 @@
    "verified": false,
    "functional": null,
    "blocked": false,
-   "dependency_status": "partially_unavailable:connection_failed"
+   "dependency_status": "unknown"
   },
   {
    "name": "snagly",
@@ -1130,43 +1130,6 @@
   {
    "name": "carta-crm",
    "display_name": null,
-   "version": "1.16.14",
-   "description": "Manage the Carta CRM conversationally — search, add, update, and enrich investors, companies, contacts, deals, notes, and fundraisings via the Carta CRM MCP Server",
-   "author": "Carta",
-   "homepage": "https://github.com/carta/plugins",
-   "repository": "https://github.com/carta/plugins",
-   "license": null,
-   "marketplace": "anthropic-plugin-directory",
-   "installation_preference": "available",
-   "requires_user_config": [],
-   "components_on_disk": {
-    "skills": 27,
-    "agents": 0,
-    "commands": 0,
-    "hook_events": {
-     "SessionStart": 1,
-     "PostModelSwitch": 1,
-     "UserPromptSubmit": 1,
-     "PreToolUse": 1
-    },
-    "hook_commands_on_path": []
-   },
-   "mcp_servers": [],
-   "shares_name_with_another_synced_plugin": true,
-   "missing_hook_binaries": [],
-   "loaded_skills": 27,
-   "loaded_agents": 0,
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "restore": "conditional: synced from the claude.ai account into the app-started audit session, but absent from an API-created fresh session; not documented for cloud sessions",
-   "available": true,
-   "verified": false,
-   "functional": null,
-   "blocked": false,
-   "dependency_status": "none"
-  },
-  {
-   "name": "carta-crm",
-   "display_name": null,
    "version": "1.16.20",
    "description": "Manage the Carta CRM conversationally — search, add, update, and enrich investors, companies, contacts, deals, notes, and fundraisings via the Carta CRM MCP Server",
    "author": "Carta",
@@ -1189,7 +1152,7 @@
     "hook_commands_on_path": []
    },
    "mcp_servers": [],
-   "shares_name_with_another_synced_plugin": true,
+   "shares_name_with_another_synced_plugin": false,
    "missing_hook_binaries": [],
    "loaded_skills": 27,
    "loaded_agents": 0,
@@ -2881,7 +2844,7 @@
      "launcher_downloads_package": true,
      "required_env_names": [],
      "uses_user_config": false,
-     "status": "failed:CONNECT_TIMEOUT"
+     "status": "connected"
     }
    ],
    "shares_name_with_another_synced_plugin": false,
@@ -2892,9 +2855,9 @@
    "restore": "conditional: synced from the claude.ai account into the app-started audit session, but absent from an API-created fresh session; not documented for cloud sessions",
    "available": true,
    "verified": false,
-   "functional": false,
-   "blocked": true,
-   "dependency_status": "unavailable:connection_failed"
+   "functional": null,
+   "blocked": false,
+   "dependency_status": "satisfied"
   },
   {
    "name": "freee-mcp",
@@ -3078,44 +3041,6 @@
   {
    "name": "carta-cap-table",
    "display_name": null,
-   "version": "6.97.0",
-   "description": "Carta Cap Table plugin — skills and hooks for querying cap tables, grants, SAFEs, 409A valuations, financing rounds, and more",
-   "author": "Carta",
-   "homepage": "https://github.com/carta/plugins",
-   "repository": "https://github.com/carta/plugins",
-   "license": null,
-   "marketplace": "anthropic-plugin-directory",
-   "installation_preference": "available",
-   "requires_user_config": [],
-   "components_on_disk": {
-    "skills": 21,
-    "agents": 0,
-    "commands": 0,
-    "hook_events": {
-     "SessionStart": 1,
-     "PostModelSwitch": 1,
-     "PreToolUse": 1,
-     "UserPromptSubmit": 1,
-     "PostToolUse": 1
-    },
-    "hook_commands_on_path": []
-   },
-   "mcp_servers": [],
-   "shares_name_with_another_synced_plugin": true,
-   "missing_hook_binaries": [],
-   "loaded_skills": 20,
-   "loaded_agents": 0,
-   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
-   "restore": "conditional: synced from the claude.ai account into the app-started audit session, but absent from an API-created fresh session; not documented for cloud sessions",
-   "available": true,
-   "verified": false,
-   "functional": null,
-   "blocked": false,
-   "dependency_status": "none"
-  },
-  {
-   "name": "carta-cap-table",
-   "display_name": null,
    "version": "6.97.12",
    "description": "Carta Cap Table plugin — skills and hooks for querying cap tables, grants, SAFEs, 409A valuations, financing rounds, and more",
    "author": "Carta",
@@ -3139,7 +3064,7 @@
     "hook_commands_on_path": []
    },
    "mcp_servers": [],
-   "shares_name_with_another_synced_plugin": true,
+   "shares_name_with_another_synced_plugin": false,
    "missing_hook_binaries": [],
    "loaded_skills": 20,
    "loaded_agents": 0,
@@ -5064,7 +4989,7 @@
      "launcher_downloads_package": true,
      "required_env_names": [],
      "uses_user_config": false,
-     "status": "failed:CONNECT_TIMEOUT"
+     "status": "failed:CONNECTION_CLOSED"
     }
    ],
    "shares_name_with_another_synced_plugin": false,
@@ -6041,7 +5966,7 @@
      "launcher_downloads_package": true,
      "required_env_names": [],
      "uses_user_config": false,
-     "status": "failed:CONNECT_TIMEOUT"
+     "status": "connected"
     }
    ],
    "shares_name_with_another_synced_plugin": false,
@@ -6052,9 +5977,9 @@
    "restore": "conditional: synced from the claude.ai account into the app-started audit session, but absent from an API-created fresh session; not documented for cloud sessions",
    "available": true,
    "verified": false,
-   "functional": false,
-   "blocked": true,
-   "dependency_status": "unavailable:connection_failed"
+   "functional": null,
+   "blocked": false,
+   "dependency_status": "satisfied"
   },
   {
    "name": "animation-studio",
@@ -6235,7 +6160,7 @@
       "ADO_PROJECT"
      ],
      "uses_user_config": false,
-     "status": "failed:CONNECT_TIMEOUT"
+     "status": "connected"
     }
    ],
    "shares_name_with_another_synced_plugin": false,
@@ -6246,9 +6171,9 @@
    "restore": "conditional: synced from the claude.ai account into the app-started audit session, but absent from an API-created fresh session; not documented for cloud sessions",
    "available": true,
    "verified": false,
-   "functional": false,
-   "blocked": true,
-   "dependency_status": "unavailable:connection_failed,needs_credentials"
+   "functional": null,
+   "blocked": false,
+   "dependency_status": "partially_unavailable:needs_credentials"
   },
   {
    "name": "assetlib-audit",

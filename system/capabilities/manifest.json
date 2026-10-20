@@ -1,11 +1,11 @@
 {
  "schema_version": 1,
- "generated_at": "2026-10-20T17:09:37+00:00",
+ "generated_at": "2026-10-20T17:21:12+00:00",
  "generated_by": "system/bootstrap/capability_audit.py --write",
  "source": {
   "transcript_parsed": true,
   "transcript_file": "~/.claude/projects/<repo>/<session>.jsonl",
-  "mcp_status_snapshot_at": "2026-10-20T16:57:44.768Z",
+  "mcp_status_snapshot_at": "2026-10-20T17:20:35.703Z",
   "note": "Counts describe the session that generated this file. A different session may differ; run the check mode to compare."
  },
  "totals": {
@@ -22,17 +22,17 @@
    "claude-code-builtin": 6,
    "agency-agents": 282
   },
-  "plugins_synced": 344,
+  "plugins_synced": 342,
   "account_skills_synced": 19,
   "repo_agents_committed": 282,
-  "mcp_servers_failed": 219,
+  "mcp_servers_failed": 215,
   "mcp_servers_failed_by_error": {
    "ERR_PROXY_TUNNEL": 199,
    "INVALID_CONFIG": 2,
    "ENOENT": 6,
-   "CONNECT_TIMEOUT": 6,
-   "CONNECTION_CLOSED": 4,
-   "ECONNREFUSED": 2
+   "CONNECTION_CLOSED": 5,
+   "ECONNREFUSED": 2,
+   "CONNECT_TIMEOUT": 1
   },
   "mcp_servers_needing_auth": [
    "plugin:engineering:datadog",
@@ -53,33 +53,32 @@
    "Spotify",
    "Vercel",
    "Zapier",
+   "ccd_session",
    "claude-code-remote",
    "github"
   ]
  },
  "plugins": {
-  "count": 344,
+  "count": 342,
   "distinct_names": 339,
   "names_synced_twice": [
    "agentforce-adlc",
    "apollo",
-   "carta-cap-table",
-   "carta-crm",
    "govtribe"
   ],
   "by_marketplace": {
-   "anthropic-plugin-directory": 296,
+   "anthropic-plugin-directory": 294,
    "knowledge-work-plugins": 48
   },
   "names_with_loaded_skills": 301,
   "names_with_loaded_agents": 52,
   "with_mcp_servers": 167,
   "by_dependency_status": {
-   "unavailable": 148,
-   "none": 176,
-   "partially_unavailable": 4,
-   "unknown": 10,
-   "satisfied": 6
+   "unavailable": 145,
+   "none": 174,
+   "unknown": 11,
+   "satisfied": 8,
+   "partially_unavailable": 4
   }
  },
  "hook_errors": [
@@ -96,7 +95,7 @@
   {
    "hook": "PreToolUse:Bash",
    "message": "Failed with non-blocking status code: /bin/sh: 1: claude-tab-fix: not found",
-   "count": 89
+   "count": 95
   },
   {
    "hook": "PreToolUse:Write",
@@ -392,6 +391,14 @@
    "verification_note": null
   },
   {
+   "name": "ccd_session",
+   "kind": "claude.ai connector",
+   "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
+   "status": "connected",
+   "verified": false,
+   "verification_note": null
+  },
+  {
    "name": "claude-code-remote",
    "kind": "platform",
    "persistence": "ACCOUNT/PLUGIN-PERSISTENT",
@@ -440,11 +447,11 @@
   {
    "id": 4,
    "source": "account-synced plugins ~/.claude/plugins/synced/<account>/",
-   "count": 344,
+   "count": 342,
    "class": "ACCOUNT/PLUGIN-PERSISTENT",
    "restore": "conditional: present in the app-started audit session, absent in an API-created fresh session (2026-10-20 probe); cloud-session sync is not documented",
    "restored_in_fresh_cloud_session": "conditional",
-   "drift": "plugin set and versions change without any repository change (343 -> 344 between 08:02 and 17:00 on 2026-10-20: carta-crm 1.16.20 and carta-cap-table 6.97.12 added, viralhunt 1.6.33 removed)"
+   "drift": "plugin set and versions change without any repository change: 343 -> 344 -> 342 on 2026-10-20 (carta-crm 1.16.14 -> 1.16.20, carta-cap-table 6.97.0 -> 6.97.12, a duplicate viralhunt copy removed)"
   },
   {
    "id": 5,
@@ -711,7 +718,7 @@
   "connected claude.ai connectors and platform MCP servers",
   "environment settings (no setup script exists)",
   "everything committed on the cloned branch, including 282 Agency Agents once PR #2 is on main",
-  "NOT guaranteed: the 344 synced plugins and their 2,459 skills, 226 agents, hooks and MCP servers"
+  "NOT guaranteed: the ~342 synced plugins and their 2,459 skills, 226 agents, hooks and MCP servers"
  ],
  "requires_founder_authorization": [
   {

@@ -660,6 +660,40 @@ def build(state, transcript_path):
 # --------------------------------------------------------------------------- output
 
 
+# Patterns that must never appear in committed output: account/org directory IDs, raw UUIDs,
+# email addresses, session/trigger IDs and common credential shapes.
+LEAK_PATTERNS = {
+    "account_dir": r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_[0-9a-f-]{36}",
+    "uuid": r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b",
+    "email": r"\b[\w.+-]+@[\w-]+\.[\w.]+\b",
+    "session_or_trigger_id": r"\b(session|cse|trig|env)_01[A-Za-z0-9]{10,}",
+    "anthropic_key": r"\bsk-ant-[A-Za-z0-9_-]{6,}",
+    "openai_key": r"\bsk-(proj-)?[A-Za-z0-9_-]{20,}",
+    "github_token": r"\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}",
+    "aws_key": r"\b(AKIA|ASIA)[0-9A-Z]{16}\b",
+    "jwt": r"\beyJ[A-Za-z0-9_-]{10,}\.eyJ",
+    "url_credentials": r"https?://[^/\s:@\"]+:[^/\s:@\"]+@",
+    "url_secret_param": r"[?&](key|token|api_key|apikey|secret|sig|access_token)=",
+}
+
+
+def find_leaks(text):
+    """Return the names of leak patterns present in text."""
+    return sorted(name for name, pat in LEAK_PATTERNS.items() if re.search(pat, text))
+
+
+def shrink_reasons(manifest):
+    """Explain why regenerating would drop most of the recorded capabilities, if it would."""
+    recorded = (_load_json(os.path.join(OUT_DIR, "manifest.json")) or {}).get("totals", {})
+    now = manifest["totals"]
+    reasons = []
+    for key in ("plugins_synced", "skills_loaded", "agents_loaded"):
+        was, cur = recorded.get(key) or 0, now.get(key) or 0
+        if was and cur < was * 0.5:
+            reasons.append(f"{key} would drop from {was} to {cur}")
+    return reasons
+
+
 def write_outputs(manifest, plugins, skills, agents):
     os.makedirs(OUT_DIR, exist_ok=True)
     files = {
@@ -679,16 +713,23 @@ def write_outputs(manifest, plugins, skills, agents):
             "agents": agents,
         },
     }
-    for fname, payload in files.items():
-        text = _redact(json.dumps(payload, indent=1, ensure_ascii=False))
-        with open(os.path.join(OUT_DIR, fname), "w", encoding="utf-8") as fh:
-            fh.write(text + "\n")
     # manifest.json keeps hand-written sections; merge generated data into it.
     path = os.path.join(OUT_DIR, "manifest.json")
     existing = _load_json(path) or {}
     existing.update({k: v for k, v in manifest.items()})
-    with open(path, "w", encoding="utf-8") as fh:
-        fh.write(_redact(json.dumps(existing, indent=1, ensure_ascii=False)) + "\n")
+    texts = {
+        fname: _redact(json.dumps(payload, indent=1, ensure_ascii=False))
+        for fname, payload in files.items()
+    }
+    texts["manifest.json"] = _redact(json.dumps(existing, indent=1, ensure_ascii=False))
+    # Check everything before writing anything, so a leak never reaches disk half-written.
+    leaks = {fname: find_leaks(text) for fname, text in texts.items()}
+    leaks = {fname: found for fname, found in leaks.items() if found}
+    if leaks:
+        raise SystemExit(f"refusing to write: possible identifiers or credentials {leaks}")
+    for fname, text in texts.items():
+        with open(os.path.join(OUT_DIR, fname), "w", encoding="utf-8") as fh:
+            fh.write(text + "\n")
 
 
 def check(manifest, plugins, skills, agents):
@@ -756,6 +797,11 @@ def main():
     parser.add_argument(
         "--transcript", help="session transcript to read (default: newest for this repo)"
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="with --write, allow a regeneration that drops most recorded capabilities",
+    )
     args = parser.parse_args()
     path = args.transcript or latest_transcript()
     state = read_transcript(path)
@@ -766,6 +812,13 @@ def main():
         )
     manifest, plugins, skills, agents = build(state, path)
     if args.write:
+        # A session without synced plugins would otherwise overwrite the record with a much
+        # smaller set; make that an explicit choice.
+        reasons = shrink_reasons(manifest)
+        if reasons and not args.force:
+            print("refusing to write: " + "; ".join(reasons), file=sys.stderr)
+            print("run the check mode to see what is missing, or pass --force", file=sys.stderr)
+            return 2
         write_outputs(manifest, plugins, skills, agents)
         print(
             f"wrote {OUT_DIR}: {len(plugins)} plugins, {len(skills)} skills, {len(agents)} agents"
