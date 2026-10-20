@@ -1,0 +1,34 @@
+d042a7b
+python3 -c "import  isort" || pip3 install  isort --upgrade
+python3 -c "import  ruff" || pip3 install  ruff --upgrade
+isort --check --diff --project=verbalized_sampling verbalized_sampling scripts
+--- /home/user/verbalized-sampling/system/governance/.restricted/main-tree/verbalized_sampling/__init__.py:before	2026-10-20 19:23:38.054440
++++ /home/user/verbalized-sampling/system/governance/.restricted/main-tree/verbalized_sampling/__init__.py:after	2026-10-20 19:23:39.178604
+@@ -28,10 +28,10 @@
+ 
+ # Simple API (NEW in v0.2)
+ from .api import select, verbalize
+-from .selection import DiscreteDist, Item
+ 
+ # Research API (existing, unchanged)
+ from .cli import app as cli_app
++from .selection import DiscreteDist, Item
+ 
+ __all__ = [
+     # Simple API
+--- /home/user/verbalized-sampling/system/governance/.restricted/main-tree/verbalized_sampling/api.py:before	2026-10-20 19:23:38.058125
++++ /home/user/verbalized-sampling/system/governance/.restricted/main-tree/verbalized_sampling/api.py:after	2026-10-20 19:23:39.183239
+@@ -18,11 +18,11 @@
+ import time
+ from typing import Any, Dict, List, Literal, Optional, Sequence
+ 
+-from .selection import DiscreteDist, Item, postprocess_responses
+ from .llms import get_model
+ from .methods import Method, ResponseParser
+-from .methods.prompt import BasePromptTemplate, TaskType, CreativityPromptTemplate
++from .methods.prompt import BasePromptTemplate, CreativityPromptTemplate, TaskType
+ from .methods.schema import get_schema
++from .selection import DiscreteDist, Item, postprocess_responses
+ 
+ 
+ def verbalize(

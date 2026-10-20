@@ -1,0 +1,7 @@
+main d042a7b  pr1 d4ab6bf  pr2 b1407d8
+PR2 into main: exit 0
+PR1 into main: exit 0
+PR1 first, then PR2: exit 0
+PR2 first, then PR1: exit 0
+files changed by both PRs:
+.gitignore

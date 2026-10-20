@@ -1,0 +1,26 @@
+{
+ "command": [
+  "make",
+  "lint"
+ ],
+ "exit_code": 2,
+ "files": {
+  "stderr.txt": {
+   "bytes": 271,
+   "sha256": "af09aa203a1e36f4debc8907895d531c72c1a42bb52a0ffaa7e90a95fd130be1"
+  },
+  "stdout.txt": {
+   "bytes": 1401,
+   "sha256": "ae4d0ad8e22eefe7dfc8a0180978b574d1e054a427b66665d35a57f5add77ed3"
+  }
+ },
+ "finished": "2026-10-20T19:23:37+00:00",
+ "git_dirty": false,
+ "git_head": "b1407d8be00c74694707544bd2aaf1953fd75847",
+ "id": "20261020T192336Z-pr-make-lint",
+ "label": "pr-make-lint",
+ "output_rewriting_plugin_disabled": true,
+ "restricted": false,
+ "restricted_reason": [],
+ "started": "2026-10-20T19:23:36+00:00"
+}

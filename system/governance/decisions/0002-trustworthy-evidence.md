@@ -15,7 +15,9 @@ The account syncs a plugin, `agentone-token-compression`, whose PostToolUse hook
 ## Evidence
 
 - In the audit session the switch took effect without a restart. A large output updated the plugin's cache at 18:28:35 UTC, and the same kind of output a minute later did not. No compression notes appeared after that.
-- The fresh-session test in `system/capabilities/manifest.json` (`cold_start_probe_2`) checks that a new session receives the switch from the repository alone.
+- The plugin switch (`enabledPlugins`) took effect at the next worker start: the plugin's tools left the session at 19:05 UTC and didn't return.
+- A fresh session created through the API received the switch from the repository alone, and had no plugins at all (`system/capabilities/manifest.json` → `cold_start_probe_2`).
+- The critical checks were rerun through `records.py evidence` after the switch was on. Each entry records whether it was.
 
 ## Consequences
 

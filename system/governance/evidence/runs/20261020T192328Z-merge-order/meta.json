@@ -1,0 +1,27 @@
+{
+ "command": [
+  "bash",
+  "-c",
+  "M=origin/main; P1=origin/claude/auto-video-editing-luxury-w9l6jp; P2=HEAD; echo \"main $(git rev-parse --short $M)  pr1 $(git rev-parse --short $P1)  pr2 $(git rev-parse --short $P2)\"; git merge-tree --write-tree --name-only $M $P2 >/dev/null; echo \"PR2 into main: exit $?\"; git merge-tree --write-tree --name-only $M $P1 >/dev/null; echo \"PR1 into main: exit $?\"; git merge-tree --write-tree --name-only $P1 $P2 | sed -n \"2,20p\"; T=$(git merge-tree --write-tree $M $P1) && C=$(git -c user.name=sim -c user.email=sim commit-tree $T -p $M -p $P1 -m sim) && git merge-tree --write-tree --name-only $C $P2 >/dev/null; echo \"PR1 first, then PR2: exit $?\"; T=$(git merge-tree --write-tree $M $P2) && C=$(git -c user.name=sim -c user.email=sim commit-tree $T -p $M -p $P2 -m sim) && git merge-tree --write-tree --name-only $C $P1 >/dev/null; echo \"PR2 first, then PR1: exit $?\"; echo \"files changed by both PRs:\"; comm -12 <(git diff --name-only $M...$P1 | sort) <(git diff --name-only $M...$P2 | sort)"
+ ],
+ "exit_code": 0,
+ "files": {
+  "stderr.txt": {
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout.txt": {
+   "bytes": 177,
+   "sha256": "e985716a320010400256ec0f93cbecd3899b80107f1fdd278ccf9bf87e08b767"
+  }
+ },
+ "finished": "2026-10-20T19:23:29+00:00",
+ "git_dirty": false,
+ "git_head": "b1407d8be00c74694707544bd2aaf1953fd75847",
+ "id": "20261020T192328Z-merge-order",
+ "label": "merge-order",
+ "output_rewriting_plugin_disabled": true,
+ "restricted": false,
+ "restricted_reason": [],
+ "started": "2026-10-20T19:23:28+00:00"
+}

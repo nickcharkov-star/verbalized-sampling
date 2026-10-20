@@ -1,0 +1,26 @@
+{
+ "command": [
+  "python3",
+  "system/governance/deny_evidence.py"
+ ],
+ "exit_code": 0,
+ "files": {
+  "stderr.txt": {
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout.txt": {
+   "bytes": 1246,
+   "sha256": "845c46a9f5203e2ee29106c0c16f12f122fcc109cfaa39f3422ada292ff83989"
+  }
+ },
+ "finished": "2026-10-20T19:23:02+00:00",
+ "git_dirty": false,
+ "git_head": "b1407d8be00c74694707544bd2aaf1953fd75847",
+ "id": "20261020T192301Z-deny-enforcement",
+ "label": "deny-enforcement",
+ "output_rewriting_plugin_disabled": true,
+ "restricted": false,
+ "restricted_reason": [],
+ "started": "2026-10-20T19:23:01+00:00"
+}

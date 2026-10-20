@@ -1,0 +1,20 @@
+Operating baseline check against system/baseline/baseline.json
+  transcript parsed: True (session lists are checked only when it is)
+  agent Statistician                   file ok=True   loaded
+  agent Research Synthesist            file ok=True   loaded
+  agent Trend Researcher               file ok=True   loaded
+  agent Feedback Synthesizer           file ok=True   loaded
+  agent Business Strategist            file ok=True   loaded
+  agent Codebase Onboarding Engineer   file ok=True   loaded
+  agent Code Reviewer                  file ok=True   loaded
+  agent Minimal Change Engineer        file ok=True   loaded
+  built-in agents: Explore, Plan, general-purpose: missing none
+  web tools offered: WebSearch, WebFetch
+  python3 3.13.16, git found
+  settings: 233 deny rules, required ones missing: 0, output-rewriting switch in process env: 1
+  synced plugins in this session: 342 (baseline requires none); output-rewriting plugin on disk: yes, disabled by settings
+  analysis environment (.venv-analysis): restored, imports ok
+  records: evidence entries: 0, head none
+  records: action entries:   0, head none
+  records: result: intact
+  result: baseline satisfied

@@ -588,7 +588,9 @@
    "marketing-x-twitter-intelligence-analyst.md": [
     "Xquik"
    ]
-  }
+  },
+  "merge": "PR #1 and PR #2 share one file, .gitignore; PR #2's entries sit mid-file, so both merge cleanly into main and with each other in either order (evidence merge-order)",
+  "secrets_rescan_2026_10_20": "leak patterns match 13 of 303 added or changed files; all placeholders in agent prose (example.com-style addresses, package@version, illustrative UUIDs, token query parameters in sample URLs, PEM header lines without key material); evidence secret-scan-pr-diff"
  },
  "restores_automatically": [
   "Claude Code built-in skills (15, plus workflow-authoring while Workflow/ultracode is on) and 6 built-in agents",
@@ -596,6 +598,7 @@
   "19 claude.ai account skills",
   "connected claude.ai connectors and platform MCP servers",
   "environment settings (no setup script exists)",
+  "the repository's .claude/settings.json: output-rewriting switch and 233 deny rules (verified by cold_start_probe_2)",
   "everything committed on the cloned branch, including 282 Agency Agents once PR #2 is on main",
   "NOT guaranteed: the ~342 synced plugins and their 2,459 skills, 226 agents, hooks and MCP servers"
  ],
@@ -652,6 +655,22 @@
   {
    "action": "mark PR #2 ready, resolve its .gitignore conflict with PR #1 if both merge, then merge",
    "unlocks": "Agency Agents and this audit on main"
+  },
+  {
+   "action": "accept or amend decisions D-0001 to D-0004",
+   "unlocks": "the baseline, evidence and authority rules take effect"
+  },
+  {
+   "action": "record a spending authority decision (amounts, approvers, providers, restricted receipt store) and narrow deny rules in a reviewed PR",
+   "unlocks": "any commercial action"
+  },
+  {
+   "action": "remove unneeded connector grants and the standing token from account scheduled tasks",
+   "unlocks": "closes access that repository deny rules cannot reach"
+  },
+  {
+   "action": "add research hosts under Allowed domains",
+   "unlocks": "page reading for the research agents (operating_baseline.limitations_2026_10_20)"
   }
  ],
  "cold_start_probe": {
@@ -1256,5 +1275,86 @@
    "xcodegen",
    "xiaohongshu-mcp daemon (localhost:18060)"
   ]
+ },
+ "cold_start_probe_2": {
+  "method": "fresh cloud session created via API on commit 73854cd (final settings, baseline, governance), read-only",
+  "date": "2026-10-20T19:20Z",
+  "results": {
+   "plugins_synced": 0,
+   "output_rewriting_plugin_present": false,
+   "output_rewriting_switch_delivered_by_repo": true,
+   "full_inventory_check": "exit 1 as documented without plugins: skills 35 vs 2495, agents 288 vs 514; 226 agents and 2460 skills missing",
+   "baseline_check": "exit 0: 8/8 agent files match SHA-256 and load; built-ins and web tools present; 233 deny rules, required ones present",
+   "records_verify": "exit 0",
+   "deny_canary": "refused",
+   "denied_tools_offered": "none of create_session, send_later, merge_pull_request, Gmail send_message, Vercel buy_domain; read tools pull_request_read and get_session offered",
+   "agent_launches": {
+    "Statistician": "READY",
+    "Research Synthesist": "READY",
+    "Trend Researcher": "READY",
+    "Feedback Synthesizer": "READY",
+    "Business Strategist": "READY",
+    "Codebase Onboarding Engineer": "READY",
+    "Code Reviewer": "READY",
+    "Minimal Change Engineer": "READY",
+    "Explore": "READY",
+    "Plan": "READY"
+   },
+   "workflow_tasks": {
+    "Codebase Onboarding Engineer": "mapped subpackages and exports correctly, read-only",
+    "Research Synthesist": "found the paper via WebSearch metadata only; every WebFetch failed (DNS) and curl was refused by the proxy",
+    "Statistician": "not run: needs the analysis environment"
+   },
+   "not_run": "analysis-environment restore and the subagent canary, both refused by the auto-mode safety classifier in the unattended session; the subagent canary was refused by the deny rule when run in the audit session",
+   "tracked_files_changed": 0
+  }
+ },
+ "operating_baseline": {
+  "record": "system/baseline/baseline.json",
+  "doc": "system/baseline/BASELINE.md",
+  "decision": "D-0001 (proposed)",
+  "agents": [
+   "Statistician",
+   "Research Synthesist",
+   "Trend Researcher",
+   "Feedback Synthesizer",
+   "Business Strategist",
+   "Codebase Onboarding Engineer",
+   "Code Reviewer",
+   "Minimal Change Engineer"
+  ],
+  "builtins": [
+   "Explore",
+   "Plan",
+   "general-purpose"
+  ],
+  "plugins_required": 0,
+  "check": "python3 system/bootstrap/capability_audit.py --baseline [--strict]",
+  "limitations_2026_10_20": [
+   "research hosts blocked by the Trusted network policy: arxiv.org, export.arxiv.org, huggingface.co, api.semanticscholar.org, openreview.net, aclanthology.org, doi.org, api.crossref.org",
+   "analysis environment must be restored per session; the auto-mode classifier refused the install in an unattended session"
+  ]
+ },
+ "governance": {
+  "doc": "system/governance/README.md",
+  "decisions": [
+   "0001-operating-baseline",
+   "0002-trustworthy-evidence",
+   "0003-spending-and-external-action-authority",
+   "0004-merge-is-not-launch"
+  ],
+  "decision_status": "proposed, awaiting founder acceptance",
+  "runtime_deny_rules": 233,
+  "evidence": "system/governance/evidence/INDEX.jsonl (hash chain; records.py verify)",
+  "actions": "system/governance/actions.jsonl (none recorded; no restricted store exists yet)",
+  "spending_authorized": false,
+  "readiness": "NOT READY"
+ },
+ "main_known_failures": {
+  "note": "pre-existing on main d042a7b, identical on PR #2, kept out of this PR",
+  "make_test": "collects 0 tests (pytest exit 5)",
+  "make_lint": "fails at isort on verbalized_sampling/api.py and __init__.py",
+  "package_import": "pip install -e . succeeds on Python 3.13 but import fails: datasets 5.1.0 needs pyarrow>=24, which needs NumPy 2; pyproject caps numpy<2.0",
+  "version_mismatch": "__init__.py __version__ 0.2.0 vs pyproject 0.1.3"
  }
 }

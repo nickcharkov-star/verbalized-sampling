@@ -10,16 +10,16 @@ Machine-readable record: [`baseline.json`](baseline.json). Check it:
 python3 system/bootstrap/capability_audit.py --baseline
 ```
 
-It exits 0 when the baseline is satisfied, **whether or not any plugins arrived in the session**, and 1 otherwise. The full inventory check (without `--baseline`) still exits 1 in a session without plugins, because it compares against an inventory that included them.
+It exits 0 when the baseline is satisfied, **whether or not any plugins arrived in the session**, and 1 when something is broken: a changed or missing agent file, a missing deny rule, the output-rewriting switch off, a broken record chain, or a leak in the docs. It also reports **limitations**: dependencies that a later step or the founder must supply. These are the analysis environment not yet restored and research hosts the network policy blocks. Limitations don't fail the check unless you pass `--strict`. The full inventory check (without `--baseline`) still exits 1 in a session without plugins, because it compares against an inventory that included them.
 
 ## What is in it
 
 | Capability | Version | Used for | Dependencies and their status |
 |---|---|---|---|
 | Statistician (`academic-statistician.md`) | sha256 in `baseline.json`; upstream `4e3ac3c` | validating the method's quantitative claims | repository result files: available. Numerics for exact tests: **resolved** by the pinned analysis environment below. New experiment runs: paid API calls, not authorized |
-| Research Synthesist | as above | evidence map of the method's claims, replications, competing methods | WebSearch/WebFetch: available. Paywalled databases: out of scope, recorded as a search boundary |
-| Trend Researcher | as above | one-off market and competitor scans from public sources | WebSearch/WebFetch: available (its `tools:` line excludes Bash and connectors). Paid research tools, monitoring, interviews: out of scope or not authorized |
-| Feedback Synthesizer | as above | coding public feedback into use cases and objections | WebSearch/WebFetch: available. Surveys, analytics, email: not authorized. No personal data in the repository |
+| Research Synthesist | as above | evidence map of the method's claims, replications, competing methods | WebSearch: works. **Reading pages on arxiv.org, huggingface.co, semanticscholar.org and other scholarly hosts: blocked by the network policy** (below). Paywalled databases: out of scope, recorded as a search boundary |
+| Trend Researcher | as above | one-off market and competitor scans from public sources | as Research Synthesist (its `tools:` line excludes Bash and connectors). Paid research tools, monitoring, interviews: out of scope or not authorized |
+| Feedback Synthesizer | as above | coding public feedback into use cases and objections | as Research Synthesist. Surveys, analytics, email: not authorized. No personal data in the repository |
 | Business Strategist | as above | competitive analysis, business-model options, decision gates | research outputs and public sources: available. Its recommendations cannot authorize launch |
 | Codebase Onboarding Engineer | as above | fact-only map of what the library implements | source files only |
 | Code Reviewer | as above | reviewing research tooling and PRs | the diff; approving and merging are denied tools |
@@ -42,10 +42,22 @@ No plugin, plugin skill, plugin agent or claude.ai connector is part of the base
    ```bash
    python3 -m venv .venv-analysis
    .venv-analysis/bin/pip install -q --only-binary=:all: -r system/baseline/requirements-analysis.txt
-   python3 system/bootstrap/capability_audit.py --baseline --require-analysis-env
+   python3 system/bootstrap/capability_audit.py --baseline
    ```
 
+   In an unattended fresh session (probe 2), Claude Code's auto-mode safety classifier refused this `pip install`, so a person must approve it in the session. Alternatively, the founder can add an equivalent install to the cloud environment's setup script (environment menu, Edit, Setup script).
+
 4. Record critical checks as evidence: `python3 system/governance/records.py evidence <label> -- <command>`.
+
+## Blocked dependency: reading research pages
+
+Under the cloud environment's **Trusted** network policy, as observed on 2026-10-20 in the audit session and in the fresh probe:
+
+- **Blocked:** arxiv.org, export.arxiv.org, huggingface.co, api.semanticscholar.org, openreview.net, aclanthology.org, doi.org and api.crossref.org. WebFetch fails with a DNS error, and the proxy refuses `curl`.
+- **Allowed:** pypi.org and api.github.com.
+- **WebSearch** works, but returns only result metadata.
+
+Until the founder adds those hosts under **Allowed domains** in the environment's network settings (environment menu, Edit, Network access), Research Synthesist, Trend Researcher and Feedback Synthesizer must cite search results as such and say that the page itself was not read. The baseline check lists the blocked hosts every time it runs.
 
 ## Not in the baseline, and why
 

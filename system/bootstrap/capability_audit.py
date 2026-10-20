@@ -5,7 +5,7 @@ Two modes:
 
   python3 system/bootstrap/capability_audit.py          # compare this session to the manifest
   python3 system/bootstrap/capability_audit.py --write  # regenerate system/capabilities/*.json
-  python3 system/bootstrap/capability_audit.py --baseline  # check only the operating baseline
+  python3 system/bootstrap/capability_audit.py --baseline [--strict]  # operating baseline only
 
 Sources, in order of authority:
   1. The session transcript (~/.claude/projects/<cwd-slug>/<session>.jsonl): the exact skill,
@@ -30,6 +30,8 @@ import re
 import shutil
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 from collections import Counter
 
 HOME = os.path.expanduser("~")
@@ -851,13 +853,30 @@ def check(manifest, plugins, skills, agents):
     return status
 
 
-def check_baseline(state, require_analysis_env=False):
-    """Check the operating baseline in system/baseline/baseline.json. Plugins are not required."""
+def reachable(host, timeout=10):
+    """True when an HTTPS request to the host gets any HTTP response through the network policy."""
+    try:
+        urllib.request.urlopen(
+            urllib.request.Request(f"https://{host}/", method="HEAD"), timeout=timeout
+        )
+    except urllib.error.HTTPError:
+        return True
+    except (urllib.error.URLError, OSError):
+        return False
+    return True
+
+
+def check_baseline(state, strict=False):
+    """Check the operating baseline in system/baseline/baseline.json. Plugins are not required.
+
+    Problems fail the check. Limitations (a dependency the founder or a later step must supply)
+    are reported, and fail it only with strict=True.
+    """
     spec = _load_json(BASELINE)
     if not spec:
         print("baseline: system/baseline/baseline.json is missing or unreadable")
         return 1
-    problems = []
+    problems, limits = [], []
     parsed = state["parsed"]
     print("Operating baseline check against system/baseline/baseline.json")
     print(f"  transcript parsed: {parsed} (session lists are checked only when it is)")
@@ -952,9 +971,19 @@ def check_baseline(state, require_analysis_env=False):
             problems.append(f"analysis environment: {env_state}")
     else:
         env_state = f"not restored; before exact tests run: {env_spec['restore']}"
-        if require_analysis_env:
-            problems.append("analysis environment is not restored")
+        limits.append("analysis environment is not restored")
     print(f"  analysis environment ({env_spec['venv']}): {env_state}")
+
+    hosts = spec.get("research_hosts") or {}
+    blocked = [h for h in hosts.get("hosts", []) if not reachable(h)]
+    if blocked:
+        limits.append(
+            f"web pages can't be read from {', '.join(blocked)}"
+            f" ({', '.join(hosts['needed_for'])} limited to search results): {hosts['resolve']}"
+        )
+    total = len(hosts.get("hosts", []))
+    print(f"  research hosts: {total - len(blocked)}/{total} reachable;")
+    print(f"    blocked: {', '.join(blocked) or 'none'}")
 
     proc = subprocess.run(
         [sys.executable, RECORDS, "verify"], capture_output=True, text=True, cwd=REPO
@@ -969,8 +998,18 @@ def check_baseline(state, require_analysis_env=False):
         problems.append(f"identifier/credential patterns in committed docs: {leaks}")
     for problem in problems:
         print(f"  PROBLEM: {problem}")
-    print(f"  result: {'BASELINE NOT SATISFIED' if problems else 'baseline satisfied'}")
-    return 1 if problems else 0
+    for limit in limits:
+        print(f"  LIMITATION: {limit}")
+    if problems or (strict and limits):
+        result = "BASELINE NOT SATISFIED"
+    else:
+        result = (
+            f"baseline satisfied, with {len(limits)} limitation(s)"
+            if limits
+            else "baseline satisfied"
+        )
+    print(f"  result: {result}")
+    return 1 if problems or (strict and limits) else 0
 
 
 def main():
@@ -992,9 +1031,9 @@ def main():
         help="check only the operating baseline (system/baseline/baseline.json)",
     )
     parser.add_argument(
-        "--require-analysis-env",
+        "--strict",
         action="store_true",
-        help="with --baseline, fail when the pinned analysis environment is not restored",
+        help="with --baseline, also fail on limitations (analysis env missing, hosts blocked)",
     )
     args = parser.parse_args()
     path = args.transcript or latest_transcript()
@@ -1005,7 +1044,7 @@ def main():
             file=sys.stderr,
         )
     if args.baseline:
-        return check_baseline(state, args.require_analysis_env)
+        return check_baseline(state, args.strict)
     manifest, plugins, skills, agents = build(state, path)
     if args.write:
         # A session without synced plugins would otherwise overwrite the record with a much

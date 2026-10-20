@@ -1,0 +1,23 @@
+Capability check against system/capabilities/manifest.json
+  transcript parsed: True
+  skills_loaded            recorded=  2495  now=  2495
+  agents_loaded            recorded=   514  now=   514
+  plugins_synced           recorded=   342  now=   342
+  account_skills_synced    recorded=    19  now=    19
+  repo_agents_committed    recorded=   282  now=   282
+  mcp_servers_failed       recorded=   215  now=   215
+  agents: 0 missing vs manifest, 0 new
+  skills: 0 missing vs manifest, 0 new
+  MCP servers failed now: 215 {'ERR_PROXY_TUNNEL': 199, 'INVALID_CONFIG': 2, 'ENOENT': 6, 'CONNECTION_CLOSED': 5, 'ECONNREFUSED': 2, 'CONNECT_TIMEOUT': 1}
+  MCP servers needing sign-in: plugin:engineering:datadog, plugin:finance:bigquery, plugin:gitlab:gitlab
+  binaries missing from PATH: adb-mcp, claude-tab-fix, cmd, toolbox, vulca-mcp
+  hook error x1: SessionStart:startup: Failed with non-blocking status code: cat: <plugin aws-startup-advisor>/scripts/startup-context.txt: No such file or dir
+  hook error x1: SessionStart:startup: Hook output looks like a JSON object but is not valid JSON — JSON Parse error: Unterminated string. Emit the payload wit
+  hook error x200: PreToolUse:Bash: Failed with non-blocking status code: /bin/sh: 1: claude-tab-fix: not found
+  hook error x14: PreToolUse:Write: Failed with non-blocking status code: /bin/sh: 1: claude-tab-fix: not found
+  hook error x8: PostToolUse:Read: Failed with non-blocking status code: /bin/sh: 1: claude-tab-fix: not found
+  hook error x1: SessionStart:compact: Failed with non-blocking status code: cat: <plugin aws-startup-advisor>/scripts/startup-context.txt: No such file or dir
+  hook error x1: SessionStart:compact: Hook output looks like a JSON object but is not valid JSON — JSON Parse error: Unterminated string. Emit the payload wit
+  repo .claude/agents: 282 definitions, 0 unparseable
+  identifier/credential patterns in committed docs: none
+  result: matches the manifest

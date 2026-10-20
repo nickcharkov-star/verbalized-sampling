@@ -47,6 +47,11 @@
      "resolution": "Claude Code built-in tools"
     },
     {
+     "need": "Reading pages on scholarly and model hosts (arxiv.org, huggingface.co, semanticscholar.org and others in research_hosts)",
+     "status": "blocked by network policy",
+     "resolution": "the founder adds these hosts under Allowed domains in the cloud environment's network settings (environment menu, Edit, Network access); until then web research cites search results only and says the page was not read"
+    },
+    {
      "need": "Paywalled bibliographic databases",
      "status": "out of scope",
      "resolution": "recorded as a search boundary, not worked around"
@@ -63,6 +68,11 @@
      "need": "WebSearch and WebFetch (its tools: line excludes Bash and all connectors)",
      "status": "available",
      "resolution": "Claude Code built-in tools"
+    },
+    {
+     "need": "Reading pages on scholarly and model hosts (arxiv.org, huggingface.co, semanticscholar.org and others in research_hosts)",
+     "status": "blocked by network policy",
+     "resolution": "the founder adds these hosts under Allowed domains in the cloud environment's network settings (environment menu, Edit, Network access); until then web research cites search results only and says the page was not read"
     },
     {
      "need": "Paid research tools (SEMrush, Ahrefs, SimilarWeb, Statista, CB Insights, PitchBook)",
@@ -86,6 +96,11 @@
      "need": "WebSearch and WebFetch (its tools: line excludes connectors)",
      "status": "available",
      "resolution": "Claude Code built-in tools"
+    },
+    {
+     "need": "Reading pages on scholarly and model hosts (arxiv.org, huggingface.co, semanticscholar.org and others in research_hosts)",
+     "status": "blocked by network policy",
+     "resolution": "the founder adds these hosts under Allowed domains in the cloud environment's network settings (environment menu, Edit, Network access); until then web research cites search results only and says the page was not read"
     },
     {
      "need": "Surveys, in-app channels, analytics, email campaigns, interviews",
@@ -184,7 +199,8 @@
   "import_check": "import numpy, scipy.stats, pandas, statsmodels.api",
   "needed_for": [
    "Statistician (exact tests)"
-  ]
+  ],
+  "unattended_sessions": "the auto-mode safety classifier refused this install in an unattended fresh session (probe 2); a person approves it in the session, or the founder adds an equivalent install to the environment's setup script"
  },
  "settings": {
   "file": ".claude/settings.json",
@@ -226,5 +242,24 @@
    "Model QA Specialist": "needs scipy, scikit-learn and shap for tabular models; replication would need paid API calls",
    "Prompt Engineer": "its workflow calls live models repeatedly (paid API usage)"
   }
+ },
+ "research_hosts": {
+  "needed_for": [
+   "Research Synthesist",
+   "Trend Researcher",
+   "Feedback Synthesizer"
+  ],
+  "hosts": [
+   "arxiv.org",
+   "export.arxiv.org",
+   "huggingface.co",
+   "api.semanticscholar.org",
+   "openreview.net",
+   "aclanthology.org",
+   "doi.org",
+   "api.crossref.org"
+  ],
+  "observed_2026_10_20": "all unreachable under the environment's Trusted network policy (DNS failure in WebFetch, proxy refusal for curl), in the audit session and the fresh probe; WebSearch works but returns result metadata only",
+  "resolve": "the founder adds these hosts under Allowed domains in the cloud environment's network settings (environment menu, Edit, Network access); until then web research cites search results only and says the page was not read"
  }
 }

@@ -32,11 +32,11 @@ This checks only what research and validation rely on ([`../baseline/BASELINE.md
 - the built-in agents and web tools
 - `python3` and `git`
 - the committed settings: the output-rewriting switch, also checked in the live process environment, and the required deny rules
-- the pinned analysis environment, when restored
+- the pinned analysis environment, when restored, and whether the research hosts are reachable
 - the hash chains in `system/governance/`
 - leak patterns in the committed docs
 
-It needs no plugins and exits 0 when the baseline holds, including in a session where no plugins arrived. Add `--require-analysis-env` once `.venv-analysis` should exist. To confirm the deny rules are live, run `echo vs-deny-canary`; Claude Code must refuse it.
+It needs no plugins and exits 0 when the baseline holds, including in a session where no plugins arrived. It reports limitations, such as the analysis environment not yet restored or research hosts blocked by the network policy, without failing; `--strict` makes them fail too. To confirm the deny rules are live, run `echo vs-deny-canary`: Claude Code must refuse it. It does so in subagents too.
 
 To refresh the recorded state after a deliberate change, run it with `--write` and commit the regenerated files. Two guards protect the record:
 

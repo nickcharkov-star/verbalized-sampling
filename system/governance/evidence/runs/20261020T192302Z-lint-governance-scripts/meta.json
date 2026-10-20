@@ -1,0 +1,27 @@
+{
+ "command": [
+  "bash",
+  "-c",
+  "F='system/bootstrap/capability_audit.py system/governance/records.py system/governance/deny_evidence.py'; ruff check --line-length 100 $F && ruff format --line-length 100 --check $F && isort --check-only --profile black $F"
+ ],
+ "exit_code": 0,
+ "files": {
+  "stderr.txt": {
+   "bytes": 452,
+   "sha256": "088812e7437aefaef0104879817d84be5961687c9bf8c884ed7f1662a7ab852c"
+  },
+  "stdout.txt": {
+   "bytes": 45,
+   "sha256": "c6486b51f483249343d4a4bdb91c41be31f0bdc28887b2f4cd4800e174f8bd6b"
+  }
+ },
+ "finished": "2026-10-20T19:23:02+00:00",
+ "git_dirty": false,
+ "git_head": "b1407d8be00c74694707544bd2aaf1953fd75847",
+ "id": "20261020T192302Z-lint-governance-scripts",
+ "label": "lint-governance-scripts",
+ "output_rewriting_plugin_disabled": true,
+ "restricted": false,
+ "restricted_reason": [],
+ "started": "2026-10-20T19:23:02+00:00"
+}

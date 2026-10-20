@@ -1,0 +1,10 @@
+d042a7b
+python3 -c "import  pytest" || pip3 install  pytest --upgrade
+pytest -s
+============================= test session starts ==============================
+platform linux -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/user/verbalized-sampling/system/governance/.restricted/main-tree
+configfile: pyproject.toml
+collected 0 items
+
+============================ no tests ran in 0.06s =============================

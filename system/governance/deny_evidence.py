@@ -6,7 +6,7 @@
 Reads the newest session transcript for this repository (the format belongs to Claude Code and
 may change) and reports, as tool names and timestamps only:
   - tools the harness withdrew from the session after they matched a deny rule
-  - commands Claude Code refused with a permission denial
+  - commands Claude Code refused with a permission denial, in the session and its subagents
   - every call to a tool the current rules deny, and whether it came before that tool was
     withdrawn (a call after withdrawal would mean the rule did not hold)
 Exit 1 if any call to a denied tool happened after the tool was withdrawn.
@@ -14,6 +14,7 @@ Exit 1 if any call to a denied tool happened after the tool was withdrawn.
 
 import argparse
 import fnmatch
+import glob
 import json
 import os
 import sys
@@ -22,18 +23,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from capability_audit import REPO, latest_transcript  # noqa: E402
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--transcript", help="transcript to read (default: newest for this repo)")
-    args = parser.parse_args()
-    with open(os.path.join(REPO, ".claude", "settings.json"), encoding="utf-8") as fh:
-        rules = [r for r in json.load(fh)["permissions"]["deny"] if r.startswith("mcp__")]
-
-    def denied(name):
-        return any(fnmatch.fnmatchcase(name, rule) for rule in rules)
-
+def read(path, who):
+    """Tool-list changes, permission refusals and tool calls recorded in one transcript."""
     deltas, refusals, calls, first = [], [], [], None
-    with open(args.transcript or latest_transcript(), encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         for line in fh:
             try:
                 rec = json.loads(line)
@@ -59,7 +52,27 @@ def main():
                 elif part.get("type") == "tool_result" and part.get("is_error"):
                     text = json.dumps(part.get("content"))
                     if "has been denied" in text:
-                        refusals.append((when, text[:160]))
+                        refusals.append((when, f"{who}: {text[:160]}"))
+    return deltas, refusals, calls, first
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--transcript", help="transcript to read (default: newest for this repo)")
+    args = parser.parse_args()
+    with open(os.path.join(REPO, ".claude", "settings.json"), encoding="utf-8") as fh:
+        rules = [r for r in json.load(fh)["permissions"]["deny"] if r.startswith("mcp__")]
+
+    def denied(name):
+        return any(fnmatch.fnmatchcase(name, rule) for rule in rules)
+
+    path = args.transcript or latest_transcript()
+    deltas, refusals, calls, first = read(path, "session")
+    # Subagents run in their own transcripts next to the session's; the same rules apply there.
+    for sub in sorted(glob.glob(os.path.join(os.path.splitext(path)[0], "subagents", "*.jsonl"))):
+        _, sub_refusals, sub_calls, _ = read(sub, "subagent")
+        refusals += sub_refusals
+        calls += sub_calls
 
     # Rules take effect at the first denial the harness records; a session that started with the
     # rules in place records none, so then they hold from its first record.

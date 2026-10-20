@@ -1,0 +1,26 @@
+{
+ "command": [
+  "make",
+  "test"
+ ],
+ "exit_code": 2,
+ "files": {
+  "stderr.txt": {
+   "bytes": 38,
+   "sha256": "51c902a1297480e92ba4585482efdaf12f290f1b9121aecad14b785bf40d6abd"
+  },
+  "stdout.txt": {
+   "bytes": 381,
+   "sha256": "4b36ca099fc3d80a0214eb916cabec1d10911856f786fd7c1dd7cec45fbf75b6"
+  }
+ },
+ "finished": "2026-10-20T19:23:36+00:00",
+ "git_dirty": false,
+ "git_head": "b1407d8be00c74694707544bd2aaf1953fd75847",
+ "id": "20261020T192336Z-pr-make-test",
+ "label": "pr-make-test",
+ "output_rewriting_plugin_disabled": true,
+ "restricted": false,
+ "restricted_reason": [],
+ "started": "2026-10-20T19:23:36+00:00"
+}
