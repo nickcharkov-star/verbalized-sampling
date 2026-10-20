@@ -185,6 +185,7 @@
       "mcp__claude-code-remote__add_repo",
       "mcp__claude-code-remote__archive_session",
       "mcp__claude-code-remote__confirm_repository_trust",
+      "mcp__claude-code-remote__create_session",
       "mcp__claude-code-remote__create_trigger",
       "mcp__claude-code-remote__delete_trigger",
       "mcp__claude-code-remote__fire_trigger",
