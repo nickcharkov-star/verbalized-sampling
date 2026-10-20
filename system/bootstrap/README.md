@@ -18,7 +18,25 @@ This only reads. It compares the current session with `system/capabilities/manif
 - whether every agent definition in `.claude/agents/` still parses
 - whether any committed capability file or doc matches an identifier or credential pattern
 
-It exits **0** when the session matches the manifest and **1** when skills or agents are missing, a definition is broken, or a doc leaks, so it can gate a script or CI step.
+It exits **0** when the session matches the manifest and **1** when skills or agents are missing, a definition is broken, or a doc leaks, so it can gate a script or CI step. In a session without the account's plugins it exits 1 by design, because the manifest records the full inventory.
+
+## Then check the operating baseline
+
+```bash
+python3 system/bootstrap/capability_audit.py --baseline
+```
+
+This checks only what research and validation rely on ([`../baseline/BASELINE.md`](../baseline/BASELINE.md)):
+
+- the eight baseline agents: each file's SHA-256, its frontmatter, and its presence in the session
+- the built-in agents and web tools
+- `python3` and `git`
+- the committed settings: the output-rewriting switch, also checked in the live process environment, and the required deny rules
+- the pinned analysis environment, when restored
+- the hash chains in `system/governance/`
+- leak patterns in the committed docs
+
+It needs no plugins and exits 0 when the baseline holds, including in a session where no plugins arrived. Add `--require-analysis-env` once `.venv-analysis` should exist. To confirm the deny rules are live, run `echo vs-deny-canary`; Claude Code must refuse it.
 
 To refresh the recorded state after a deliberate change, run it with `--write` and commit the regenerated files. Two guards protect the record:
 
@@ -55,7 +73,7 @@ An agent is available when it appears in the list. It is verified only after one
 
 ### Which plugins are installed
 
-Plugins are not installed from this repository. Cloud sessions ignore `enabledPlugins` in a repository's `.claude/settings.json`. When they arrive at all, they come from the claude.ai account at session start. In the 2026-10-20 audit, the session started from the Claude app received 343 plugins; a fresh session created through the API received **none** (see `manifest.json` → `cold_start_probe`). Always check:
+Plugins are not installed from this repository; when they arrive at all, they come from the claude.ai account at session start. The repository's `.claude/settings.json` can only switch a synced plugin off: it sets `agentone-token-compression@synced` to `false`. That took effect in the audit session at the next worker start (the plugin's tools disappeared at 19:05 UTC and didn't come back). A plugin the organization marks as required would ignore it. In the 2026-10-20 audit, the session started from the Claude app received 343 plugins; a fresh session created through the API received **none** (see `manifest.json` → `cold_start_probe`). Always check:
 
 ```bash
 ls ~/.claude/plugins/synced/*/*.meta.json | wc -l      # plugin count
@@ -116,3 +134,4 @@ These need the account owner. Claude must not do them on its own:
 6. **Enable or disable plugins and skills** on claude.ai. That changes what every future session loads.
 7. **Decide about Cognee memory**: it currently lives only on the VM (see `SYSTEM-CAPABILITIES.md`).
 8. **Review the account's scheduled tasks** at https://claude.ai/code/routines. One holds a standing API token with broad connector grants and survives every VM.
+9. **Authorize any spending, outreach, publishing or deployment** with a decision record as described in `system/governance/decisions/0003-spending-and-external-action-authority.md`, then narrow the matching deny rule in a reviewed pull request. Sessions on this repository can't do these today: the runtime denies the tools.

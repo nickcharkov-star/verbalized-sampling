@@ -76,6 +76,12 @@ archive/
 *results*/
 *CLAUDE.md
 */.claude*
+# Per-session config written by the odoo-timesheet Claude Code plugin; holds credential fields
+.claude/odoo-timesheet/
+# Raw evidence that matched an identifier or credential pattern; only its hash is committed
+system/governance/.restricted/
+# Analysis environment restored from system/baseline/requirements-analysis.txt
+.venv-analysis/
 
 # Generated data and plots (organized structure)
 generated_data/*/
@@ -104,6 +110,3 @@ ablation_data/results/
 .Trashes
 ehthumbs.db
 Thumbs.db
-
-# Per-session config written by the odoo-timesheet Claude Code plugin; holds credential fields
-.claude/odoo-timesheet/

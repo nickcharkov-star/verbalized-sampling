@@ -5,6 +5,7 @@ Two modes:
 
   python3 system/bootstrap/capability_audit.py          # compare this session to the manifest
   python3 system/bootstrap/capability_audit.py --write  # regenerate system/capabilities/*.json
+  python3 system/bootstrap/capability_audit.py --baseline  # check only the operating baseline
 
 Sources, in order of authority:
   1. The session transcript (~/.claude/projects/<cwd-slug>/<session>.jsonl): the exact skill,
@@ -20,11 +21,14 @@ scheme+host, HTTP headers, account or organization identifiers, or plugin implem
 
 import argparse
 import datetime
+import fnmatch
 import glob
+import hashlib
 import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 from collections import Counter
 
@@ -704,12 +708,32 @@ DOCS_TO_SCAN = (
     "system/capabilities/plugins.json",
     "system/capabilities/skills.json",
     "system/capabilities/agents.json",
+    "system/baseline/BASELINE.md",
+    "system/baseline/baseline.json",
+    "system/governance/README.md",
+    ".claude/settings.json",
 )
+BASELINE = os.path.join(REPO, "system", "baseline", "baseline.json")
+RECORDS = os.path.join(REPO, "system", "governance", "records.py")
 
 
 def find_leaks(text):
     """Return the names of leak patterns present in text."""
     return sorted(name for name, pat in LEAK_PATTERNS.items() if re.search(pat, text))
+
+
+def scan_docs():
+    """Leak patterns found in committed docs, records and decision files, by path."""
+    paths = [os.path.join(REPO, rel) for rel in DOCS_TO_SCAN]
+    paths += sorted(glob.glob(os.path.join(REPO, "system", "governance", "decisions", "*.md")))
+    leaks = {}
+    for path in paths:
+        if os.path.exists(path):
+            with open(path, encoding="utf-8") as fh:
+                found = find_leaks(fh.read())
+            if found:
+                leaks[os.path.relpath(path, REPO)] = found
+    return leaks
 
 
 def shrink_reasons(manifest):
@@ -816,14 +840,7 @@ def check(manifest, plugins, skills, agents):
     repo_agents = scan_repo_agents()
     bad = [a for a in repo_agents if a["error"]]
     print(f"  repo .claude/agents: {len(repo_agents)} definitions, {len(bad)} unparseable")
-    leaks = {}
-    for rel in DOCS_TO_SCAN:
-        path = os.path.join(REPO, rel)
-        if os.path.exists(path):
-            with open(path, encoding="utf-8") as fh:
-                found = find_leaks(fh.read())
-            if found:
-                leaks[rel] = found
+    leaks = scan_docs()
     print(f"  identifier/credential patterns in committed docs: {leaks or 'none'}")
     drifted = any(rec_totals.get(k) != cur.get(k) for k in ("skills_loaded", "agents_loaded"))
     missing = (rec_agents - cur_agents) or (rec_skills - cur_skills)
@@ -832,6 +849,128 @@ def check(manifest, plugins, skills, agents):
     status = 1 if (drifted or missing or bad or leaks) else 0
     print(f"  result: {'DRIFT OR PROBLEM FOUND' if status else 'matches the manifest'}")
     return status
+
+
+def check_baseline(state, require_analysis_env=False):
+    """Check the operating baseline in system/baseline/baseline.json. Plugins are not required."""
+    spec = _load_json(BASELINE)
+    if not spec:
+        print("baseline: system/baseline/baseline.json is missing or unreadable")
+        return 1
+    problems = []
+    parsed = state["parsed"]
+    print("Operating baseline check against system/baseline/baseline.json")
+    print(f"  transcript parsed: {parsed} (session lists are checked only when it is)")
+
+    listed = set(state["agents"])
+    for agent in spec["agents"]:
+        path = os.path.join(REPO, agent["file"])
+        if not os.path.exists(path):
+            problems.append(f"agent {agent['name']}: {agent['file']} is missing")
+            continue
+        with open(path, "rb") as fh:
+            digest = hashlib.sha256(fh.read()).hexdigest()
+        fields, err = parse_frontmatter(path)
+        if digest != agent["sha256"]:
+            problems.append(f"agent {agent['name']}: file differs from the recorded sha256")
+        if err:
+            problems.append(f"agent {agent['name']}: {err}")
+        elif fields["name"] != agent["name"]:
+            problems.append(f"agent {agent['name']}: frontmatter name is {fields['name']!r}")
+        elif "mcp__" in fields.get("tools", ""):
+            problems.append(f"agent {agent['name']}: its tools line names an MCP tool")
+        loaded = "not checked" if not parsed else "loaded" if agent["name"] in listed else "MISSING"
+        if loaded == "MISSING":
+            problems.append(f"agent {agent['name']}: not in this session's agent list")
+        print(f"  agent {agent['name']:30} file ok={digest == agent['sha256']!s:5}  {loaded}")
+    if parsed:
+        missing = [b for b in spec["builtin_agents"] if b not in state["builtin_agents"]]
+        problems += [f"built-in agent {b} is not in this session" for b in missing]
+        print(
+            f"  built-in agents: {', '.join(spec['builtin_agents'])}: missing {missing or 'none'}"
+        )
+        deferred = [t for t in ("WebSearch", "WebFetch") if t in spec["builtin_tools"]]
+        absent = [t for t in deferred if t not in state["tool_names"]]
+        problems += [f"tool {t} is not offered in this session" for t in absent]
+        print(f"  web tools offered: {', '.join(t for t in deferred if t not in absent) or 'none'}")
+
+    if sys.version_info < (3, 10):
+        problems.append(f"python3 is {sys.version.split()[0]}; the baseline needs 3.10+")
+    if not shutil.which("git"):
+        problems.append("git is not on PATH")
+    print(
+        f"  python3 {sys.version.split()[0]}, git {'found' if shutil.which('git') else 'MISSING'}"
+    )
+
+    want = spec["settings"]
+    settings = _load_json(os.path.join(REPO, want["file"])) or {}
+    for key, value in want["env"].items():
+        if (settings.get("env") or {}).get(key) != value:
+            problems.append(f"{want['file']}: env.{key} is not {value!r}")
+        if os.environ.get(key) != value:
+            problems.append(f"env {key} is not {value!r} in this process (settings not applied?)")
+    for key, value in want["enabledPlugins"].items():
+        if (settings.get("enabledPlugins") or {}).get(key) is not value:
+            problems.append(f"{want['file']}: enabledPlugins[{key!r}] is not {value}")
+    deny = set((settings.get("permissions") or {}).get("deny") or [])
+    # A required MCP tool counts as denied when a wildcard rule such as mcp__*__send* covers it.
+    globs = [d for d in deny if d.startswith("mcp__") and "*" in d]
+    absent_rules = [
+        r
+        for r in want["required_deny_rules"]
+        if r not in deny and not any(fnmatch.fnmatchcase(r, g) for g in globs)
+    ]
+    problems += [f"{want['file']}: required deny rule missing: {r}" for r in absent_rules]
+    print(
+        f"  settings: {len(deny)} deny rules, required ones missing: {len(absent_rules)},"
+        f" output-rewriting switch in process env: {os.environ.get('TOKEN_OPTIMIZER_DISABLED')}"
+    )
+
+    root = synced_root("plugins")
+    synced = glob.glob(os.path.join(root, "*.meta.json")) if root else []
+    rewriting = [
+        p
+        for p in glob.glob(os.path.join(root or "", "*", ".claude-plugin", "plugin.json"))
+        if (_load_json(p) or {}).get("name") == "agentone-token-compression"
+    ]
+    print(
+        f"  synced plugins in this session: {len(synced)} (baseline requires none);"
+        f" output-rewriting plugin on disk: {'yes, disabled by settings' if rewriting else 'no'}"
+    )
+
+    env_spec = spec["analysis_environment"]
+    python = os.path.join(REPO, env_spec["venv"], "bin", "python")
+    if os.path.exists(python):
+        try:
+            proc = subprocess.run(
+                [python, "-c", env_spec["import_check"]], capture_output=True, timeout=180
+            )
+            env_state = "restored, imports ok" if proc.returncode == 0 else "restored, IMPORT FAILS"
+        except subprocess.TimeoutExpired:
+            env_state = "restored, IMPORT TIMED OUT"
+        if env_state != "restored, imports ok":
+            problems.append(f"analysis environment: {env_state}")
+    else:
+        env_state = f"not restored; before exact tests run: {env_spec['restore']}"
+        if require_analysis_env:
+            problems.append("analysis environment is not restored")
+    print(f"  analysis environment ({env_spec['venv']}): {env_state}")
+
+    proc = subprocess.run(
+        [sys.executable, RECORDS, "verify"], capture_output=True, text=True, cwd=REPO
+    )
+    for line in proc.stdout.splitlines():
+        print(f"  records: {line}")
+    if proc.returncode != 0:
+        problems.append("governance records failed verification")
+
+    leaks = scan_docs()
+    if leaks:
+        problems.append(f"identifier/credential patterns in committed docs: {leaks}")
+    for problem in problems:
+        print(f"  PROBLEM: {problem}")
+    print(f"  result: {'BASELINE NOT SATISFIED' if problems else 'baseline satisfied'}")
+    return 1 if problems else 0
 
 
 def main():
@@ -847,6 +986,16 @@ def main():
         action="store_true",
         help="with --write, allow a regeneration that drops most recorded capabilities",
     )
+    parser.add_argument(
+        "--baseline",
+        action="store_true",
+        help="check only the operating baseline (system/baseline/baseline.json)",
+    )
+    parser.add_argument(
+        "--require-analysis-env",
+        action="store_true",
+        help="with --baseline, fail when the pinned analysis environment is not restored",
+    )
     args = parser.parse_args()
     path = args.transcript or latest_transcript()
     state = read_transcript(path)
@@ -855,6 +1004,8 @@ def main():
             "warning: no skill listing found in the transcript; skill/agent lists will be empty",
             file=sys.stderr,
         )
+    if args.baseline:
+        return check_baseline(state, args.require_analysis_env)
     manifest, plugins, skills, agents = build(state, path)
     if args.write:
         # A session without synced plugins would otherwise overwrite the record with a much
