@@ -91,14 +91,14 @@ A capability counts as degraded when it is still listed but its plugin's `depend
 
 ### Which capabilities restore automatically
 
-These come back in any new cloud session for the same account, with nothing to do. Each was verified by the fresh-session probe:
+These come back in any new cloud session for the same account, with nothing to do. Items marked *(probe)* were observed in the fresh-session probe; the others come from the platform docs or this session's logs:
 
-- Claude Code built-in skills (15, plus `workflow-authoring` while Workflow/ultracode is on) and the 6 built-in agents
-- the cloud-image skill and the platform's Stop git-check hook (two more platform hook scripts are written but not wired)
-- the 19 claude.ai account skills
-- claude.ai connectors that are already connected on the account (11 observed in the fresh probe; others may need re-authorization)
+- Claude Code built-in skills (15, plus `workflow-authoring` while Workflow/ultracode is on) and the 6 built-in agents *(probe)*
+- the cloud-image skill *(probe)* and the platform's Stop git-check hook (two more platform hook scripts are written but not wired)
+- the 19 claude.ai account skills *(probe)*
+- claude.ai connectors that are already connected on the account (11 observed *(probe)*; others may need re-authorization)
 - the environment's settings (network level, environment variables; there is no setup script)
-- everything committed to the branch the session clones: `.claude/agents/` (after PR #2 merges), `system/`, `.gitignore`
+- everything committed to the branch the session clones: `.claude/agents/` (after PR #2 merges) *(probe)*, `system/`, `.gitignore`
 
 **Not guaranteed:** the account-synced plugins (~342, and the set changes between sessions) and everything they bring (2,459 skills, 226 agents, hooks, MCP servers). They were present in the app-started audit session and absent in the API-created probe. When they are present, their stdio MCP servers launched with `npx`/`uvx` re-download from registries that **Trusted** allows.
 
@@ -108,8 +108,8 @@ These come back in any new cloud session for the same account, with nothing to d
 
 These need the account owner. Claude must not do them on its own:
 
-1. **Merge PR #2** so `main` carries `.claude/agents/`. Until then, new sessions on `main` have none of the 282 Agency Agents.
-2. **Widen network access** for the 200 proxy-blocked MCP servers (Custom allowlist). This is a security decision, because it opens outbound traffic to third-party hosts.
+1. **Mark PR #2 ready and merge it** so `main` carries `.claude/agents/`. Until then, new sessions on `main` have none of the 282 Agency Agents.
+2. **Widen network access** for the 199 proxy-blocked MCP servers (Custom allowlist). This is a security decision, because it opens outbound traffic to third-party hosts.
 3. **Sign in** to OAuth servers (Datadog, BigQuery, GitLab in the last audit) and to any connector that shows as needing auth.
 4. **Add credentials** as network secrets or environment variables (for example `TWELVELABS_API_KEY`, `ADO_PAT`, `COCKROACHDB_*`). Never commit them, and never paste them into chat.
 5. **Add an environment setup script** (none exists today) to install missing binaries (`toolbox`, `adb-mcp`, `vulca-mcp`, `claude-tab-fix`) or to back up memory.
