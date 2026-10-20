@@ -1,0 +1,27 @@
+{
+ "command": [
+  "bash",
+  "-c",
+  "cd system/governance/.restricted/main-tree && git rev-parse --short HEAD && make test"
+ ],
+ "exit_code": 2,
+ "files": {
+  "stderr.txt": {
+   "bytes": 38,
+   "sha256": "51c902a1297480e92ba4585482efdaf12f290f1b9121aecad14b785bf40d6abd"
+  },
+  "stdout.txt": {
+   "bytes": 429,
+   "sha256": "0b19f29d4c849605ecb494c7c94d16567e821c544ae93bb62c5c27452654e254"
+  }
+ },
+ "finished": "2026-10-20T19:23:38+00:00",
+ "git_dirty": false,
+ "git_head": "b1407d8be00c74694707544bd2aaf1953fd75847",
+ "id": "20261020T192338Z-main-make-test",
+ "label": "main-make-test",
+ "output_rewriting_plugin_disabled": true,
+ "restricted": false,
+ "restricted_reason": [],
+ "started": "2026-10-20T19:23:38+00:00"
+}

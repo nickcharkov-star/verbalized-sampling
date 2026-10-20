@@ -1,0 +1,26 @@
+{
+ "command": [
+  "python3",
+  "system/bootstrap/capability_audit.py"
+ ],
+ "exit_code": 0,
+ "files": {
+  "stderr.txt": {
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout.txt": {
+   "bytes": 1953,
+   "sha256": "50263ae5639eef1e44f15f3b74c94aff10cf9624b08ebaa353b9dc55ee5f0822"
+  }
+ },
+ "finished": "2026-10-20T19:23:01+00:00",
+ "git_dirty": false,
+ "git_head": "b1407d8be00c74694707544bd2aaf1953fd75847",
+ "id": "20261020T192300Z-inventory-check",
+ "label": "inventory-check",
+ "output_rewriting_plugin_disabled": true,
+ "restricted": false,
+ "restricted_reason": [],
+ "started": "2026-10-20T19:23:00+00:00"
+}

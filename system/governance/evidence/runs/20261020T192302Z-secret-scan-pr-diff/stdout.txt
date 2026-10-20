@@ -1,0 +1,15 @@
+files added or modified vs main: 303
+files matching a pattern: 13
+  .claude/agents/accounts-payable-agent.md ['email']
+  .claude/agents/data-privacy-officer.md ['email']
+  .claude/agents/engineering-developer-tooling-engineer.md ['email']
+  .claude/agents/engineering-embedded-firmware-engineer.md ['email']
+  .claude/agents/engineering-feishu-integration-developer.md ['url_secret_param']
+  .claude/agents/identity-graph-operator.md ['email']
+  .claude/agents/security-secrets-credential-engineer.md ['email']
+  .claude/agents/security-senior-secops.md ['email', 'private_key', 'url_secret_param']
+  .claude/agents/security-threat-detection-engineer.md ['uuid']
+  .claude/agents/security-threat-intelligence-analyst.md ['uuid']
+  .claude/agents/support-legal-compliance-checker.md ['email']
+  .claude/agents/testing-api-tester.md ['email']
+  .claude/agents/testing-performance-benchmarker.md ['email']

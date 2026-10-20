@@ -1,0 +1,27 @@
+{
+ "command": [
+  "python3",
+  "-c",
+  "import subprocess,sys;sys.path.insert(0,'system/bootstrap');from capability_audit import find_leaks;fs=subprocess.run(['git','diff','--name-only','--diff-filter=AM','origin/main...HEAD'],capture_output=True,text=True).stdout.split();hits={f:find_leaks(open(f,errors='replace').read()) for f in fs};hits={f:h for f,h in hits.items() if h};print('files added or modified vs main:',len(fs));print('files matching a pattern:',len(hits));[print(' ',f,h) for f,h in sorted(hits.items())]"
+ ],
+ "exit_code": 0,
+ "files": {
+  "stderr.txt": {
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout.txt": {
+   "bytes": 903,
+   "sha256": "19008f265383a7349b72e41ba956e373c0a2857c46436deea41dc23a57d7aae5"
+  }
+ },
+ "finished": "2026-10-20T19:23:05+00:00",
+ "git_dirty": false,
+ "git_head": "b1407d8be00c74694707544bd2aaf1953fd75847",
+ "id": "20261020T192302Z-secret-scan-pr-diff",
+ "label": "secret-scan-pr-diff",
+ "output_rewriting_plugin_disabled": true,
+ "restricted": false,
+ "restricted_reason": [],
+ "started": "2026-10-20T19:23:02+00:00"
+}

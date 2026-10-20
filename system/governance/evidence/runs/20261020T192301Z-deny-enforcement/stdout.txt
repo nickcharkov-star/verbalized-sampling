@@ -1,0 +1,14 @@
+deny rules for MCP tools: 207; rules in effect from 2026-10-20T19:10:38.353Z
+tools withdrawn from the session after the rules took effect: 205
+  e.g. 2026-10-20T19:10:38.779Z mcp__claude-code-remote__add_repo
+  e.g. 2026-10-20T19:10:38.779Z mcp__claude-code-remote__archive_session
+  e.g. 2026-10-20T19:10:38.779Z mcp__claude-code-remote__confirm_repository_trust
+  e.g. 2026-10-20T19:10:38.779Z mcp__claude-code-remote__create_trigger
+  e.g. 2026-10-20T19:10:38.779Z mcp__claude-code-remote__delete_trigger
+permission refusals: 1
+  2026-10-20T19:10:38.353Z "Permission to use Bash with command echo vs-deny-canary-should-be-blocked has been denied."
+call to a now-denied tool: 2026-10-20T07:51:00.194Z mcp__claude-code-remote__send_later: before withdrawal (2026-10-20T19:10:38.779Z)
+call to a now-denied tool: 2026-10-20T16:57:42.654Z mcp__claude-code-remote__create_session: before withdrawal (2026-10-20T19:20:36.150Z)
+call to a now-denied tool: 2026-10-20T18:02:37.274Z mcp__claude-code-remote__send_later: before withdrawal (2026-10-20T19:10:38.779Z)
+call to a now-denied tool: 2026-10-20T19:20:21.961Z mcp__claude-code-remote__create_session: before withdrawal (2026-10-20T19:20:36.150Z)
+result: no denied tool was called after withdrawal

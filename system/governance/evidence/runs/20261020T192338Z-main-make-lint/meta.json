@@ -1,0 +1,27 @@
+{
+ "command": [
+  "bash",
+  "-c",
+  "cd system/governance/.restricted/main-tree && git rev-parse --short HEAD && make lint"
+ ],
+ "exit_code": 2,
+ "files": {
+  "stderr.txt": {
+   "bytes": 351,
+   "sha256": "73d5acdd71c8d5cc51531a932af69a5a0a6a271c50040b27beff33cf458ee9ae"
+  },
+  "stdout.txt": {
+   "bytes": 1569,
+   "sha256": "63c5dd16787c19a1aa08a9582791c0afed93d6d02e5d2dd99d691e99e9975a1d"
+  }
+ },
+ "finished": "2026-10-20T19:23:39+00:00",
+ "git_dirty": false,
+ "git_head": "b1407d8be00c74694707544bd2aaf1953fd75847",
+ "id": "20261020T192338Z-main-make-lint",
+ "label": "main-make-lint",
+ "output_rewriting_plugin_disabled": true,
+ "restricted": false,
+ "restricted_reason": [],
+ "started": "2026-10-20T19:23:38+00:00"
+}

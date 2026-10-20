@@ -1,0 +1,27 @@
+{
+ "command": [
+  "python3",
+  "-c",
+  "import glob,yaml;fs=sorted(glob.glob('.claude/agents/*.md'));fm=[yaml.safe_load(open(f).read().split(chr(10)+'---',1)[0][4:]) for f in fs];ok=[m for m in fm if isinstance(m,dict) and m.get('name') and m.get('description')];names=[m['name'].lower() for m in ok];print('definitions',len(fs),'valid frontmatter',len(ok),'distinct names',len(set(names)),'pyyaml',yaml.__version__)"
+ ],
+ "exit_code": 0,
+ "files": {
+  "stderr.txt": {
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout.txt": {
+   "bytes": 70,
+   "sha256": "06b8f64c62901778b8f3b210f666ecf063bc2e9981db3915b14e8126538f7de7"
+  }
+ },
+ "finished": "2026-10-20T19:23:02+00:00",
+ "git_dirty": false,
+ "git_head": "b1407d8be00c74694707544bd2aaf1953fd75847",
+ "id": "20261020T192302Z-agent-definitions",
+ "label": "agent-definitions",
+ "output_rewriting_plugin_disabled": true,
+ "restricted": false,
+ "restricted_reason": [],
+ "started": "2026-10-20T19:23:02+00:00"
+}

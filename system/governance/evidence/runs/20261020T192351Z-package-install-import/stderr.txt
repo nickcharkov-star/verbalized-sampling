@@ -1,0 +1,47 @@
+
+[notice] A new release of pip is available: 26.2.1 -> 26.2.2
+[notice] To update, run: /home/user/verbalized-sampling/system/governance/.restricted/pkg-venv/bin/python3 -m pip install --upgrade pip
+[nltk_data] Error loading punkt: Security Violation [pathsec.urlopen]:
+[nltk_data]     refusing a proxied fetch of
+[nltk_data]     'https://raw.githubusercontent.com/nltk/nltk_data/gh-
+[nltk_data]     pages/index.xml'. A configured proxy performs the
+[nltk_data]     egress, so NLTK cannot pin the validated IP and SSRF
+[nltk_data]     protection cannot be enforced (CWE-918). If and only
+[nltk_data]     if the proxy is trusted to be SSRF-safe, opt in via
+[nltk_data]     NLTK_ALLOW_PROXIED_URLOPEN=1 or
+[nltk_data]     nltk.pathsec.ALLOW_PROXIED_FETCH=True.
+[nltk_data] Error loading stopwords: Security Violation
+[nltk_data]     [pathsec.urlopen]: refusing a proxied fetch of
+[nltk_data]     'https://raw.githubusercontent.com/nltk/nltk_data/gh-
+[nltk_data]     pages/index.xml'. A configured proxy performs the
+[nltk_data]     egress, so NLTK cannot pin the validated IP and SSRF
+[nltk_data]     protection cannot be enforced (CWE-918). If and only
+[nltk_data]     if the proxy is trusted to be SSRF-safe, opt in via
+[nltk_data]     NLTK_ALLOW_PROXIED_URLOPEN=1 or
+[nltk_data]     nltk.pathsec.ALLOW_PROXIED_FETCH=True.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import verbalized_sampling; print("import ok")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/verbalized-sampling/verbalized_sampling/__init__.py", line 34, in <module>
+    from .cli import app as cli_app
+  File "/home/user/verbalized-sampling/verbalized_sampling/cli.py", line 28, in <module>
+    from verbalized_sampling.evals.dialogue import DialogueLinguisticEvaluator, DonationEvaluator
+  File "/home/user/verbalized-sampling/verbalized_sampling/evals/dialogue/__init__.py", line 22, in <module>
+    from .donation import DonationEvaluator
+  File "/home/user/verbalized-sampling/verbalized_sampling/evals/dialogue/donation.py", line 30, in <module>
+    from verbalized_sampling.analysis.evals.base import BaseEvaluator
+  File "/home/user/verbalized-sampling/verbalized_sampling/analysis/evals/__init__.py", line 22, in <module>
+    from .data_quality import SyntheticDataQualityEvaluator
+  File "/home/user/verbalized-sampling/verbalized_sampling/analysis/evals/data_quality.py", line 23, in <module>
+    from datasets import load_dataset
+  File "/home/user/verbalized-sampling/system/governance/.restricted/pkg-venv/lib/python3.13/site-packages/datasets/__init__.py", line 17, in <module>
+    from .arrow_dataset import Column, Dataset
+  File "/home/user/verbalized-sampling/system/governance/.restricted/pkg-venv/lib/python3.13/site-packages/datasets/arrow_dataset.py", line 59, in <module>
+    import pyarrow as pa
+  File "/home/user/verbalized-sampling/system/governance/.restricted/pkg-venv/lib/python3.13/site-packages/pyarrow/__init__.py", line 59, in <module>
+    from pyarrow.lib import (BuildInfo, CppBuildInfo, RuntimeInfo, set_timezone_db_path,
+    ...<3 lines>...
+                             io_thread_count, is_opentelemetry_enabled, set_io_thread_count)
+  File "pyarrow/lib.pyx", line 42, in init pyarrow.lib
+ImportError: pyarrow requires NumPy 2.0 or newer, found 1.26.4

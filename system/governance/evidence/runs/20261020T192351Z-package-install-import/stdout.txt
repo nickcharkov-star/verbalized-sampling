@@ -1,0 +1,2 @@
+Python 3.13.16
+{'numpy': '1.26.4', 'pyarrow': '26.0.0', 'datasets': '5.1.0', 'verbalized-sampling': '0.1.3'}
